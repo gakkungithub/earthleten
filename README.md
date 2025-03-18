@@ -39,3 +39,4 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 # earthleten
 sports app with next js
 >>>>>>> d5246bd9422cb04aaaf990e19d4af5e5dc1f3003
+

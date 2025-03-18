@@ -13,34 +13,34 @@ datasource db {
 
 // データベース表の形状の定義
 // idは数値ではなく文字列の方がいい(数値だと桁数が限られてしまううえに、数値はフォーマットが沢山あるから)
-model Bulletin {
+model Thread {
   id        String    @id
-  comments  Comment[]
-  title     String
-  genre     String
   user      User      @relation(fields: [uid], references: [id])
   uid       String
+  title     String
+  genre     String
   bdate     DateTime  @default(now())
+  comments  Comment[]
 }
 
 model Comment {
   id        String    @id
-  bulletin  Bulletin  @relation(fields: [bid], references: [id])
-  bid       String
+  thread    Thread    @relation(fields: [tid], references: [id])
+  tid       String
   user      User      @relation(fields: [uid], references: [id])
   uid       String
   talk      String  
-  bdate     DateTime  @default(now())
+  cdate     DateTime  @default(now())
 }
 
 model User {
   id        String    @id
+  threads   Threads[]
+  comments  Comment[]
   name      String    @unique
   gender    String
   bdate     DateTime
   height    Float
   weight    Float
   image     String
-  bulletins Bulletin[]
-  comments  Comment[]
 }
