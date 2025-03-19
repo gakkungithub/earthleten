@@ -1,5 +1,7 @@
+'use client';
+
 import { useState } from 'react';
-import { useRouter } from 'next/router';
+import { redirect } from 'next/navigation';
 
 export default function FormThreads(){
     const [form, setform] = useState({
@@ -20,15 +22,9 @@ export default function FormThreads(){
         });
     };
 
-    const router = useRouter();
     const submit = () => {
-        const sportsParams = {
-            sports: form.sports
-        }
-        router.push({
-            pathname: '/app/threads',
-            query: sportsParams
-        });
+        localStorage.setItem("sports", JSON.stringify(form.sports))
+        redirect('/threads');
     };
     
     const [show, setShow] = useState<boolean>(false)

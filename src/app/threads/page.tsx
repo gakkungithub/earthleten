@@ -1,13 +1,30 @@
-import { useRouter } from 'next/router';
-import BoardThreads from '@/components/BoardThreads'
+'use client';
 
-export default function ThreadsPage(){
-    const router = useRouter();
-    const genres = Array.isArray(router.query.genres) ? router.query.genres : router.query.genres ? [router.query.genres] : [];
+import { useEffect, useState } from 'react';
+import { getThreads } from '@/lib/getter';
+import ThreadDetails from '@/components/ThreadDetails';
+import { Thread } from '@/typeDeclar/typeComp';
 
-    return(
+export default function ThreadsResult(){
+    const [threads, setThreads] = useState<Thread[]>([]);
+
+    useEffect(() => {
+        const fetchThreads = async () => {
+            const stringGenres = localStorage.getItem("sports");
+            if (stringGenres) {
+                const savedThreads = await getThreads(JSON.parse(stringGenres));
+                setThreads(savedThreads ?? []);
+            }
+            else {
+                setThreads([]);
+            }
+        };
+        fetchThreads();
+    }, []);
+
+    return (
         <>
-        <BoardThreads genres={genres}/>
+        <ThreadDetails threads={threads} />
         </>
-    );
+    )
 }
