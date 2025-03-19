@@ -18,7 +18,7 @@ model Thread {
   user      User      @relation(fields: [uid], references: [id])
   uid       String
   title     String
-  genre     String
+  sports     String
   bdate     DateTime  @default(now())
   comments  Comment[]
 }
