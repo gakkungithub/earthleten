@@ -1,13 +1,13 @@
 import { useRouter } from 'next/router';
-import ThreadsPage from '@/components/ThreadsPage'
+import BoardThreads from '@/components/BoardThreads'
 
-export default function ThreadsLayout(){
+export default function ThreadsPage(){
     const router = useRouter();
     const genres = Array.isArray(router.query.genres) ? router.query.genres : router.query.genres ? [router.query.genres] : [];
 
     return(
         <>
-        <ThreadsPage genres={genres}/>
+        <BoardThreads genres={genres}/>
         </>
     );
 }

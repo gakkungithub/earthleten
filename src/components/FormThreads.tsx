@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 
 export default function FormThreads(){
     const [form, setform] = useState({
@@ -16,6 +17,17 @@ export default function FormThreads(){
         setform({
             ...form,
             [e.target.name]: fsp
+        });
+    };
+
+    const router = useRouter();
+    const submit = () => {
+        const sportsParams = {
+            sports: form.sports
+        }
+        router.push({
+            pathname: '/app/threads',
+            query: sportsParams
         });
     };
     
@@ -48,7 +60,7 @@ export default function FormThreads(){
                 checked={form.sports.includes('陸上')} 
                 onChange={handleCheckSports} /><br />         
             </fieldset>
-            <button type="button"></button>
+            <button type="button" onClick={submit}></button>
         </form>
         }
         </>

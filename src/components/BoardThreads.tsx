@@ -6,7 +6,7 @@ type genreProp = {
     genres: string[]
 }
 
-export default async function ThreadsPage( genres : genreProp ) {
+export default async function BoardThreads( genres : genreProp ) {
     // スレッド一覧を取得する
     const threads = await getThreads(genres);
 
