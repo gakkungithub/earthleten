@@ -1,30 +1,31 @@
-'use client';
-
-import { useEffect, useState } from 'react';
+//import { useEffect, useState } from 'react';
 import { getThreads } from '@/lib/getter';
 import ThreadDetails from '@/components/ThreadDetails';
-import { Thread } from '@/typeDeclar/typeComp';
+import { NextApiRequest, NextApiResponse } from 'next';
 
-export default function ThreadsResult(){
-    const [threads, setThreads] = useState<Thread[]>([]);
-
-    useEffect(() => {
-        const fetchThreads = async () => {
-            const stringGenres = localStorage.getItem("sports");
-            if (stringGenres) {
-                const savedThreads = await getThreads(JSON.parse(stringGenres));
-                setThreads(savedThreads ?? []);
-            }
-            else {
-                setThreads([]);
-            }
-        };
-        fetchThreads();
-    }, []);
-
-    return (
-        <>
-        <ThreadDetails threads={threads} />
-        </>
-    )
+export default async function ThreadsResult(req: NextApiRequest, res: NextApiResponse){
+    if (req.method === 'POST') {
+        try {
+            const { sports } = req.body;
+            const threads = await getThreads(sports);
+            return (
+                <>
+                <ThreadDetails threads={threads} />
+                </>
+            )
+        } catch (error) {
+            return (
+                <>
+                <p>表示できるスレッドがありません!!</p>
+                </>
+            )
+        }
+    }
+    else {
+        return (
+            <>
+            <p>表示できるスレッドがありません!!</p>
+            </>
+        )
+    }
 }

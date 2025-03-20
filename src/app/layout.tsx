@@ -1,22 +1,10 @@
 import Link from 'next/link';
 import type { Metadata } from "next";
-// import { Geist, Geist_Mono } from "next/font/google";
 import './globals.css';
-
 // googleのフォントの一種であるInconsolataをインポートしている
 import { Inconsolata } from 'next/font/google';
 
 const fnt = Inconsolata({ subsets: ['latin']})
-
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
 
 export const metadata: Metadata = {
   title: "Earthlete",
