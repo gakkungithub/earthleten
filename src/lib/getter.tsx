@@ -11,9 +11,13 @@ export async function getUser(id: string): Promise<User>{
     });
 }
 
+type genresProp = {
+    genres: string[]
+}
+
 /* スレッドを取得する 
  * genreがundefinedの場合、絞り込まない */
-export async function getThreads( genres : string[]){
+export async function getThreads( genres: genresProp ) {
     return await prisma.Thread.findMany({
         where: {
             genres: {

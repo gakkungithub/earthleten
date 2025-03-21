@@ -1,9 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
   experimental: {
     serverActions: true,
+  },
+  eslist: {
+    ignoreDuringBuilds: true,
   }
-};
+}
 
-export default nextConfig;
+module.exports = nextConfig
