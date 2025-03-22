@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ThreadDetails from '@/components/ThreadDetails';
-import FormThreads from '@/components/FormThreads';
+import NarrowThreads from '@/components/NarrowThreads';
 import { Thread } from '@/typeDeclar/typeComp';
 
 export default function ThreadsResult(){
@@ -28,7 +28,7 @@ export default function ThreadsResult(){
     
     return (
         <div className="flex">
-            <FormThreads onSubmit={fetchThreads}/>
+            <NarrowThreads onSubmit={fetchThreads}/>
             {threads ? 
             <ThreadDetails threads={threads} /> :
             <div>表示できるスレッドがありません!!</div>
