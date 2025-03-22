@@ -28,7 +28,7 @@ export default function RootLayout({children,}: Readonly<{
           <Link className="no-underline text-blue-300" href="/threads">
             掲示板</Link></li>
         </ul>
-        <div className="ml-2">
+        <div className="mx-2">
           {children}
         </div>
       </body>
