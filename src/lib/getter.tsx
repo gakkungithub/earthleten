@@ -20,12 +20,12 @@ type genresProp = {
 export async function getThreads( genres: genresProp ) {
     return await prisma.Thread.findMany({
         where: {
-            genres: {
+            sports: {
                 in: genres
-            }
+            },
         },
         orderBy: {
             bdate: 'desc'
-        }
+        },
     });
 }
