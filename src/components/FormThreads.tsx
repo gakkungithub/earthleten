@@ -71,7 +71,7 @@ export default function FormThreads({ onSubmit }: formThreadsProp){
                     </fieldset>
                 </div>
                 <button type="button" onClick={narrow}
-                className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 mr-2 hover:bg-blue-500">
+                className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-500">
                     検索
                 </button>
             </form>
@@ -91,7 +91,7 @@ export default function FormThreads({ onSubmit }: formThreadsProp){
                     </fieldset>
                 </div>
                 <button type="button"
-                className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 mr-2 hover:bg-blue-500">
+                className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-500">
                     登録
                 </button>
             </form>
