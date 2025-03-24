@@ -1,12 +1,12 @@
 import prisma from './prisma';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-export async function addThread(data) {
-    const thread = await prisma.Thread.create({
-        title: data.title,
-        sports: data.sports,
-    });
-}
+// export async function addThread(data) {
+//     const thread = await prisma.Thread.create({
+//         title: data.title,
+//         sports: data.sports,
+//     });
+// }
 
 // id        String    @id @default(cuid())
 // user      User      @relation(fields: [uid], references: [id])
@@ -16,27 +16,34 @@ export async function addThread(data) {
 // bdate     DateTime  @default(now())
 // comments  Comment[]
 
-type inputUserProp = {
+type InputUserValues = {
     name: string,
     gender: string,
-    bdate: Date,
-    height: number,
-    weight: number,
-    image: string
+    bdate?: Date,
+    height?: number,
+    weight?: number,
+    image?: File,
 }
 
-export async function addUser(data: inputUserProp){
+export async function addUser(data: InputUserValues){
     try {
+        const imageBlob = data.image;
+
+        if (!(imageBlob instanceof File)) {
+            return { success: false, message: 'ファイルの読み取りエラーが生じました'}
+        }
+
         const user = await prisma.User.create({
             name: data.name,
             gender: data.gender,
             bdate: data.bdate,
             height: data.height,
             weight: data.weight,
-            image: data.image
+            image: window.URL.createObjectURL(imageBlob),
         });
+
         return { success: true, message: `ようこそ ${user.name} さん!!`}
-    } catch (error) {
+    } catch (error: unknown) {
         if (error instanceof PrismaClientKnownRequestError) {
             if (error.code === 'P2002') {
                 return { success: false, message: `ユーザー名 ${data.name} は既に使われています` };
