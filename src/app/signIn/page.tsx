@@ -10,6 +10,8 @@ import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { addUser } from '@/lib/actions'
 
+const validFileExtensions = ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'];
+
 // yup定義をファイル化するかどうかは後で決める
 const schema = yup.object({
     name: yup
@@ -24,8 +26,8 @@ const schema = yup.object({
     bdate: yup
         .date()
         .label('誕生日')
-        .min(new Date('1908-05-23'), '${label}は{min}以降にしてください。')
-        .max(new Date(), '${label}は{max}以前にしてください。'),
+        .min(new Date('1908-05-23'), '${label}は${min}以降にしてください。')
+        .max(new Date().toLocaleString('ja-JP'), '${label}は${max}以前にしてください。'),
     height: yup
         .number()
         .label('身長')
@@ -37,11 +39,19 @@ const schema = yup.object({
         .min(0.1, '${label}は${min}kg以上にしてください。')
         .max(1000, '${label}は${max}kg以下にしてください。'),
     image: yup
-        .mixed<File>()
+        .mixed<FileList>()
+        .nullable()
         .test('image', '画像ファイルを選んでください',
             (value) => {
-                if (!value) return true;
-                return value.type.startsWith('/image/');
+                if (value === undefined || value === null || value.length != 1) {
+                    return true;
+                }
+                else {
+                    const fileName = value[0].name.toLowerCase();
+                    const fileExtension = fileName.split('.').pop();
+
+                    return validFileExtensions.includes(fileExtension || '');
+                }
             }
         )
 });
@@ -52,20 +62,40 @@ type InputUserValues = {
     bdate?: Date,
     height?: number,
     weight?: number,
-    image?: File,
+    image?: FileList | undefined | null,
 }
 
 export default function SignInPage(){
+    const [currentImage, setImage] = useState<string>("");
     const [errormessage, setErrorMessage] = useState<string>("");
 
-    const { register, handleSubmit, getValues,
+    const defaultValues: InputUserValues = {
+        name: "",
+        gender: "",
+        bdate: new Date(),
+        height: 160,
+        weight: 55,
+        image: null,
+    }
+
+    const { register, handleSubmit,
         formState: { errors } } = useForm({
+        defaultValues,
         resolver: yupResolver(schema),
     });
 
     // onSubmitは非同期処理Promiseを返すのでasyncが可能
     const onsubmit = async (data: InputUserValues) => {
-        const result = await addUser(data);
+        const userData = {
+            name: data.name,
+            gender: data.gender,
+            bdate: data.bdate,
+            height: data.height,
+            weight: data.weight,
+            image: currentImage,
+        };
+
+        const result = await addUser(userData);
         
         if (result.success) {
             redirect('/');
@@ -83,6 +113,7 @@ export default function SignInPage(){
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">ユーザー名</legend>
                 <input id="username" type="text" className="border w-32 rounded" {...register('name')}/>
+                <div>{errors.name?.message}</div>
             </fieldset>
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">性別</legend>
@@ -97,34 +128,43 @@ export default function SignInPage(){
                         <input id="gender_private" type="radio" value="private" {...register('gender')} /> 非公開
                     </label><br />
                 </div>
+                <div>{errors.gender?.message}</div>
             </fieldset>
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">誕生日</legend>
                 <input id="birthdate" type="date" className="border" {...register('bdate')}/>
+                <div>{errors.bdate?.message}</div>
             </fieldset>
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">身長</legend>
                 <div className="flex justify-center">
-                    <input id="height" type="number" defaultValue="160" step="0.1" min="0.1" max="270" className="border w-12 mr-2" {...register('height')}/>
+                    <input id="height" type="number" step="0.1" min="0.1" max="270" className="border w-12 mr-2" {...register('height')}/>
                     <p>cm</p>
                 </div>
+                <div>{errors.height?.message}</div>
             </fieldset>
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">体重</legend>
                 <div className="flex justify-center">
-                    <input id="weight" type="number" defaultValue="55" step="0.1" min="0.1" max="1000" className="border w-12 mr-2" {...register('weight')}/>
+                    <input id="weight" type="number" step="0.1" min="0.1" max="1000" className="border w-12 mr-2" {...register('weight')}/>
                     <p>kg</p>
                 </div>
+                <div>{errors.weight?.message}</div>
             </fieldset>
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">自画像</legend>
                 <div className="mx-auto mb-4 h-16 w-16 rounded-full border">
-                    {getValues('image') &&
-                    <Image src={window.URL.createObjectURL(getValues('image'))} alt="" width={64} height={64} className="m-auto rounded-full"/>
+                    {currentImage !== "" &&
+                    <Image src={currentImage} alt="" width={64} height={64} className="m-auto rounded-full"/>
                     }
                 </div>
                 <label htmlFor="selfImage" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500">画像を選択</label>
-                <input id="selfImage" type="file" accept="image/*" className="hidden" {...register('image')}/>
+                <input id="selfImage" type="file" accept="image/*" className="hidden" {...register('image', 
+                    {onChange: (e) => {
+                        const file = e.currentTarget.files ? window.URL.createObjectURL(e.currentTarget.files[0]) : currentImage;
+                        setImage((prevImage) => file || prevImage)
+                    }})}/>
+                <div>{errors.image?.message}</div>
             </fieldset>
             <div className="h-4">
                 {errormessage &&

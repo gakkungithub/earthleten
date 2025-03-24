@@ -1,3 +1,5 @@
+'use server';
+
 import prisma from './prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
@@ -22,25 +24,13 @@ type InputUserValues = {
     bdate?: Date,
     height?: number,
     weight?: number,
-    image?: File,
+    image?: string,
 }
 
 export async function addUser(data: InputUserValues){
     try {
-        const imageBlob = data.image;
 
-        if (!(imageBlob instanceof File)) {
-            return { success: false, message: 'ファイルの読み取りエラーが生じました'}
-        }
-
-        const user = await prisma.User.create({
-            name: data.name,
-            gender: data.gender,
-            bdate: data.bdate,
-            height: data.height,
-            weight: data.weight,
-            image: window.URL.createObjectURL(imageBlob),
-        });
+        const user = await prisma.User.create({data});
 
         return { success: true, message: `ようこそ ${user.name} さん!!`}
     } catch (error: unknown) {
