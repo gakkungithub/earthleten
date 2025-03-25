@@ -24,26 +24,46 @@ const schema = yup.object({
         .label('性別')
         .required('いずれかの${label}を選んでください。'),
     bdate: yup
-        .date()
+        .array()
+        .of(yup.number().nullable())
+        .required()
         .label('誕生日')
-        .min(new Date('1908-05-23'), '${label}は${min}以降にしてください。')
-        .max(new Date().toLocaleString('ja-JP'), '${label}は${max}以前にしてください。'),
+        .test('is-valid-bdate', '正しい日付を入力してください', (value) => {
+            const [ year, month, day ] = value;
+            if (year && month && day) {
+                if ( year < 1908 || (month < 1 || month > 12)) {
+                    return false;
+                }
+                const daysInMonth = new Date(year, month, 0).getDate();
+                if (day < 1 || day > daysInMonth) {
+                    return false;
+                }
+                return true;
+            }
+            // alert(`${value} hello`);
+            return false;
+        }),
     height: yup
         .number()
         .label('身長')
+        .required()
+        .nullable()
+        .transform((value) => ( value === "" ? null : value))
         .min(0.1, '${label}は{min}cm以上にしてください。')
         .max(272, '${label}は{max}cm以下にしてください'),
     weight: yup
         .number()
         .label('体重')
+        .required()
+        .nullable()
+        .transform((value) => ( value === "" ? null : value))
         .min(0.1, '${label}は${min}kg以上にしてください。')
         .max(1000, '${label}は${max}kg以下にしてください。'),
     image: yup
         .mixed<FileList>()
-        .nullable()
         .test('image', '画像ファイルを選んでください',
             (value) => {
-                if (value === undefined || value === null || value.length != 1) {
+                if (value === undefined || value.length != 1) {
                     return true;
                 }
                 else {
@@ -59,10 +79,10 @@ const schema = yup.object({
 type InputUserValues = {
     name: string,
     gender: string,
-    bdate?: Date,
-    height?: number,
-    weight?: number,
-    image?: FileList | undefined | null,
+    bdate: (number | null | undefined)[],
+    height: number | null,
+    weight: number | null,
+    image?: FileList,
 }
 
 export default function SignInPage(){
@@ -72,10 +92,9 @@ export default function SignInPage(){
     const defaultValues: InputUserValues = {
         name: "",
         gender: "",
-        bdate: new Date(),
-        height: 160,
-        weight: 55,
-        image: null,
+        bdate: [null, null, null],
+        height: null,
+        weight: null,
     }
 
     const { register, handleSubmit,
@@ -86,10 +105,13 @@ export default function SignInPage(){
 
     // onSubmitは非同期処理Promiseを返すのでasyncが可能
     const onsubmit = async (data: InputUserValues) => {
+        const [year, month, day] = data.bdate;
+
         const userData = {
             name: data.name,
             gender: data.gender,
-            bdate: data.bdate,
+            bdate: (year !== null && month !== null && day !== null && year !== undefined && month !== undefined && day !== undefined) 
+                    ? new Date(`${data.bdate[0]}-${data.bdate[1]}-${data.bdate[2]}`) : null,
             height: data.height,
             weight: data.weight,
             image: currentImage,
@@ -109,7 +131,7 @@ export default function SignInPage(){
     // legendは横並びにできない
     <div className="w-full">
         <h2 className="text-2xl text-black text-center">サインイン</h2>
-        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col mx-auto justify-center space-y-2 p-2 w-1/2 md:w-1/3 lg:w-1/4 bg-gray-200">
+        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col mx-auto justify-center space-y-2 p-2 w-2/3 md:w-1/2 lg:w-1/3 bg-gray-200">
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">ユーザー名</legend>
                 <input id="username" type="text" className="border w-32 rounded" {...register('name')}/>
@@ -132,13 +154,20 @@ export default function SignInPage(){
             </fieldset>
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">誕生日</legend>
-                <input id="birthdate" type="date" className="border" {...register('bdate')}/>
+                <div className="flex justify-center items-center">
+                    <input id="bdate" type="number" step="1" className="border w-12 m-2" {...register('bdate.0')}/>
+                    <p>年</p>
+                    <input id="bdate" type="number" step="1" className="border w-12 m-2" {...register('bdate.1')}/>
+                    <p>月</p>
+                    <input id="bdate" type="number" step="1" className="border w-12 m-2" {...register('bdate.2')}/>
+                    <p>日</p>                   
+                </div>
                 <div>{errors.bdate?.message}</div>
             </fieldset>
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">身長</legend>
                 <div className="flex justify-center">
-                    <input id="height" type="number" step="0.1" min="0.1" max="270" className="border w-12 mr-2" {...register('height')}/>
+                    <input id="height" type="number" step="0.1" className="border w-12 mr-2" {...register('height')}/>
                     <p>cm</p>
                 </div>
                 <div>{errors.height?.message}</div>
@@ -146,7 +175,7 @@ export default function SignInPage(){
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">体重</legend>
                 <div className="flex justify-center">
-                    <input id="weight" type="number" step="0.1" min="0.1" max="1000" className="border w-12 mr-2" {...register('weight')}/>
+                    <input id="weight" type="number" step="0.1" className="border w-12 mr-2" {...register('weight')}/>
                     <p>kg</p>
                 </div>
                 <div>{errors.weight?.message}</div>
@@ -178,29 +207,3 @@ export default function SignInPage(){
     </div>
     );
 }
-
-// export async function addUser(data: inputUserProp){
-//         try {
-//             const user = await prisma.User.create({
-//                 name: data.name,
-//                 gender: data.gender,
-//                 bdate: data.bdate,
-//                 height: data.height,
-//                 weight: data.weight,
-//                 image: data.image
-//             });
-//             return { success: true, message: `ようこそ ${user.name} さん!!`}
-//         } catch (error) {
-//             if (error instanceof PrismaClientKnownRequestError) {
-//                 if (error.code === 'P2002') {
-//                     return { success: false, message: `ユーザー名 ${data.name} は既に使われています` };
-//                 }
-//                 else {
-//                     return { success: false, message: "予期せぬPrism内のエラーが生じました" };
-//                 }
-//             }
-//             else {
-//                 return { success: false, message: "予期せぬエラーが生じました" };
-//             }
-//         }
-//     }

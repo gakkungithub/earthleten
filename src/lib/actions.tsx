@@ -21,9 +21,9 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 type InputUserValues = {
     name: string,
     gender: string,
-    bdate?: Date,
-    height?: number,
-    weight?: number,
+    bdate: Date | null,
+    height: number | null,
+    weight: number | null,
     image?: string,
 }
 
