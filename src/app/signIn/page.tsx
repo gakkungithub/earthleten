@@ -25,24 +25,31 @@ const schema = yup.object({
         .required('いずれかの${label}を選んでください。'),
     bdate: yup
         .array()
-        .of(yup.number().nullable())
-        .required()
-        .label('誕生日')
-        .test('is-valid-bdate', '正しい日付を入力してください', (value) => {
-            const [ year, month, day ] = value;
-            if (year && month && day) {
-                if ( year < 1908 || (month < 1 || month > 12)) {
-                    return false;
-                }
-                const daysInMonth = new Date(year, month, 0).getDate();
-                if (day < 1 || day > daysInMonth) {
-                    return false;
+        .of(yup
+            .number()
+            .nullable()
+            .test('bdate', '正しい日付を入力してください', 
+                (value, context) => {
+                const [ year, month, day ] = context.parent;
+                if (year && month && day) {
+                    if ( year < 1908 || (month < 1 || month > 12)) {
+                        return false;
+                    }
+    
+                    const daysInMonth = new Date(year, month, 0).getDate();
+                    
+                    if (day < 1 || day > daysInMonth) {
+                        return false;
+                    }
+                    
+                    return true;
                 }
                 return true;
-            }
-            // alert(`${value} hello`);
-            return false;
-        }),
+                }
+            )
+        )
+        .required()
+        .label('誕生日'),
     height: yup
         .number()
         .label('身長')
@@ -69,7 +76,6 @@ const schema = yup.object({
                 else {
                     const fileName = value[0].name.toLowerCase();
                     const fileExtension = fileName.split('.').pop();
-
                     return validFileExtensions.includes(fileExtension || '');
                 }
             }
@@ -150,7 +156,7 @@ export default function SignInPage(){
                         <input id="gender_private" type="radio" value="private" {...register('gender')} /> 非公開
                     </label><br />
                 </div>
-                <div>{errors.gender?.message}</div>
+                <div className="text-center">{errors.gender?.message}</div>
             </fieldset>
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">誕生日</legend>
@@ -162,7 +168,7 @@ export default function SignInPage(){
                     <input id="bdate" type="number" step="1" className="border w-12 m-2" {...register('bdate.2')}/>
                     <p>日</p>                   
                 </div>
-                <div>{errors.bdate?.message}</div>
+                <div>{errors.bdate?.[0]?.message}</div>
             </fieldset>
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">身長</legend>
