@@ -39,8 +39,8 @@ model User {
   comments  Comment[]
   name      String    @unique
   gender    String
-  bdate     DateTime
-  height    Float
-  weight    Float
+  bdate     DateTime?
+  height    Float?
+  weight    Float?
   image     String
 }

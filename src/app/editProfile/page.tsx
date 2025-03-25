@@ -28,7 +28,7 @@ const schema = yup.object({
         .of(yup
             .number()
             .nullable()
-            .test('bdate', '正しい日付を入力してください', 
+            .test('bdate', '正しい誕生日を入力してください', 
                 (value, context) => {
                 const [ year, month, day ] = context.parent;
                 if (year && month && day) {
@@ -41,15 +41,13 @@ const schema = yup.object({
                     if (day < 1 || day > daysInMonth) {
                         return false;
                     }
-                    
                     return true;
                 }
                 return true;
                 }
             )
         )
-        .required()
-        .label('誕生日'),
+        .required(),
     height: yup
         .number()
         .label('身長')
@@ -116,8 +114,9 @@ export default function SignInPage(){
         const userData = {
             name: data.name,
             gender: data.gender,
-            bdate: (year !== null && month !== null && day !== null && year !== undefined && month !== undefined && day !== undefined) 
-                    ? new Date(`${data.bdate[0]}-${data.bdate[1]}-${data.bdate[2]}`) : null,
+            bdate: (year !== null && month !== null && day !== null 
+                    && year !== undefined && month !== undefined && day !== undefined) 
+                    ? new Date(year, month, day) : null,
             height: data.height,
             weight: data.weight,
             image: currentImage,
@@ -136,7 +135,7 @@ export default function SignInPage(){
     return (
     // legendは横並びにできない
     <div className="w-full">
-        <h2 className="text-2xl text-black text-center">サインイン</h2>
+        <h2 className="text-2xl text-black text-center">アカウント登録</h2>
         <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col mx-auto justify-center space-y-2 p-2 w-2/3 md:w-1/2 lg:w-1/3 bg-gray-200">
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">ユーザー名</legend>
@@ -207,7 +206,7 @@ export default function SignInPage(){
                 }
             </div>
             <button type="submit" className=" bg-orange-400 text-white rounded p-2 w-fit m-auto hover:bg-orange-300">
-                サインイン
+                登録
             </button>
         </form>
     </div>

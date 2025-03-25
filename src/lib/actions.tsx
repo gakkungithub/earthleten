@@ -29,7 +29,6 @@ type InputUserValues = {
 
 export async function addUser(data: InputUserValues){
     try {
-
         const user = await prisma.User.create({data});
 
         return { success: true, message: `ようこそ ${user.name} さん!!`}
