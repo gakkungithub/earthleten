@@ -20,6 +20,7 @@ export type Comment = {
 export type User = {
     id: string;
     name: string;
+    password: string;
     gender: string;
     bdate: Date;
     height: number;

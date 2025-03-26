@@ -8,7 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
-import { addUser } from '@/lib/actions'
+import { editUserProfile } from '@/lib/actions'
 
 const validFileExtensions = ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'];
 
@@ -80,7 +80,7 @@ const schema = yup.object({
         )
 });
 
-type InputUserValues = {
+type InputUserProfileValues = {
     name: string,
     gender: string,
     bdate: (number | null | undefined)[],
@@ -89,11 +89,11 @@ type InputUserValues = {
     image?: FileList,
 }
 
-export default function SignInPage(){
+export default function EditProfilePage() {
     const [currentImage, setImage] = useState<string>("");
     const [errormessage, setErrorMessage] = useState<string>("");
 
-    const defaultValues: InputUserValues = {
+    const defaultValues: InputUserProfileValues = {
         name: "",
         gender: "",
         bdate: [null, null, null],
@@ -108,10 +108,10 @@ export default function SignInPage(){
     });
 
     // onSubmitは非同期処理Promiseを返すのでasyncが可能
-    const onsubmit = async (data: InputUserValues) => {
+    const onsubmit = async (data: InputUserProfileValues) => {
         const [year, month, day] = data.bdate;
 
-        const userData = {
+        const userProfile = {
             name: data.name,
             gender: data.gender,
             bdate: (year !== null && month !== null && day !== null 
@@ -122,37 +122,37 @@ export default function SignInPage(){
             image: currentImage,
         };
 
-        const result = await addUser(userData);
+        const result = await editUserProfile(userProfile);
         
         if (result.success) {
             redirect('/');
         }
         else {
-            setErrorMessage(result.message);
+            setErrorMessage(result.message || "");
         }
     };
 
     return (
     // legendは横並びにできない
     <div className="w-full">
-        <h2 className="text-2xl text-black text-center">アカウント登録</h2>
+        <h2 className="text-2xl text-black text-center">プロフィール設定</h2>
         <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col mx-auto justify-center space-y-2 p-2 w-2/3 md:w-1/2 lg:w-1/3 bg-gray-200">
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">ユーザー名</legend>
-                <input id="username" type="text" className="border w-32 rounded" {...register('name')}/>
+                <input id="name" type="text" className="border w-32 rounded" {...register('name')}/>
                 <div>{errors.name?.message}</div>
             </fieldset>
             <fieldset className="p-2 border bg-white">
                 <legend className="text-center font-bold">性別</legend>
                 <div className="w-fit m-auto">
-                    <label htmlFor="gender_male" className="m-2">
-                        <input id="gender_male" type="radio" value="male" {...register('gender')}/> 男性
+                    <label htmlFor="gender-male" className="m-2">
+                        <input id="gender-male" type="radio" value="male" {...register('gender')}/> 男性
                     </label><br />                    
-                    <label htmlFor="gender_female" className="m-2">
-                        <input id="gender_female" type="radio" value="female" {...register('gender')} /> 女性
+                    <label htmlFor="gender-female" className="m-2">
+                        <input id="gender-female" type="radio" value="female" {...register('gender')} /> 女性
                     </label><br /> 
-                    <label htmlFor="gender_private" className="m-2">
-                        <input id="gender_private" type="radio" value="private" {...register('gender')} /> 非公開
+                    <label htmlFor="gender-private" className="m-2">
+                        <input id="gender-private" type="radio" value="private" {...register('gender')} /> 非公開
                     </label><br />
                 </div>
                 <div className="text-center">{errors.gender?.message}</div>
@@ -192,8 +192,8 @@ export default function SignInPage(){
                     <Image src={currentImage} alt="" width={64} height={64} className="m-auto rounded-full"/>
                     }
                 </div>
-                <label htmlFor="selfImage" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500">画像を選択</label>
-                <input id="selfImage" type="file" accept="image/*" className="hidden" {...register('image', 
+                <label htmlFor="self-image" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500">画像を選択</label>
+                <input id="self-image" type="file" accept="image/*" className="hidden" {...register('image', 
                     {onChange: (e) => {
                         const file = e.currentTarget.files ? window.URL.createObjectURL(e.currentTarget.files[0]) : currentImage;
                         setImage((prevImage) => file || prevImage)

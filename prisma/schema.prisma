@@ -38,7 +38,8 @@ model User {
   threads   Thread[]
   comments  Comment[]
   name      String    @unique
-  gender    String
+  password  String    
+  gender    String    @default("private")
   bdate     DateTime?
   height    Float?
   weight    Float?

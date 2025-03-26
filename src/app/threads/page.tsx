@@ -8,6 +8,7 @@ import { Thread } from '@/typeDeclar/typeComp';
 export default function ThreadsResult(){
     const [threads, setThreads] = useState<Thread[]>([]);
 
+    // prismaがクライアント側で使えないのでサーバにPOSTリクエストを送信してスレッドを取得している
     const fetchThreads = async (genres: string[]) => {
         const response = await fetch('/api/threads', {
             method: 'POST',
