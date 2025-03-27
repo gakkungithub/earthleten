@@ -7,7 +7,7 @@ export default function RedirectPage( params  : paramProp) {
 
     return (
         <>
-        {type === 'fromAddAcount'
+        {type === ''
 
         }
         </>

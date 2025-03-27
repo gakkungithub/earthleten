@@ -29,7 +29,7 @@ export default function HeaderInClient() {
         }
         {pathname !== '/addAcount' &&
         <li className="block px-3 py-1 my-1 hover:bg-gray-100 rounded">
-            <Link className="no-underline text-orange-400" href="/addAcount">
+            <Link className="no-underline text-orange-400" href="/addAccount">
             新規登録</Link></li>
         }
         {pathname !== '/editProfile' &&

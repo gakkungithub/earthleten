@@ -6,6 +6,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 // 検証ルールを定義する属性を持つ
 import * as yup from 'yup';
 
+import { redirect } from 'next/navigation';
+
 const schema = yup.object({
     name: yup
         .string()
@@ -15,10 +17,14 @@ const schema = yup.object({
         .required('パスワードを入力してください'),
 });
 
+type UserValues = {
+    name: string,
+    password: string,
+}
 export default function LogInPage() {
     const [errormessage, setErrorMessage] = useState("");
 
-    const defaultValues: {name: string, password: string} = {
+    const defaultValues: UserValues = {
         name: "",
         password: "",
     }
@@ -28,13 +34,33 @@ export default function LogInPage() {
         resolver: yupResolver(schema), 
     });
 
+    const onsubmit = async (data: UserValues) => {
+        const res = await fetch('api/auth', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ data }),
+        });
+
+        if (res.ok) {
+            const { token } = await res.json();
+            localStorage.setItem("token", token);
+            redirect('/');
+        }
+        else {
+            const { message } = await res.json();
+            setErrorMessage(message);
+        }
+    }
+
     return (
     <div className="w-full">
         <h2 className="text-2xl text-black text-center">ログイン</h2>
-        <form className="flex flex-col mx-auto justify-center space-y-2 p-2 w-2/3 md:w-1/2 lg:w-1/3 bg-gray-200">
+        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col mx-auto justify-center space-y-2 p-2 w-2/3 md:w-1/2 lg:w-1/3 bg-gray-200">
             <fieldset className="p-2 border text-center bg-white">
                 <legend className="font-bold">ユーザー名</legend>
-                <input id="username" type="text" className="border w-32 rounded" {...register('name')}/>
+                <input id="name" type="text" className="border w-32 rounded" {...register('name')}/>
                 <div>{errors.name?.message}</div>
             </fieldset>
             <fieldset className="p-2 border text-center bg-white">
