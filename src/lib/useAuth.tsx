@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { redirect } from 'next/navigation';
 import { jwtVerify } from "jose";
 
 type UserProfile = {
@@ -13,7 +13,7 @@ type UserProfile = {
     weight: number | null,
     image?: string,
 }
-export default function UseAuth() {
+export default function UseAuth(pathname: string) {
     const [loginUser, setLoginUser] = useState<UserProfile>({
         id: "",
         name: "",
@@ -24,23 +24,23 @@ export default function UseAuth() {
         image: "",
     });
 
-    const router = useRouter();
-
     useEffect(() => {
         const checkToken = async () => {
-            const token = localStorage.getItem("token");
-            try {
-                const secretKey = new TextEncoder().encode("prisma-supabase");
-                const decodedJWT = await jwtVerify(token ?? "", secretKey);
-                const userProfile = decodedJWT.payload as UserProfile;
-
-                setLoginUser(userProfile);
-            } catch {
-                router.push('/logIn');
+            if (!['/', '/addAccount'].includes(pathname)){
+                const token = localStorage.getItem("token");
+                try {
+                    const secretKey = new TextEncoder().encode("prisma-supabase");
+                    const decodedJWT = await jwtVerify(token ?? "", secretKey);
+                    const userProfile = decodedJWT.payload as UserProfile;
+    
+                    setLoginUser(userProfile);
+                } catch {
+                    redirect('/logIn');
+                }
             }
         };
         checkToken();
-    }, [router]);
+    }, [pathname]);
     
     return loginUser;
 }

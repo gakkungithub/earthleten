@@ -42,7 +42,7 @@ export default function RootLayout({children,}: Readonly<{
     }
   }, [pathname])
 
-  const loginUser = UseAuth();
+  const loginUser = UseAuth(pathname);
 
   return (
     <html lang="ja">
@@ -59,17 +59,22 @@ export default function RootLayout({children,}: Readonly<{
             掲示板</Link></li>
         </ul>
         <ul className="flex fixed top-3 right-2">
-        {pathname !== '/logIn' &&
+        {pathname !== '/logIn' && !loginUser &&
         <li className="block px-3 py-1 my-1 hover:bg-gray-100 rounded">
             <Link className="no-underline text-blue-600" href="/logIn">
             ログイン</Link></li>
         }
-        {pathname !== '/addAccount' &&
+        {pathname !== '/logOut' && loginUser &&
+        <li className="block px-3 py-1 my-1 hover:bg-gray-100 rounded">
+            <Link className="no-underline text-blue-600" href="/logOut">
+            ログアウト</Link></li>
+        }
+        {pathname !== '/addAccount' && !loginUser &&
         <li className="block px-3 py-1 my-1 hover:bg-gray-100 rounded">
             <Link className="no-underline text-orange-400" href="/addAccount">
             新規登録</Link></li>
         }
-        {pathname !== '/editProfile' &&
+        {pathname !== '/editProfile' && loginUser &&
         <li className="px-1 py-1 mx-2 rounded-full border">
             <Link className="text-blue-300" href="/editProfile">
             <Image src='/defaultIcon.png' alt="" width={32} height={32}/>

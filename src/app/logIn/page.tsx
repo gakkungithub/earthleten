@@ -35,7 +35,8 @@ export default function LogInPage() {
     });
 
     const onsubmit = async (data: UserValues) => {
-        const res = await fetch('api/auth', {
+        // alert(`${data.name}${data.password}`);
+        const res = await fetch('/api/auth', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -44,12 +45,13 @@ export default function LogInPage() {
         });
 
         if (res.ok) {
-            const { token } = await res.json();
+            const token = await res.json();
             localStorage.setItem("token", token);
             redirect('/');
         }
         else {
-            const { message } = await res.json();
+            const message = await res.json();
+            console.log(message);
             setErrorMessage(message);
         }
     }

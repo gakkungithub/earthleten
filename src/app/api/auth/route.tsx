@@ -1,13 +1,13 @@
 import { getUserByName, getHash } from '@/lib/getter';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { NextApiRequest, NextApiResponse } from 'next';
 import { SignJWT } from 'jose';
 
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
-    const { name, password: inputPassword } = await req.body();
-
+export async function POST(req: Response) {
+    const { data } = await req.json();
+    const { name, password: inputPassword } = data;
     try {
         const user = await getUserByName(name);
+        
         const { password: gotPassword, ...userWithoutPassword } = user;
 
         // ここにクッキーの機能を作る
@@ -17,23 +17,23 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
             .setExpirationTime("2h")
             .sign(secretKey);
 
-            return res.status(200).json({ token: token });
+            return new Response(JSON.stringify(token), { status: 200 });
         }
         else {
-            return res.status(401).json({ message: 'パスワードが異なります。'});
+            return new Response(JSON.stringify('パスワードが異なります'), { status: 401 });
         }
 
     } catch (error: unknown) {
         if (error instanceof PrismaClientKnownRequestError) {
             if (error.code === 'P2001') {
-                return res.status(401).json({ message: `サーバ名 ${name} が見つかりません。`});
+                return new Response(JSON.stringify(`サーバ名 ${name} が見つかりません。`), { status: 401 });
             }
             else {
-                return res.status(401).json({ message: "予期せぬPrism内のエラーが生じました"});
+                return new Response(JSON.stringify("予期せぬPrism内のエラーが生じました"), { status: 401 });  
             }
         }
         else {
-            return res.status(401).json({ message: "予期せぬエラーが生じました"});
+            return new Response(JSON.stringify("予期せぬエラーが生じました"), { status: 401 });
         }
     }
 
