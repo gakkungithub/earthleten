@@ -18,7 +18,7 @@ export default function UseAuth(pathname: string) {
 
     useEffect(() => {
         const checkToken = async () => {
-            if (!['/addAccount'].includes(pathname)){
+            if (!['/addAccount', '/logOut'].includes(pathname)){
                 const token = localStorage.getItem("token");
                 try {
                     const secretKey = new TextEncoder().encode("prisma-supabase");
@@ -32,6 +32,9 @@ export default function UseAuth(pathname: string) {
                         redirect('/logIn');
                     }
                 }
+            }
+            else if (pathname === '/logOut') {
+                redirect('/');
             }
         };
         checkToken();

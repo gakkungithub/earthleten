@@ -97,7 +97,7 @@ export default function RootLayout({children,}: Readonly<{
             <ul className="flex justify-around">
               <li><Link className="no-underline text-white bg-blue-600 p-4 rounded" onClick={ () => setShowLogoutMenu(false) } href={pathname}>
               キャンセル</Link></li>
-              <li><Link className="no-underline text-white bg-red-600 p-4 rounded" onClick={handleLogout} href="/">
+              <li><Link className="no-underline text-white bg-red-600 p-4 rounded" onClick={handleLogout} href="/logOut">
               ログアウト</Link></li>
             </ul>
           </div>
