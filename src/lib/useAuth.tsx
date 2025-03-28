@@ -14,19 +14,11 @@ type UserProfile = {
     image?: string,
 }
 export default function UseAuth(pathname: string) {
-    const [loginUser, setLoginUser] = useState<UserProfile>({
-        id: "",
-        name: "",
-        gender: "",
-        bdate: null,
-        height: null,
-        weight: null,
-        image: "",
-    });
+    const [loginUser, setLoginUser] = useState<UserProfile | null>(null);
 
     useEffect(() => {
         const checkToken = async () => {
-            if (!['/', '/addAccount'].includes(pathname)){
+            if (!['/addAccount'].includes(pathname)){
                 const token = localStorage.getItem("token");
                 try {
                     const secretKey = new TextEncoder().encode("prisma-supabase");
@@ -35,13 +27,16 @@ export default function UseAuth(pathname: string) {
     
                     setLoginUser(userProfile);
                 } catch {
-                    redirect('/logIn');
+                    setLoginUser(null);
+                    if (pathname !== '/') {
+                        redirect('/logIn');
+                    }
                 }
             }
         };
         checkToken();
     }, [pathname]);
-    
+
     return loginUser;
 }
 
