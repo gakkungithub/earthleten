@@ -7,17 +7,23 @@ import { Inconsolata } from 'next/font/google';
 
 import { headers } from 'next/headers';
 
-import HeaderInClient from '@/components/HeaderInClient';
+import HeaderButtons from '@/components/HeaderButtons';
+
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
 
 const fnt = Inconsolata({ subsets: ['latin']});
 
-export default function RootLayout({children,}: Readonly<{
+export default async function RootLayout({children,}: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="ja">
       <body className={fnt.className}>
-        <HeaderInClient />
+      <h1 className="text-4xl text-indigo-800 font-bold my-2">Earthlete</h1>
+        <HeaderButtons login={session !== null ? true : false}/>
         <div className="mx-2">
           {children}
         </div>

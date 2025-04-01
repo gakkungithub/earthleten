@@ -1,23 +1,19 @@
 import { getUserByName, getHash } from '@/lib/getter';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { SignJWT } from 'jose';
+// import { SignJWT } from 'jose';
 
 export async function POST(req: Response) {
-    const { data } = await req.json();
-    const { name, password: inputPassword } = data;
+    const { name, password: inputPassword } = await req.json();
     try {
-        const user = await getUserByName(name);
-        
-        const { password: gotPassword, ...userWithoutPassword } = user;
-
+        const { id, name: gotName, password: gotPassword, image } = await getUserByName(name);
+        const user = {
+            id: id,
+            name: gotName,
+            image: image,
+        }
         // ここにクッキーの機能を作る
         if (gotPassword === await getHash(inputPassword)) {
-            const secretKey = new TextEncoder().encode("prisma-supabase");
-            const token = await new SignJWT(userWithoutPassword).setProtectedHeader({alg:"HS256"})
-            .setExpirationTime("2h")
-            .sign(secretKey);
-
-            return new Response(JSON.stringify(token), { status: 200 });
+            return new Response(JSON.stringify(user), { status: 200 });
         }
         else {
             return new Response(JSON.stringify('パスワードが異なります'), { status: 401 });
@@ -36,5 +32,4 @@ export async function POST(req: Response) {
             return new Response(JSON.stringify("予期せぬエラーが生じました"), { status: 401 });
         }
     }
-
 }

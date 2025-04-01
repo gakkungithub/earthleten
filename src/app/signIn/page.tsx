@@ -6,7 +6,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 // 検証ルールを定義する属性を持つ
 import * as yup from 'yup';
 
-import { redirect } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 
 const schema = yup.object({
     name: yup
@@ -35,24 +35,12 @@ export default function LogInPage() {
     });
 
     const onsubmit = async (data: UserValues) => {
-        // alert(`${data.name}${data.password}`);
-        const res = await fetch('/api/auth', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ data }),
+        const res = await signIn("Earthlete", {
+            name: data.name,
+            password: data.password
         });
-
-        if (res.ok) {
-            const token = await res.json();
-            localStorage.setItem("token", token);
-            redirect('/');
-        }
-        else {
-            const message = await res.json();
-            console.log(message);
-            setErrorMessage(message);
+        if (res?.error) {
+            setErrorMessage('サインインに失敗しました');
         }
     }
 
@@ -76,7 +64,7 @@ export default function LogInPage() {
                 }
             </div>
             <button type="submit" className=" bg-blue-600 text-white rounded p-2 w-fit m-auto hover:bg-blue-500">
-                ログイン
+                サインイン
             </button>
         </form>
     </div>
