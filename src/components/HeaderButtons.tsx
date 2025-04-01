@@ -3,10 +3,12 @@
 import Link from 'next/link';
 import Image from 'next/image';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 
 import { signOut } from 'next-auth/react';
+
+import { redirect } from 'next/navigation';
 
 export default function HeaderButtons({ login } : { login: boolean }) {
     const [showLogoutMenu, setShowLogoutMenu] = useState<boolean>(false);
@@ -16,6 +18,12 @@ export default function HeaderButtons({ login } : { login: boolean }) {
       signOut();
       setShowLogoutMenu(false);
     };
+
+    useEffect(() => {
+        if (!login && !['/', '/signIn', '/addAccount'].includes(pathname)) {
+            redirect('/signIn');
+        }
+    }, [pathname, login]);
   
     return (
         <>

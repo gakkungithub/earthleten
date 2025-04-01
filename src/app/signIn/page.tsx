@@ -36,11 +36,15 @@ export default function LogInPage() {
 
     const onsubmit = async (data: UserValues) => {
         const res = await signIn("Earthlete", {
+            redirect: false,
             name: data.name,
             password: data.password
         });
         if (res?.error) {
             setErrorMessage('サインインに失敗しました');
+        }
+        else {
+            window.location.href = '/';
         }
     }
 
