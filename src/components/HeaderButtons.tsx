@@ -10,10 +10,11 @@ import { signOut } from 'next-auth/react';
 
 import { redirect } from 'next/navigation';
 
-export default function HeaderButtons({ login } : { login: boolean }) {
+export default function HeaderButtons({ login, id, name, image } : { login: boolean, id: string, name: string, image: string}) {
     const [showLogoutMenu, setShowLogoutMenu] = useState<boolean>(false);
     const pathname = usePathname();
 
+    // alert(`${id}, ${name}, ${image}`);
     const handleLogout = () => {
       signOut();
       setShowLogoutMenu(false);
@@ -57,7 +58,7 @@ export default function HeaderButtons({ login } : { login: boolean }) {
           {pathname !== '/editProfile' && login &&
           <li className="px-1 py-1 mx-2 rounded-full border">
               <Link className="text-blue-300" href="/editProfile">
-              <Image src='/defaultIcon.png' alt="" width={32} height={32}/>
+              <Image src={image !== '' ? image : '/defaultIcon.png'} alt="" width={32} height={32}/>
               </Link></li>
           }
         </ul>

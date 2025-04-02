@@ -23,7 +23,8 @@ export default async function RootLayout({children,}: Readonly<{
     <html lang="ja">
       <body className={fnt.className}>
       <h1 className="text-4xl text-indigo-800 font-bold my-2">Earthlete</h1>
-        <HeaderButtons login={session !== null ? true : false}/>
+        <HeaderButtons login={session !== null ? true : false} 
+          id={session?.user?.id || ''} name={session?.user?.name || ''} image={session?.user?.image || ''}/>
         <div className="mx-2">
           {children}
         </div>

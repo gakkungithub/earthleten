@@ -66,20 +66,24 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt( { token, user, account }) {
-            if (account?.provider === "credentials") {
+            if (account?.provider === "Earthlete") {
                 token.id = user.id;
                 token.name = user.name;
-                token.image = user.image;
+                token.picture = user.image;
             }
             return token;
         },
         async redirect( { baseUrl } ) {
             return baseUrl;
+        },
+        async session( { session, token } ) {
+            if (token && session?.user) {
+                if (session.user && typeof(token.id) === 'string') {
+                    session.user.id = token.id || '';
+                    session.user.image = token.picture;
+                }
+            }
+            return session;
         }
-        // async session( { session, token } ) {
-        //     if (token && session) {
-        //         session.user = token.user;
-        //     }
-        // }
     }
 }
