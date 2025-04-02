@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 // 検証を担うリゾルバー
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -9,6 +9,8 @@ import * as yup from 'yup';
 import { redirect } from 'next/navigation';
 import Image from 'next/image';
 import { editUserProfile } from '@/lib/actions'
+
+import { useSession } from 'next-auth/react';
 
 const validFileExtensions = ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'];
 
@@ -93,6 +95,9 @@ export default function EditProfilePage() {
     const [currentImage, setImage] = useState<string>("");
     const [errormessage, setErrorMessage] = useState<string>("");
 
+    const { data: session, status } = useSession();
+    const id = session?.user?.id || '';
+
     const defaultValues: InputUserProfileValues = {
         name: "",
         gender: "",
@@ -101,10 +106,37 @@ export default function EditProfilePage() {
         weight: null,
     }
 
-    const { register, handleSubmit,
+    const { register, handleSubmit, setValue,
         formState: { errors } } = useForm({
         defaultValues,
         resolver: yupResolver(schema),
+    });
+
+    useEffect(() => {
+        const getUserProfileValues = async() => {
+            if (status === "authenticated") {
+                const response = await fetch('/api/editProfile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id }),
+                });
+        
+                if (response.ok) {
+                    const profile = await response.json();
+                    if (profile) {
+                        setValue('name', profile.name || "");
+                        setValue('gender', profile.gender || "");
+                        setValue('bdate', profile.bdate || [null, null, null]);
+                        setValue('height', profile.height || "");
+                        setValue('weight', profile.weight || "");
+                        setValue('image', profile.image || "");
+                    }
+                }
+            }
+        };
+        getUserProfileValues();
     });
 
     // onSubmitは非同期処理Promiseを返すのでasyncが可能

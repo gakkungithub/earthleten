@@ -10,11 +10,11 @@ import { signOut } from 'next-auth/react';
 
 import { redirect } from 'next/navigation';
 
-export default function HeaderButtons({ login, id, name, image } : { login: boolean, id: string, name: string, image: string}) {
+//ここにはloginとimageしか使わない(idやnameはクライアントコンポーネントでuseSessionを使って取得する)
+export default function HeaderButtons({ login, image } : { login: boolean, image: string}) {
     const [showLogoutMenu, setShowLogoutMenu] = useState<boolean>(false);
     const pathname = usePathname();
 
-    // alert(`${id}, ${name}, ${image}`);
     const handleLogout = () => {
       signOut();
       setShowLogoutMenu(false);
