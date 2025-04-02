@@ -19,6 +19,7 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 // comments  Comment[]
 
 type UserProfile = {
+    id: string,
     name: string,
     gender: string,
     bdate: Date | null,
@@ -28,7 +29,11 @@ type UserProfile = {
 }
 export async function editUserProfile(data: UserProfile): Promise<{ success: boolean, message?: string }>{
     try {
-        await prisma.User.create({data});
+        const { id, ...updateData } = data;
+        await prisma.User.update({
+            where: { id: id },
+            data: updateData,
+        });
         return { success: true };
 
     } catch (error: unknown) {

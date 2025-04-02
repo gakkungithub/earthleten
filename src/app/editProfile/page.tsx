@@ -125,25 +125,36 @@ export default function EditProfilePage() {
         
                 if (response.ok) {
                     const profile = await response.json();
+                    const {name, gender, bdate: bdateString, height, weight, image} = profile;
+                    const bdate = new Date(bdateString);
+                    console.log(image);
                     if (profile) {
-                        setValue('name', profile.name || "");
-                        setValue('gender', profile.gender || "");
-                        setValue('bdate', profile.bdate || [null, null, null]);
-                        setValue('height', profile.height || "");
-                        setValue('weight', profile.weight || "");
-                        setValue('image', profile.image || "");
+                        setValue('name', name || "");
+                        setValue('gender', gender || "");
+                        setValue('height', height || "");
+                        setValue('weight', weight || "");
+                        setValue('image', image || "");
+                        setImage(image);
+                        if (bdate instanceof Date) {
+                            const year = bdate.getFullYear();
+                            const month = bdate.getMonth();
+                            const day = bdate.getDate();
+                            setValue('bdate', [year || null, month || null, day || null]);
+                        }
                     }
                 }
             }
         };
         getUserProfileValues();
-    });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id]);
 
     // onSubmitは非同期処理Promiseを返すのでasyncが可能
     const onsubmit = async (data: InputUserProfileValues) => {
         const [year, month, day] = data.bdate;
 
         const userProfile = {
+            id: id,
             name: data.name,
             gender: data.gender,
             bdate: (year !== null && month !== null && day !== null 
