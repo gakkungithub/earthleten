@@ -127,14 +127,12 @@ export default function EditProfilePage() {
                     const profile = await response.json();
                     const {name, gender, bdate: bdateString, height, weight, image} = profile;
                     const bdate = new Date(bdateString);
-                    console.log(image);
                     if (profile) {
                         setValue('name', name || "");
                         setValue('gender', gender || "");
                         setValue('height', height || "");
                         setValue('weight', weight || "");
-                        setValue('image', image || "");
-                        setImage(image);
+                        setImage(image || "");
                         if (bdate instanceof Date) {
                             const year = bdate.getFullYear();
                             const month = bdate.getMonth();
@@ -165,6 +163,10 @@ export default function EditProfilePage() {
             image: currentImage,
         };
 
+        // const abuff = await data.image?.[0].arrayBuffer()
+        // if (abuff !== undefined) {
+        //     console.log(Buffer.from(abuff));
+        // }
         const result = await editUserProfile(userProfile);
         
         if (result.success) {

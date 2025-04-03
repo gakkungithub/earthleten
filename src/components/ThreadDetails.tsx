@@ -1,11 +1,7 @@
 import LinkedThreadDetails from "./LinkedThreadDetails"
 import { Thread } from '@/typeDeclar/typeComp';
 
-type ThreadsProp = {
-    threads: Thread[];
-}
-
-export default function ThreadDetails({threads}: ThreadsProp){
+export default function ThreadDetails({threads}: {threads: Thread[]}){
     return (
         <>
         {threads.forEach((t: Thread) => (
