@@ -8,8 +8,8 @@ import { Dispatch, SetStateAction } from 'react';
 export default function FormNarrowThreads({ setThreads }: {
     setThreads: Dispatch<SetStateAction<Thread[]>>;
 }){
-    const [form, setform] = useState({
-        sports: ['baseball', 'football', 'trackfield']
+    const [form, setform] = useState<{sports: string[]}>({
+        sports: []
     });
 
     const [openMenu, setOpenMenu] = useState<string>('');
@@ -46,6 +46,12 @@ export default function FormNarrowThreads({ setThreads }: {
     const MenuButton = ({label, menu} : {label: string, menu: string}) => {
         return <button onClick={() => controlOpenMenu(menu)} 
                 className={`text-center p-1 text-white rounded ${openMenu.includes(menu) ? "bg-fuchsia-600 hover:bg-fuchsia-500" : "bg-blue-600 hover:bg-blue-500" }`}>{label}</button>
+    }
+
+    const MenuInput = ({label, id, value, } : {label: string, id: string, value: string}) => {
+        return <label htmlFor={`narrow-sports-${id}`} className="flex items-center rounded">
+        <input id={`narrow-sports-${id}`} name="sports" type="checkbox" value={value}
+        className="mr-2" />{label}</label>
     }
 
     const narrow = async () => {

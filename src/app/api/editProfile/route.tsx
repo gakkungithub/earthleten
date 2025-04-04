@@ -5,6 +5,7 @@ export async function POST(req: Request){
 
     try {
         const userProfile = await getUserByID(id);
+
         return new Response(JSON.stringify(userProfile), { status: 200 });
     } catch {
         return new Response(JSON.stringify('Error fetching profile'), { status: 500 });

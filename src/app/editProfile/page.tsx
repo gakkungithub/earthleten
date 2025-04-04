@@ -124,22 +124,19 @@ export default function EditProfilePage() {
                 });
         
                 if (response.ok) {
-                    const profile = await response.json();
-                    const {name, gender, bdate: bdateString, height, weight, image} = profile;
-                    const bdate = new Date(bdateString);
-                    if (profile) {
-                        setValue('name', name || "");
-                        setValue('gender', gender || "");
-                        setValue('height', height || "");
-                        setValue('weight', weight || "");
-                        setImage(image || "");
-                        if (bdate instanceof Date) {
-                            const year = bdate.getFullYear();
-                            const month = bdate.getMonth();
-                            const day = bdate.getDate();
-                            setValue('bdate', [year || null, month || null, day || null]);
-                        }
-                    }
+                    const userProfile = await response.json();
+                    const bdate = new Date (userProfile.bdate); 
+                    
+                    setValue('name', userProfile.name || "");
+                    setValue('gender', userProfile.gender || "");
+                    setValue('bdate', bdate instanceof Date ? 
+                        [bdate.getFullYear() || null, bdate.getMonth() || null, bdate.getDate() || null] : [null, null, null]);
+                    setValue('height', userProfile.height || "");
+                    setValue('weight', userProfile.weight || "");
+                    setImage(userProfile.image || "");
+                }
+                else {
+                    setErrorMessage(await response.json());
                 }
             }
         };
