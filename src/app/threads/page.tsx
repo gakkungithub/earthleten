@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ThreadDetails from '@/components/ThreadDetails';
 import { Thread } from '@/typeDeclar/typeComp';
 
@@ -15,6 +15,8 @@ export default function ThreadsResult(){
     const openMenuHandler = (menu: string) => {
         setOpenMenu((openMenu === menu ? "" : menu));
     };
+
+    useEffect(() => {setOpenMenu("")}, [threads])
     
     return (
         <div className="flex">

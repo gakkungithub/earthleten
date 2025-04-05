@@ -136,7 +136,7 @@ export default function FormNarrowThreads({ setThreads }: {
     // #endregion
 
     // #region formSetting
-    const { register, handleSubmit, getValues, watch, setValue, formState: { errors } } = useForm<CboxData>({
+    const { register, handleSubmit, getValues, watch, setValue, formState: { errors, isDirty } } = useForm<CboxData>({
         defaultValues: { sports: { main: [], sub1: [], sub2: [] } }
     });
 
@@ -205,7 +205,7 @@ export default function FormNarrowThreads({ setThreads }: {
                 }
                 else if (regName === 'sports.sub1') {
                     const allSub2Genres = menuMap[e.target.value].genres;
-                    setValue('sports.sub1', [...new Set(watchSub2.filter(genre => !allSub2Genres.includes(genre)))]);
+                    setValue('sports.sub2', [...new Set(watchSub2.filter(genre => !allSub2Genres.includes(genre)))]);
                 }
             }
         }
@@ -278,7 +278,7 @@ export default function FormNarrowThreads({ setThreads }: {
             </React.Fragment>
             ))}
             </div>
-            <button type="submit" className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-500">
+            <button type="submit" disabled={!isDirty} className={`fixed bottom-4 left-1/2 text-white rounded px-2 py-1 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
                 検索
             </button>
         </form>
