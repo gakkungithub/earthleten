@@ -36,7 +36,7 @@ export default function ThreadsResult(){
                     {openMenu === 'add' &&
                     <FormAddThreads />
                     }
-                    <div>
+                    <div className="absolute z-1">
                         {threads && threads.length > 0 ? 
                         <ThreadDetails threads={threads} /> :
                         <div>表示できるスレッドがありません!!</div>

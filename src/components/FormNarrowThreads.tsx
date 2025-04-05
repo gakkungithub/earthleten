@@ -1,61 +1,147 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { Thread } from '@/typeDeclar/typeComp';
 
 import { Dispatch, SetStateAction } from 'react';
 
+type CboxData = {
+    sports: {
+        main: string[],
+        sub1: string[],
+        sub2: string[],
+    }
+}
+
 export default function FormNarrowThreads({ setThreads }: {
     setThreads: Dispatch<SetStateAction<Thread[]>>;
 }){
-    const [form, setform] = useState<{sports: string[]}>({
-        sports: []
-    });
-
-    const [openMenu, setOpenMenu] = useState<string>('');
-    
-    const handleCheckSports = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const fsp = form.sports;
-        if (e.target.checked) {
-            fsp.push(e.target.value);
-        }
-        else {
-            fsp.splice(fsp.indexOf(e.target.value), 1);
-        }
-        setform({
-            ...form,
-            [e.target.name]: fsp
-        });
+    // #region menuConst 
+    const menuMap: {[key: string] : {genres: string[], level: number} } = {
+        sports: {genres: ['baseball', 'football', 'trackfield'], level: -1},
+        baseball: {genres: ['baseball_pitcher', 'baseball_fielder', 'baseball_other'], level: 0},
+        baseball_pitcher: {genres: ['baseball_pitcher_starter', 'baseball_pitcher_setupman','baseball_pitcher_closer'], level: 1},
+        baseball_fielder: {genres: ['baseball_fielder_catcher', 'baseball_fielder_first', 'baseball_fielder_second', 'baseball_fielder_third',
+            'baseball_fielder_shortstop', 'baseball_fielder_left', 'baseball_fielder_center', 'baseball_fielder_right'], level: 1},
+        baseball_other: {genres: ['baseball_other_DH', 'baseball_other_PH', 'baseball_other_twoway', 'baseball_other_coach'], level: 1},
+        football: {genres: ['football_GK', 'football_FW', 'football_MF', 'football_DF'], level: 0},
+        football_GK: {genres: ['football_GK_GK'], level: 1},
+        football_FW: {genres: ['football_FW_CF', 'football_FW_WG', 'football_FW_ST'], level: 1},
+        football_MF: {genres: ['football_MF_AM', 'football_MF_CM', 'football_MF_LM', 'football_MF_RM', 'football_MF_DM'], level: 1},
+        football_DF: {genres: ['football_DF_RWB', 'football_DF_LWB', 'football_DF_CB', 'football_DF_RB', 'football_DF_LB', 'football_DF_SW'], level: 1},
+        trackfield: {genres: ['trackfield_short', 'trackfield_hurdle', 'trackfield_middle', 'trackfield_long', 'trackfield_relay', 
+                    'trackfield_marathon', 'trackfield_walk', 'trackfield_jump', 'trackfield_throw', 'trackfield_mixed'], level: 0},
+        trackfield_short: {genres: ['trackfield_short_100m', 'trackfield_short_200m', 'trackfield_short_400m'], level: 1},
+        trackfield_hurdle: {genres: ['trackfield_hurdle_100m', 'trackfield_hurdle_110m', 'trackfield_hurdle_400m'], level: 1},
+        trackfield_middle: {genres: ['trackfield_middle_800m', 'trackfield_middle_1000m', 'trackfield_middle_1500m', 'trackfield_middle_1mile', 'trackfield_middle_3000mSC'], level: 1},
+        trackfield_long: {genres: ['trackfield_long_5000m', 'trackfield_long_10000m', 'trackfield_long_1h'], level: 1},
+        trackfield_relay: {genres: ['trackfield_relay_100m', 'trackfield_relay_200m', 'trackfield_relay_400m', 'trackfield_relay_800m'], level: 1},
+        trackfield_marathon: {genres: ['trackfield_marathon_1mile', 'trackfield_marathon_half', 'trackfield_marathon_full', 'trackfield_marathon_100km'], level: 1},
+        trackfield_walk: {genres: ['trackfield_walk_10000m', 'trackfield_walk_20000m', 'trackfield_walk_50000m', 'trackfield_walk_20km', 'trackfield_walk_50km'], level: 1},
+        trackfield_jump: {genres: ['trackfield_jump_high', 'trackfield_jump_pole', 'trackfield_jump_long', 'trackfield_jump_triple'], level: 1},
+        trackfield_throw: {genres: ['trackfield_throw_shotput', 'trackfield_throw_disk', 'trackfield_throw_hammer', 'trackfield_throw_javelin'], level: 1},
+        trackfield_mixed: {genres: ['trackfield_mixed_heptathlon', 'trackfield_mixed_decathlon'], level: 1},
     };
 
-    const controlOpenMenu = (menu: string) => {
-        if (openMenu.includes(menu)) {
-            const lastIndex = menu.lastIndexOf('-');
-            if (lastIndex === -1) {
-                setOpenMenu('');
-            }
-            else {
-                setOpenMenu(menu.substring(0, lastIndex));
-            }
-        }
-        else {
-            setOpenMenu(menu);
-        } 
-    }
+    const menuMapJP: { [key: string]: string } = {
+        baseball: '野球',
+        football: 'サッカー',
+        trackfield: '陸上',
+        baseball_pitcher: '投手',
+        baseball_fielder: '野手',
+        baseball_other: 'その他',
+        baseball_pitcher_starter: '先発',
+        baseball_pitcher_setupman: '中継',
+        baseball_pitcher_closer: '抑え',
+        baseball_fielder_catcher: 'キャッチャー',
+        baseball_fielder_first: 'ファースト',
+        baseball_fielder_second: 'セカンド',
+        baseball_fielder_third: 'サード',
+        baseball_fielder_shortstop: 'ショート',
+        baseball_fielder_left: 'レフト',
+        baseball_fielder_center: 'センター',
+        baseball_fielder_right: 'ライト',
+        baseball_other_DH: 'DH',
+        baseball_other_PH: 'PH',
+        baseball_other_twoway: '二刀流',
+        baseball_other_coach: '監督',
+        football_GK: 'GK',
+        football_FW: 'FW',
+        football_MF: 'MF',
+        football_DF: 'DF',
+        football_GK_GK: 'GK',
+        football_FW_CF: 'CF',
+        football_FW_WG: 'WG',
+        football_FW_ST: 'ST',
+        football_MF_AM: 'AM',
+        football_MF_CM: 'CM',
+        football_MF_LM: 'LM',
+        football_MF_RM: 'RM',
+        football_MF_DM: 'DM',
+        football_DF_RWB: 'RWB',
+        football_DF_LWB: 'LWB',
+        football_DF_CB: 'CB',
+        football_DF_RB: 'RB',
+        football_DF_LB: 'LB',
+        football_DF_SW: 'SW',
+        trackfield_short: '短距離',
+        trackfield_hurdle: 'ハードル',
+        trackfield_middle: '中距離',
+        trackfield_long: '長距離',
+        trackfield_relay: 'リレー',
+        trackfield_marathon: 'マラソン',
+        trackfield_walk: '競歩',
+        trackfield_jump: '跳躍',
+        trackfield_throw: '投てき',
+        trackfield_mixed: '混成競技',
+        trackfield_short_100m: '100m',
+        trackfield_short_200m: '200m',
+        trackfield_short_400m: '400m',
+        trackfield_hurdle_100m: '100mハードル',
+        trackfield_hurdle_110m: '110mハードル',
+        trackfield_hurdle_400m: '400mハードル',
+        trackfield_middle_800m: '800m',
+        trackfield_middle_1000m: '1000m',
+        trackfield_middle_1500m: '1500m',
+        trackfield_middle_1mile: '1マイル',
+        trackfield_middle_3000mSC: '3000m障害',
+        trackfield_long_5000m: '5000m',
+        trackfield_long_10000m: '10000m',
+        trackfield_long_1h: '1時間',
+        trackfield_relay_100m: '4×100m',
+        trackfield_relay_200m: '4×200m',
+        trackfield_relay_400m: '4×400m',
+        trackfield_relay_800m: '4×800m',
+        trackfield_marathon_1mile: '1マイル',
+        trackfield_marathon_half: 'ハーフ',
+        trackfield_marathon_full: 'フル',
+        trackfield_marathon_100km: '100km',
+        trackfield_walk_10000m: '10000m競歩',
+        trackfield_walk_20000m: '20000m競歩',
+        trackfield_walk_50000m: '50000m競歩',
+        trackfield_walk_20km: '20km競歩',
+        trackfield_walk_50km: '50km競歩',
+        trackfield_jump_high: '走高跳',
+        trackfield_jump_pole: '棒高跳',
+        trackfield_jump_long: '走幅跳',
+        trackfield_jump_triple: '三段跳',
+        trackfield_throw_shotput: '砲丸投',
+        trackfield_throw_disk: '円盤投',
+        trackfield_throw_hammer: 'ハンマー投',
+        trackfield_throw_javelin: 'やり投',
+        trackfield_mixed_heptathlon: '七種競技',
+        trackfield_mixed_decathlon: '十種競技'
+      };
+    // #endregion
 
-    const MenuButton = ({label, menu} : {label: string, menu: string}) => {
-        return <button onClick={() => controlOpenMenu(menu)} 
-                className={`text-center p-1 text-white rounded ${openMenu.includes(menu) ? "bg-fuchsia-600 hover:bg-fuchsia-500" : "bg-blue-600 hover:bg-blue-500" }`}>{label}</button>
-    }
+    // #region formSetting
+    const { register, handleSubmit, getValues, watch, setValue, formState: { errors } } = useForm<CboxData>({
+        defaultValues: { sports: { main: [], sub1: [], sub2: [] } }
+    });
 
-    const MenuInput = ({label, id, value, } : {label: string, id: string, value: string}) => {
-        return <label htmlFor={`narrow-sports-${id}`} className="flex items-center rounded">
-        <input id={`narrow-sports-${id}`} name="sports" type="checkbox" value={value}
-        className="mr-2" />{label}</label>
-    }
-
-    const narrow = async () => {
-        const genres = form.sports;
+    const onsubmit = async () => {
+        const genres = watchSub2;
         const response = await fetch('/api/threads', {
             method: 'POST',
             headers: {
@@ -68,299 +154,131 @@ export default function FormNarrowThreads({ setThreads }: {
             const threadsdata = await response.json();
             setThreads(threadsdata);
         }
+    }
+
+    const [openMenu, setOpenMenu] = useState<string>('');
+    
+    const watchMain = watch('sports.main');
+    const watchSub1 = watch('sports.sub1');
+    const watchSub2 = watch('sports.sub2');
+
+    const handleCheckSports = ({e, regName} : { e: React.ChangeEvent<HTMLInputElement>, regName: "sports.main" | "sports.sub1" | "sports.sub2" }) => {
+        const prevValues = (() => {
+            switch (regName) {
+                case 'sports.main':
+                    return watchMain;
+                case 'sports.sub1':
+                    return watchSub1;
+                case 'sports.sub2':
+                    return watchSub2;
+                default:
+                    return undefined;
+            }
+        })();
+        if ( prevValues !== undefined ) {
+            // リストに値がある場合はリストから値を消す
+            if (e.target.checked) {
+                setValue(regName, [...prevValues, e.target.value]);
+                if (regName === 'sports.main') {
+                    const allSub1Genres = menuMap[e.target.value].genres
+                    setValue('sports.sub1', [...new Set([...watchSub1, ...allSub1Genres])]);
+                    allSub1Genres.map((genre) => {
+                        const allSub2Genres = menuMap[genre].genres;
+                        setValue('sports.sub2', [...new Set([...getValues('sports.sub2'), ...allSub2Genres])]);
+                    });
+                }
+                else if (regName === 'sports.sub1') {
+                    const allSub2Genres = menuMap[e.target.value].genres
+                    setValue('sports.sub2', [...new Set([...watchSub2, ...allSub2Genres])]);
+                }
+            }
+            else {
+                const crntValues = prevValues.filter(value => value !== e.target.value);
+                setValue(regName, [...crntValues]);
+                if (regName === 'sports.main') {
+                    const allSub1Genres = menuMap[e.target.value].genres;
+                    setValue('sports.sub1', [...new Set(watchSub1.filter(genre => !allSub1Genres.includes(genre)))]);
+                    allSub1Genres.map((genre) => {
+                        const allSub2Genres = menuMap[genre].genres;
+                        setValue('sports.sub2', [...new Set(getValues('sports.sub2').filter(genre => !allSub2Genres.includes(genre)))]);  
+                    });
+                }
+                else if (regName === 'sports.sub1') {
+                    const allSub2Genres = menuMap[e.target.value].genres;
+                    setValue('sports.sub1', [...new Set(watchSub2.filter(genre => !allSub2Genres.includes(genre)))]);
+                }
+            }
+        }
     };
 
+    const controlOpenMenu = (menu: string) => {
+        if (openMenu.includes(menu)) {
+            const lastIndex = menu.lastIndexOf('_');
+            if (lastIndex === -1) {
+                setOpenMenu('');
+            }
+            else {
+                setOpenMenu(menu.substring(0, lastIndex));
+            }
+        }
+        else {
+            setOpenMenu(menu);
+        } 
+    }
+    
+    const MenuButton = ({label, menu} : {label: string, menu: string}) => {
+        return <button onClick={() => controlOpenMenu(menu)} 
+                className={`text-center p-1 text-white rounded ${openMenu.includes(menu) ? "bg-fuchsia-600 hover:bg-fuchsia-500" : "bg-blue-600 hover:bg-blue-500" }`}>{label}</button>
+    }
+
+    const MenuInput = ({label, value, level} : {label: string, value: string, level: number}) => {
+        const regName = `sports.${level === 0 ? 'main' : `sub${level}` }` as 'sports.main' | 'sports.sub1' | 'sports.sub2';
+        return <label htmlFor={`narrow-sports-${value}`} className="flex items-center rounded">
+        <input id={`narrow-sports-${value}`} type="checkbox" value={value}
+        className="mr-2" checked={regName.includes(value)} {...register(regName, {onChange: (e) => {handleCheckSports({e, regName})}})} />{label}</label>
+    }
+
+    // #endregion
+
     return (
-        <form className="h-full bg-gray-300 text-black
+        <form onSubmit={handleSubmit(onsubmit)} className="absolute h-full w-full bg-gray-300 text-black z-2
         transition-transform duration-300 ease-in-out">
             <div className="grid grid-cols-8">
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
+            {Object.entries(menuMap).map(([key, value]) => (
+            <React.Fragment key={key}>
+            { key === 'sports' ?
+                //最上層のメニュー
+                (<div className="col-span-2 flex flex-col space-y-1 pl-2">
                     <p className="text-center">スポーツ</p>
-                    <MenuButton label='野球' menu='baseball' />
-                    <MenuButton label='サッカー' menu='football' />
-                    <MenuButton label='陸上' menu='trackfield' />
-                </div>
-                {
-                // #region sports
+                    {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
+                </div>) :
+                (<>
+                {!menuMap[value.genres[0]] ? 
+                    // 最下層のメニュー
+                    (<>
+                    {openMenu.includes(key) && 
+                    <div className="col-span-2 flex flex-col space-y-1 pl-2">
+                        <MenuInput label='すべて選択' value={key} level={value.level} />
+                        {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuInput label={menuMapJP[genre]} value={genre} level={value.level+1}/></React.Fragment> ))}
+                    </div>
+                    }
+                    </>) :
+                    // 中間層のメニュー
+                    (<>
+                    {openMenu.includes(key) && 
+                    <div className="col-span-2 flex flex-col space-y-1 pl-2">
+                        <MenuInput label='すべて選択' value={key} level={value.level} />
+                        {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
+                    </div>
+                    }
+                    </>)
                 }
-                {openMenu.includes('baseball') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-baseball" className="flex items-center rounded">
-                    <input id="narrow-sports-baseball" name="sports" type="checkbox" value="baseball"
-                    checked={form.sports.includes('baseball')} onChange={handleCheckSports} className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='投手' menu='baseball-pitcher' />
-                    <MenuButton label='野手' menu='baseball-fielder' />
-                    <MenuButton label='その他' menu='baseball-other' />
-                </div>
-                }
-                {openMenu.includes('football') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-football" className="flex items-center rounded">
-                    <input id="narrow-sports-football" name="sports" type="checkbox" value="football"
-                    checked={form.sports.includes('football')} onChange={handleCheckSports} className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='GK' menu='football-GK' />
-                    <MenuButton label='FW' menu='football-FW' />
-                    <MenuButton label='MF' menu='football-MF' />
-                    <MenuButton label='DF' menu='football-DF' />
-                </div>
-                }
-                {openMenu.includes('trackfield') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield" name="sports" type="checkbox" value="trackfield"
-                    checked={form.sports.includes('trackfield')} onChange={handleCheckSports} className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='短距離' menu='trackfield-short' />
-                    <MenuButton label='ハードル' menu='trackfield-hurdle' />
-                    <MenuButton label='中距離' menu='trackfield-middle' />
-                    <MenuButton label='長距離' menu='trackfield-long' />
-                    <MenuButton label='リレー' menu='trackfield-relay' />
-                    <MenuButton label='マラソン' menu='trackfield-marathon' />
-                    <MenuButton label='競歩' menu='trackfield-walk' />
-                    <MenuButton label='跳躍' menu='trackfield-jump' />
-                    <MenuButton label='投てき' menu='trackfield-throw' />
-                    <MenuButton label='混成競技' menu='trackfield-mixed' />
-                </div>
-                }
-                {
-                // #endregion
-                }
-                {
-                // #region sports-sub1
-                }
-                {
-                // #region baseball
-                }
-                {openMenu.includes('baseball-pitcher') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-baseball-pitcher" className="flex items-center rounded">
-                    <input id="narrow-sports-baseball-pitcher" name="sports" type="checkbox" value="baseball-pitcher"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='先発' menu='baseball-pitcher-starter' />
-                    <MenuButton label='中継ぎ' menu='baseball-pitcher-setupman' />
-                    <MenuButton label='抑え' menu='baseball-pitcher-closer' />
-                </div>
-                }
-                {openMenu.includes('baseball-fielder') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-baseball-fielder" className="flex items-center rounded">
-                    <input id="narrow-sports-baseball-fielder" name="sports" type="checkbox" value="baseball-fielder"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='キャッチャー' menu='baseball-fielder-catcher' />
-                    <MenuButton label='ファースト' menu='baseball-fielder-first' />
-                    <MenuButton label='セカンド' menu='baseball-fielder-second' />
-                    <MenuButton label='サード' menu='baseball-fielder-third' />
-                    <MenuButton label='ショート' menu='baseball-fielder-shortstop' />
-                    <MenuButton label='レフト' menu='baseball-fielder-left' />
-                    <MenuButton label='センター' menu='baseball-fielder-center' />
-                    <MenuButton label='ライト' menu='baseball-fielder-right' />
-                </div>
-                }
-                {openMenu.includes('baseball-other') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-baseball-other" className="flex items-center rounded">
-                    <input id="narrow-sports-baseball-other" name="sports" type="checkbox" value="baseball-other"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='DH' menu='baseball-other-DH' />
-                    <MenuButton label='PH' menu='baseball-other-PH' />
-                    <MenuButton label='二刀流' menu='baseball-other-twoway' />
-                    <MenuButton label='監督' menu='baseball-other-coach' />
-                </div>
-                }
-                { 
-                // #endregion
-                }
-                {
-                // #region football
-                }
-                {openMenu.includes('football-GK') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-football-GK" className="flex items-center rounded">
-                    <input id="narrow-sports-football-GK" name="sports" type="checkbox" value="football-GK"
-                    className="mr-2" />
-                    すべて選択</label>
-                    {/* <MenuButton label='先発' menu='baseball-pitcher-starter' />
-                    <MenuButton label='中継ぎ' menu='baseball-pitcher-setupman' />
-                    <MenuButton label='抑え' menu='baseball-pitcher-closer' /> */}
-                </div>
-                }
-                {openMenu.includes('football-FW') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-football-FW" className="flex items-center rounded">
-                    <input id="narrow-sports-football-FW" name="sports" type="checkbox" value="football-FW"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='CF' menu='football-FW-CF' />
-                    <MenuButton label='WG' menu='football-FW-WG' />
-                    <MenuButton label='ST' menu='football-FW-ST' />
-                </div>
-                }
-                {openMenu.includes('football-MF') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-football-MF" className="flex items-center rounded">
-                    <input id="narrow-sports-football-MF" name="sports" type="checkbox" value="football-MF"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='AM' menu='football-MF-AM' />
-                    <MenuButton label='CM' menu='football-MF-CM' />
-                    <MenuButton label='LM' menu='football-MF-LM' />
-                    <MenuButton label='RM' menu='football-MF-RM' />
-                    <MenuButton label='DM' menu='football-MF-DM' />
-                </div>
-                }
-                {openMenu.includes('football-DF') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-football-DF" className="flex items-center rounded">
-                    <input id="narrow-sports-football-DF" name="sports" type="checkbox" value="football-DF"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='RWB' menu='football-DF-RWB' />
-                    <MenuButton label='LWB' menu='football-DF-LWB' />
-                    <MenuButton label='CB' menu='football-DF-CB' />
-                    <MenuButton label='RB' menu='football-DF-RB' />
-                    <MenuButton label='LB' menu='football-DF-LB' />
-                    <MenuButton label='SW' menu="football-DF-SW" />
-                </div>
-                }
-                { 
-                // #endregion
-                }
-                {
-                // #region trackfield
-                }
-                {openMenu.includes('trackfield-short') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-short" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-short" name="sports" type="checkbox" value="trackfield-short"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='100m' menu='trackfield-short-100m' />
-                    <MenuButton label='200m' menu='trackfield-short-200m' />
-                    <MenuButton label='400m' menu='trackfield-short-400m' />
-                </div>
-                }
-                {openMenu.includes('trackfield-hurdle') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-hurdle" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-hurdle" name="sports" type="checkbox" value="trackfield-hurdle"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='100mハードル' menu='trackfield-hurdle-100m' />
-                    <MenuButton label='110mハードル' menu='trackfield-hurdle-110m' />
-                    <MenuButton label='400mハードル' menu='trackfield-hurdle-400m' />
-                </div>
-                }
-                {openMenu.includes('trackfield-middle') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-middle" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-middle" name="sports" type="checkbox" value="trackfield-middle"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='800m' menu='trackfield-middle-800m' />
-                    <MenuButton label='1000m' menu='trackfield-middle-1000m' />
-                    <MenuButton label='1500m' menu='trackfield-middle-1500m' />
-                    <MenuButton label='1マイル' menu='trackfield-middle-1mile' />
-                    <MenuButton label='2000m' menu='trackfield-middle-2000m' />
-                    <MenuButton label='3000m' menu='trackfield-middle-1mile' />
-                    <MenuButton label='3000m障害' menu='trackfield-middle-3000mSC' />
-                </div>
-                }
-                {openMenu.includes('trackfield-long') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-long" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-long" name="sports" type="checkbox" value="trackfield-long"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='5000m' menu='trackfield-long-5000m' />
-                    <MenuButton label='10000m' menu='trackfield-long-10000m' />
-                    <MenuButton label='1時間' menu='trackfield-long-1h' />
-                </div>
-                }
-                {openMenu.includes('trackfield-relay') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-relay" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-relay" name="sports" type="checkbox" value="trackfield-relay"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='4×100m' menu='trackfield-relay-100m' />
-                    <MenuButton label='4×200m' menu='trackfield-relay-200m' />
-                    <MenuButton label='4×400m' menu='trackfield-relay-400m' />
-                    <MenuButton label='4×800m' menu='trackfield-relay-800m' />
-                </div>
-                }
-                {openMenu.includes('trackfield-marathon') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-marathon" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-marathon" name="sports" type="checkbox" value="trackfield-marathon"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='1マイル' menu='trackfield-marathon-1mile' />
-                    <MenuButton label='ハーフ' menu='trackfield-marathon-half' />
-                    <MenuButton label='フル' menu='trackfield-marathon-full' />
-                    <MenuButton label='100km' menu='trackfield-marathon-100km' />
-                </div>
-                }
-                {openMenu.includes('trackfield-walk') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-walk" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-walk" name="sports" type="checkbox" value="trackfield-walk"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='10000m' menu='trackfield-walk-10000m' />
-                    <MenuButton label='20000m' menu='trackfield-walk-20000m' />
-                    <MenuButton label='50000m' menu='trackfield-walk-50000m' />
-                    <MenuButton label='20km' menu='trackfield-walk-20km' />
-                    <MenuButton label='50km' menu='trackfield-walk-50km' />
-                </div>
-                }
-                {openMenu.includes('trackfield-jump') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-jump" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-jump" name="sports" type="checkbox" value="trackfield-jump"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='走高跳' menu='trackfield-jump-high' />
-                    <MenuButton label='棒高跳' menu='trackfield-pole' />
-                    <MenuButton label='走幅跳' menu='trackfield-long' />
-                    <MenuButton label='三段跳' menu='trackfield-triple' />
-                </div>
-                }
-                {openMenu.includes('trackfield-throw') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-throw" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-throw" name="sports" type="checkbox" value="trackfield-throw"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='砲丸投' menu='trackfield-throw-shotput' />
-                    <MenuButton label='円盤投' menu='trackfield-throw-disk' />
-                    <MenuButton label='ハンマー投' menu='trackfield-throw-hammer' />
-                    <MenuButton label='やり投' menu='trackfield-throw-javelin' />
-                </div>
-                }
-                {openMenu.includes('trackfield-mixed') &&
-                <div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <label htmlFor="narrow-sports-trackfield-mixed" className="flex items-center rounded">
-                    <input id="narrow-sports-trackfield-mixed" name="sports" type="checkbox" value="trackfield-mixed"
-                    className="mr-2" />
-                    すべて選択</label>
-                    <MenuButton label='七種競技' menu='trackfield-mixed-heptathlon' />
-                    <MenuButton label='十種競技' menu='trackfield-mixed-decathlon' />
-                </div>
-                }
-                { 
-                // #endregion
-                }
-                {
-                // #endregion
-                }
+                </>)
+            }
+            </React.Fragment>
+            ))}
             </div>
-            <button type="button" onClick={narrow}
-            className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-500">
+            <button type="submit" className="fixed bottom-4 left-1/2 bg-blue-600 text-white rounded px-2 py-1 hover:bg-blue-500">
                 検索
             </button>
         </form>

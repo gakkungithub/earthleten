@@ -24,8 +24,12 @@ export async function getUserByName(name: string): Promise<User>{
 export async function getThreads( genres: string[] ) {
     return await prisma.Thread.findMany({
         where: {
-            sports: {
-                in: genres
+            genres: {
+                some: {
+                    genre: {
+                        in: genres,
+                    }
+                }
             },
         },
         orderBy: {

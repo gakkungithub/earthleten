@@ -26,10 +26,10 @@ export default function FormAddThreads(){
     // };
 
     return (
-        <form className="h-full bg-gray-300 text-black
+        <form className="absolute h-full w-full bg-gray-300 text-black z-2
         transition-transform duration-300 ease-in-out">
             <div>
-                <fieldset　className="pl-2">
+                <fieldset className="pl-2">
                 <legend className="text-1xl font-bold">スポーツ</legend>
                     <input id="add_sports_baseball" type="radio" name="sports" value="baseball" /> 
                     <label htmlFor="add_sports_baseball" className="m-2">野球</label><br />                     
