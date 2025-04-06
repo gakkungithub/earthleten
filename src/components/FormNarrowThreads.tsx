@@ -14,8 +14,9 @@ type CboxData = {
     }
 }
 
-export default function FormNarrowThreads({ setThreads }: {
-    setThreads: Dispatch<SetStateAction<Thread[]>>;
+export default function FormNarrowThreads({ setThreads, setNarrowedGenres }: {
+    setThreads: Dispatch<SetStateAction<Thread[]>>,
+    setNarrowedGenres: Dispatch<SetStateAction<string[]>>
 }){
     // #region menuConst 
     const menuMap: {[key: string] : {genres: string[], level: number} } = {
@@ -136,7 +137,7 @@ export default function FormNarrowThreads({ setThreads }: {
     // #endregion
 
     // #region formSetting
-    const { register, handleSubmit, getValues, watch, setValue, formState: { errors, isDirty } } = useForm<CboxData>({
+    const { register, handleSubmit, getValues, watch, setValue, formState: { isDirty } } = useForm<CboxData>({
         defaultValues: { sports: { main: [], sub1: [], sub2: [] } }
     });
 
@@ -152,6 +153,8 @@ export default function FormNarrowThreads({ setThreads }: {
 
         if (response.ok) {
             const threadsdata = await response.json();
+            const genreLabels = watchSub2.map((key) => menuMapJP[key]).filter((value) => value !== undefined);
+            setNarrowedGenres(genreLabels);
             setThreads(threadsdata);
         }
     }

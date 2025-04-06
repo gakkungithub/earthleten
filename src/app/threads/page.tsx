@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { SessionProvider } from 'next-auth/react';
+
 import ThreadDetails from '@/components/ThreadDetails';
 import { Thread } from '@/typeDeclar/typeComp';
 
@@ -9,6 +11,7 @@ import FormAddThreads from '@/components/FormAddThreads';
 
 export default function ThreadsResult(){
     const [threads, setThreads] = useState<Thread[]>([]);
+    const [narrowedGenres, setNarrowedGenres] = useState<string[]>([]);
     
     const [openMenu, setOpenMenu] = useState<string>("");
 
@@ -33,12 +36,20 @@ export default function ThreadsResult(){
                 </div>
                 <div className="col-span-9 h-full border-blue-600 border-2 text-black relative">
                     {openMenu === 'narrow' &&
-                    <FormNarrowThreads setThreads={setThreads}/>
+                    <FormNarrowThreads setThreads={setThreads} setNarrowedGenres={setNarrowedGenres}/>
                     }
                     {openMenu === 'add' &&
-                    <FormAddThreads />
+                    <SessionProvider>
+                        <FormAddThreads />
+                    </SessionProvider>
                     }
-                    <div className="absolute z-1">
+                    <div className="absolute z-1 w-full ">
+                        {narrowedGenres.length > 0 &&
+                        <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full">
+                        <p className="text-white">絞り込み:</p>
+                        <p className="text-black font-bold whitespace-nowrap">{`${narrowedGenres}`}</p>
+                        </div>
+                        }
                         {threads && threads.length > 0 ? 
                         <ThreadDetails threads={threads} /> :
                         <div>表示できるスレッドがありません!!</div>
