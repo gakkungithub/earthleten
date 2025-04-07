@@ -65,6 +65,7 @@ export default function AddAccountPage() {
             const userData = {
                 name: data.name,
                 password: hashedPass,
+                image: "",
             }
 
             const result = await addUser(userData);

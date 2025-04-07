@@ -44,8 +44,24 @@ model Comment {
   tid       String
   user      User      @relation(fields: [uid], references: [id])
   uid       String
-  talk      String  
+  talk      String
+  image     CommentImage[]
+  video     CommentVideo[]
   cdate     DateTime  @default(now())
+}
+
+model CommentImage {
+  id        String    @id @default(cuid())
+  url       String
+  comment   Comment   @relation(fields: [cid], references: [id])
+  cid       String
+}
+
+model CommentVideo {
+  id        String    @id @default(cuid())
+  url       String
+  comment   Comment   @relation(fields: [cid], references: [id])
+  cid       String    
 }
 
 model User {
@@ -58,5 +74,5 @@ model User {
   bdate     DateTime?
   height    Float?
   weight    Float?
-  image     String    @default("")
+  image     String
 }
