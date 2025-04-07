@@ -17,6 +17,10 @@ export default function FormAddThreads(){
         }
     }
 
+    const deleteTopImage = async (imageName: string) => {
+        setTopImageList(prevTopImageList => prevTopImageList.filter(image => image !== imageName))
+    }
+
     return (
         <form className="absolute h-full w-full flex flex-col bg-gray-300 text-black z-2
         transition-transform duration-300 ease-in-out">
@@ -32,9 +36,14 @@ export default function FormAddThreads(){
             <fieldset className="border text-center py-2 bg-white w-full">
                 <legend className="font-bold">トップ画像</legend>
                 {topImageList.length !== 0 &&
-                    <div className="flex w-full my-4 py-4 items-center overflow-x-auto border-2">
+                    <div className="flex w-full my-4 py-4 items-center overflow-x-auto border-y-2">
                         {topImageList.map((image, index) => (
-                        <Image key={index} src={image} alt="" width={128} height={128} layout="intrinsic" className="mx-4" />
+                        <div key={index} className="relative mx-4">
+                            <Image src={image} alt="" width={128} height={128} layout="intrinsic" />
+                            <button onClick={() => deleteTopImage(image)}
+                            className="absolute top-0 right-0 w-4 h-4 rounded-full bg-gray-400 text-white text-2xl leading-4">
+                            &times;</button>
+                        </div>
                         ))}
                     </div>
                 }
