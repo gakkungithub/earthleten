@@ -35,11 +35,11 @@ export default function FormAddThreads(){
             </fieldset>
             <fieldset className="border text-center py-2 bg-white w-full">
                 <legend className="font-bold">トップ画像</legend>
-                {topImageList.length !== 0 &&
+                {topImageList.length >= 1 &&
                     <div className="flex w-full my-4 py-4 items-center overflow-x-auto border-y-2">
-                        {topImageList.map((image, index) => (
-                        <div key={index} className="relative mx-4">
-                            <Image src={image} alt="" width={128} height={128} layout="intrinsic" />
+                        {topImageList.map((image) => (
+                        <div key={image} className="relative mx-4">
+                            <Image src={image} alt="" width={128} height={128} className="h-auto"/>
                             <button onClick={() => deleteTopImage(image)}
                             className="absolute top-0 right-0 w-4 h-4 rounded-full bg-gray-400 text-white text-2xl leading-4">
                             &times;</button>
