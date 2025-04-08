@@ -281,7 +281,7 @@ export default function FormNarrowThreads({ setThreads, setNarrowedGenres }: {
             </React.Fragment>
             ))}
             </div>
-            <button type="submit" disabled={!isDirty} className={`fixed bottom-4 left-1/2 text-white rounded px-2 py-1 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
+            <button type="submit" disabled={!isDirty} className={`absolute bottom-4 left-0 right-0 mx-auto w-fit text-white rounded p-2 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
                 検索
             </button>
         </form>
