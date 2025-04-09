@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import getGenreNamesByLanguage from '@/lib/getGenreNamesByLanguage';
 
 type CboxData = {
     sports: {
@@ -138,8 +139,8 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
     const [narrowedGenres, setNarrowedGenres] = useState<string[]>([]);
 
     const onsubmit = async () => {
-        const genreLabels = watchSub2.map((key) => menuMapJP[key]).filter((value) => value !== undefined)
-        setGenres(genreLabels);
+        const genreLabels = await getGenreNamesByLanguage(watchSub2, 'jp');
+        setGenres(watchSub2);
         setNarrowedGenres(genreLabels);
     }
 

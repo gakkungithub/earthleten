@@ -3,6 +3,7 @@
 import React, { Dispatch, SetStateAction, useState } from 'react';
 import { Thread } from '@/typeDeclar/typeComp';
 import MenuNarrow from '@/components/MenuNarrow';
+import getGenreNamesByLanguage from '@/lib/getGenreNamesByLanguage';
 
 export default function FormNarrowThreads({ setThreads, setNarrowedGenres }: {
     setThreads: Dispatch<SetStateAction<Thread[]>>,
@@ -20,8 +21,9 @@ export default function FormNarrowThreads({ setThreads, setNarrowedGenres }: {
         });
 
         if (response.ok) {
-            const threadsdata = await response.json();;
-            setNarrowedGenres(genres);
+            const threadsdata = await response.json();
+            const genreLabels = getGenreNamesByLanguage(genres, 'jp');
+            setNarrowedGenres(genreLabels);
             setThreads(threadsdata);
         }
     }

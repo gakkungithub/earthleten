@@ -3,10 +3,13 @@
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
+import MenuNarrow from '@/components/MenuNarrow';
 
 export default function FormAddThreads(){
     const { data: session, status } = useSession();
     const uid = session?.user?.id || '';
+
+    const [genres, setGenres] = useState<string[]>([]);
 
     // #region imageController
     const [topImageList, setTopImageList] = useState<string[]>([]);
@@ -98,7 +101,7 @@ export default function FormAddThreads(){
                 // #endregion 
                 }
             </div>
-
+            <MenuNarrow setGenres={setGenres}/>
             <button type="button"
             className="absolute bottom-4 w-fit left-0 right-0 mx-auto bg-blue-600 text-white rounded p-2 hover:bg-blue-500">
                 登録
