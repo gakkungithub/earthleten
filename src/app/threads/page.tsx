@@ -34,7 +34,7 @@ export default function ThreadsResult(){
                         追加
                     </button>
                 </div>
-                <div className="md:col-span-4 col-span-8 md:h-1/2 h-2/3 border-blue-600 border-2 text-black relative">
+                <div className="md:col-span-4 col-span-8 md:h-4/5 h-full border-blue-600 border-2 text-black relative">
                     {openMenu === 'narrow' &&
                     <FormNarrowThreads setThreads={setThreads} setNarrowedGenres={setNarrowedGenres}/>
                     }

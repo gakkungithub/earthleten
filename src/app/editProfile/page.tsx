@@ -107,7 +107,7 @@ export default function EditProfilePage() {
     }
 
     const { register, handleSubmit, setValue,
-        formState: { errors } } = useForm({
+        formState: { errors } } = useForm<InputUserProfileValues>({
         defaultValues,
         resolver: yupResolver(schema),
     });
