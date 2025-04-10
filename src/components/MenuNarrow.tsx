@@ -229,15 +229,18 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
     // #endregion
     
     return (
-        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full bg-white text-black z-2
-        transition-transform duration-300 ease-in-out space-y-4 py-4">
-            <div className="grid grid-cols-8 w-full">
+        <div className="mx-2 h-fit">
+        <fieldset className="border text-center bg-white h-fit">
+        <legend className="font-bold">ジャンルの絞り込み</legend>
+        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full
+         bg-white text-black z-2 transition-transform duration-300 ease-in-out space-y-4">
+            <div className="grid grid-cols-9 w-full items-start">
             {Object.entries(menuMap).map(([key, value]) => (
             <React.Fragment key={key}>
             { key === 'sports' ?
                 //最上層のメニュー
-                (<div className="col-span-2 flex flex-col space-y-1 pl-2">
-                    <p className="text-center">スポーツ</p>
+                (<div className="col-span-3 flex flex-col space-y-1 pl-2">
+                    <p className="text-center">　　</p>
                     {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
                 </div>) :
                 (<>
@@ -245,7 +248,7 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                     // 最下層のメニュー
                     (<>
                     {openMenu.includes(key) && 
-                    <div className="col-span-2 flex flex-col space-y-1 pl-2">
+                    <div className="col-span-3 flex flex-col space-y-1 pl-2">
                         <MenuInput label='すべて選択' value={key} level={value.level} />
                         {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuInput label={menuMapJP[genre]} value={genre} level={value.level+1}/></React.Fragment> ))}
                     </div>
@@ -254,7 +257,7 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                     // 中間層のメニュー
                     (<>
                     {openMenu.includes(key) && 
-                    <div className="col-span-2 flex flex-col space-y-1 pl-2">
+                    <div className="col-span-3 flex flex-col space-y-1 pl-2">
                         <MenuInput label='すべて選択' value={key} level={value.level} />
                         {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
                     </div>
@@ -266,15 +269,18 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
             </React.Fragment>
             ))}
             </div>
-            <button type="submit" disabled={!isDirty} className={`w-fit text-white rounded p-2 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
+            <button type="submit" disabled={!isDirty} className={`w-fit text-white rounded p-2 mb-2 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
                 ジャンルを決定
             </button>
-            {narrowedGenres.length > 0 &&
-            <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full">
-                <p className="text-white">絞り込み:</p>
-                <p className="text-black font-bold whitespace-nowrap">{`${narrowedGenres}`}</p>
-            </div>
-            }
         </form>
+        </fieldset>
+        {narrowedGenres.length > 0 &&
+        <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full min-w-0 border">
+            <p className="text-white">絞り込み:</p>
+            <p className="text-black font-bold whitespace-nowrap w-max">{`${narrowedGenres}`}</p>
+        </div>
+        }
+        </div>
+
     );
 }

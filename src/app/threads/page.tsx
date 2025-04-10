@@ -34,7 +34,7 @@ export default function ThreadsResult(){
                         追加
                     </button>
                 </div>
-                <div className="md:col-span-4 col-span-8 md:h-4/5 h-full border-blue-600 border-2 text-black relative">
+                <div className="xl:col-span-4 col-span-8 h-fit border-blue-600 border-2 text-black">
                     {openMenu === 'narrow' &&
                     <FormNarrowThreads setThreads={setThreads} setNarrowedGenres={setNarrowedGenres}/>
                     }
@@ -43,7 +43,8 @@ export default function ThreadsResult(){
                         <FormAddThreads />
                     </SessionProvider>
                     }
-                    <div className="absolute z-1 w-full ">
+                    {openMenu === '' &&
+                    <div className="w-full h-full">
                         {narrowedGenres.length > 0 &&
                         <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full">
                         <p className="text-white">絞り込み:</p>
@@ -55,6 +56,7 @@ export default function ThreadsResult(){
                         <div>表示できるスレッドがありません!!</div>
                         }
                     </div>
+                    }
                 </div>
             </div>
         </div>

@@ -70,8 +70,8 @@ export default function FormAddThreads(){
 
     // #endregion
 
-    const { register, handleSubmit, setValue,
-        formState: { errors } } = useForm<threadDataValues>({
+    const { register, handleSubmit,
+        formState: { errors, isDirty } } = useForm<threadDataValues>({
         defaultValues: {title: "", comment1: "",},
         resolver: yupResolver(schema),
     });
@@ -102,8 +102,9 @@ export default function FormAddThreads(){
     };
 
     return (
-        <form className="absolute h-full w-full bg-gray-300 text-black z-2
-        transition-transform duration-300 ease-in-out">
+        <div className="h-fit w-full pb-15 bg-gray-300 text-black z-2 
+        transition-transform duration-300 ease-in-out relative">
+        <form onSubmit={handleSubmit(onsubmit)} className="h-fit w-full">
             <div className="mx-2">
                 <fieldset className="p-2 border text-center bg-white">
                     <legend className="font-bold">タイトル</legend> 
@@ -171,11 +172,13 @@ export default function FormAddThreads(){
                 // #endregion 
                 }
             </div>
-            <MenuNarrow setGenres={setGenres}/>
-            <button type="button"
-            className="absolute bottom-4 w-fit left-0 right-0 mx-auto bg-blue-600 text-white rounded p-2 hover:bg-blue-500">
+            <button type="submit" disabled={isDirty}
+            className={`absolute bottom-2 left-0 right-0 w-fit mx-auto text-white rounded p-2
+            ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"}`}>
                 登録
             </button>
         </form>
+        <MenuNarrow setGenres={setGenres}/>
+        </div>
     );
 }
