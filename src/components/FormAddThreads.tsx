@@ -2,8 +2,46 @@
 
 import React, { useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useForm } from 'react-hook-form';
+
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
 import Image from 'next/image';
 import MenuNarrow from '@/components/MenuNarrow';
+
+const validFileExtensions = ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'];
+
+const schema = yup.object({
+    title: yup
+        .string()
+        .label('タイトル')
+        .required('${label}は必須入力です。')
+        .max(80, '${label}は${max}文字以内で入力してください。'),
+    comment1: yup
+        .string()
+        .required('最初のコメントを入力しましょう!!'),
+    topImageList: yup
+        .mixed<FileList>()
+        .test('image', '画像ファイルを選んでください',
+            (value) => {
+                if (value === undefined || value.length !== 1) {
+                    return true;
+                }
+                else {
+                    const fileName = value[0].name.toLowerCase();
+                    const fileExtension = fileName.split('.').pop();
+                    return validFileExtensions.includes(fileExtension || '');
+                }
+            }
+        )
+});
+
+type threadDataValues = {
+    title: string, 
+    comment1: string, 
+    topImageList?: FileList, 
+}
 
 export default function FormAddThreads(){
     const { data: session, status } = useSession();
@@ -32,18 +70,50 @@ export default function FormAddThreads(){
 
     // #endregion
 
+    const { register, handleSubmit, setValue,
+        formState: { errors } } = useForm<threadDataValues>({
+        defaultValues: {title: "", comment1: "",},
+        resolver: yupResolver(schema),
+    });
+
+    const onsubmit = async (data: threadDataValues) => {
+        const threadData = {
+            uid: uid,
+            title: data.title,
+            comment1: data.comment1,
+            genres: genres,
+            images: topImageList,
+        }
+
+        const response = await fetch('/api/threads', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({threadData}),
+        });
+        
+        if (response.ok) {
+
+        }
+        else {
+
+        }
+    };
+
     return (
         <form className="absolute h-full w-full bg-gray-300 text-black z-2
         transition-transform duration-300 ease-in-out">
             <div className="mx-2">
-                <input id="add_sports_uid" type="hidden" name="id" value={uid} />
                 <fieldset className="p-2 border text-center bg-white">
                     <legend className="font-bold">タイトル</legend> 
-                    <input id="add_sports_title" type="text" name="title" placeholder="タイトル" className="border-2" />
+                    <input id="add_sports_title" type="text" placeholder="タイトル" 
+                    {...register('title')} className="border-2" />
                 </fieldset>
                 <fieldset className="p-2 border text-center bg-white">
                     <legend className="font-bold">コメント</legend>
-                    <input id="add_sports_comment1" type="textarea" name="comment1" placeholder="最初のコメント" className="border-2" /> 
+                    <input id="add_sports_comment1" type="textarea" placeholder="最初のコメント" 
+                    {...register('comment1')} className="border-2" /> 
                 </fieldset>
                 <fieldset className="border text-center py-2 bg-white w-full">
                     <legend className="font-bold">トップ画像</legend>
@@ -61,10 +131,10 @@ export default function FormAddThreads(){
                     }
                     <label htmlFor="add_sports_topImageList" className={`cursor-pointer px-4 py-2 text-white rounded
                         ${topImageList.length >= 4 ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-500"}`}>画像を追加</label>
-                    <input id="add_sports_topImageList" type="file" accept="image/*" name="topImageList"
-                    onChange={(e) => {
-                        setTopImageListOnChange(e.currentTarget.files);
-                    }}
+                    <input id="add_sports_topImageList" type="file" accept="image/*"
+                    {...register('topImageList', {onChange: (e) => {
+                        setTopImageListOnChange(e.currentTarget.files);}}
+                    )}
                     disabled={topImageList.length >= 4 ? true : false} className="hidden" />
                     <p className="my-4">選択中: {topImageList.length}/4</p>
                 </fieldset>
@@ -109,32 +179,3 @@ export default function FormAddThreads(){
         </form>
     );
 }
-
-// model Thread {
-//     id        String    @id @default(cuid())
-//     user      User      @relation(fields: [uid], references: [id])
-//     uid       String
-//     title     String
-//     genres    ThreadOnGenre[]
-//     bdate     DateTime  @default(now())
-//     comments  Comment[]
-//   }
-
-// model Comment {
-//     id        String    @id @default(cuid())
-//     thread    Thread    @relation(fields: [tid], references: [id])
-//     tid       String
-//     user      User      @relation(fields: [uid], references: [id])
-//     uid       String
-//     talk      String
-//     image     CommentImage[]
-//     video     CommentVideo[]
-//     cdate     DateTime  @default(now())
-//   }
-  
-//   model CommentImage {
-//     id        String    @id @default(cuid())
-//     url       String
-//     comment   Comment   @relation(fields: [cid], references: [id])
-//     cid       String
-//   }

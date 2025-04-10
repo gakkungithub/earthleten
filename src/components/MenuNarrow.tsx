@@ -139,6 +139,7 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
     const [narrowedGenres, setNarrowedGenres] = useState<string[]>([]);
 
     const onsubmit = async () => {
+        // 後で多言語対応もできるようにする
         const genreLabels = await getGenreNamesByLanguage(watchSub2, 'jp');
         setGenres(watchSub2);
         setNarrowedGenres(genreLabels);

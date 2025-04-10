@@ -12,17 +12,16 @@ export default function FormNarrowThreads({ setThreads, setNarrowedGenres }: {
     const [genres, setGenres] = useState<string[]>([]);
 
     const onsubmit = async () => {
-        const response = await fetch('/api/threads', {
-            method: 'POST',
+        const response = await fetch(`/api/threads?genres=${genres.join(',')}`, {
+            method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ genres }),
         });
 
         if (response.ok) {
             const threadsdata = await response.json();
-            const genreLabels = getGenreNamesByLanguage(genres, 'jp');
+            const genreLabels = await getGenreNamesByLanguage(genres, 'jp');
             setNarrowedGenres(genreLabels);
             setThreads(threadsdata);
         }

@@ -1,5 +1,4 @@
 // #region menuConst 
-
 const menuMapJP: { [key: string]: string } = {
     baseball: '野球',
     football: 'サッカー',
@@ -91,7 +90,7 @@ const menuMapJP: { [key: string]: string } = {
     };
 // #endregion
 
-export default function getGenreNamesByLanguage(genres: string[], language: string): string[] {
+export default async function getGenreNamesByLanguage(genres: string[], language: string): Promise<string[]> {
     // 後で言語によって変えられるようにする
     const genreLabels = genres.map((key) => menuMapJP[key]).filter((value) => value !== undefined);
     return genreLabels;

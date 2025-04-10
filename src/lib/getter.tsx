@@ -22,7 +22,7 @@ export async function getUserByName(name: string): Promise<User>{
 /*
  * ジャンルを取得
  */
-export async function getGenres( genres: string[] ) {
+export async function getGenreIDs( genres: string[] ) {
     return await prisma.Genre.findMany({
         where: {
             genre: {
@@ -38,7 +38,7 @@ export async function getGenres( genres: string[] ) {
 /* スレッドを取得する 
  * genreがundefinedの場合、絞り込まない */
 export async function getThreads( genres: string[] ) {
-    const gidList : {id: string}[] = await getGenres(genres);
+    const gidList : {id: string}[] = await getGenreIDs(genres);
     const gids = gidList.map(g => g.id);
     
     return await prisma.Thread.findMany({

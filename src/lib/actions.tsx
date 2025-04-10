@@ -3,31 +3,63 @@
 import prisma from './prisma';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
-// export async function addThread(data) {
-//     const thread = await prisma.Thread.create({
-//         title: data.title,
-//         sports: data.sports,
-//     });
-// }
+export async function addThread(data: {uid: string, title: string, gids: string[], comment1: string, topImageList: string[]}) : Promise<boolean> {
+    try {
+        const thread = await prisma.Thread.create({
+            uid: data.uid,
+            title: data.title,
+            bdate: new Date(),
+        });
 
-// id        String    @id @default(cuid())
-// user      User      @relation(fields: [uid], references: [id])
-// uid       String
-// title     String
-// sports    String
-// bdate     DateTime  @default(now())
-// comments  Comment[]
+        const tid = thread.id as string;
 
-type UserProfile = {
-    id: string,
-    name: string,
-    gender: string,
-    bdate: Date | null,
-    height: number | null,
-    weight: number | null,
-    image?: string,
+        const threadOnGenres = data.gids.map(gid => ({
+            tid,
+            gid,
+        }));
+
+        await prisma.ThreadOnGenre.createMany({
+            data: threadOnGenres,
+        });
+
+        return await addComment({tid: tid, uid: data.uid, talk: data.comment1, imageList: data.topImageList});
+    } catch {
+        return false;
+    }
 }
-export async function editUserProfile(data: UserProfile): Promise<{ success: boolean, message?: string }>{
+
+export async function addComment(data: {tid: string, uid: string, talk: string, imageList: string[]}): Promise<boolean> {
+    try {
+        const comment = await prisma.Comment.create({
+            data: {
+                tid: data.tid,
+                uid: data.uid,
+                talk: data.talk,
+                cdata: new Date(),
+            }
+        });
+
+        const commentImage = data.imageList.map(image => ({
+            url: image,
+            cid: comment.id
+        }));
+
+        await prisma.CommentImage.createMany({
+            data: commentImage,
+        });
+
+        return true;
+
+    } catch {
+        return false;
+    }
+
+}
+
+export async function editUserProfile(data: {
+    id: string, name: string, gender: string, bdate: Date | null,
+    height: number | null, weight: number | null, image?: string,
+}): Promise<{ success: boolean, message?: string }>{
     try {
         const { id, ...updateData } = data;
         await prisma.User.update({
@@ -51,11 +83,7 @@ export async function editUserProfile(data: UserProfile): Promise<{ success: boo
     }
 }
 
-type UserValues = {
-    name: string,
-    password: string,
-}
-export async function addUser(data: UserValues): Promise<{ success: boolean, message?: string }> {
+export async function addUser(data: {name: string, password: string}): Promise<{ success: boolean, message?: string }> {
     try {
         await prisma.User.create({data});
         return { success: true };
