@@ -10,6 +10,8 @@ import * as yup from 'yup';
 import Image from 'next/image';
 import MenuNarrow from '@/components/MenuNarrow';
 
+import { redirect } from 'next/navigation';
+
 const validFileExtensions = ['jpg', 'gif', 'png', 'jpeg', 'svg', 'webp'];
 
 const schema = yup.object({
@@ -43,7 +45,7 @@ type threadDataValues = {
     topImageList?: FileList, 
 }
 
-export default function FormAddThreads(){
+export default function AddThreadsPage(){
     const { data: session, status } = useSession();
     const uid = session?.user?.id || '';
 
@@ -95,10 +97,10 @@ export default function FormAddThreads(){
         });
         
         if (response.ok) {
-
+            redirect('/threadsTemp2');
         }
         else {
-
+            // ここにエラーメッセージ表示用の関数を置く
         }
     };
 

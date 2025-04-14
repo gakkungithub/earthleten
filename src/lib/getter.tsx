@@ -20,7 +20,7 @@ export async function getUserByName(name: string): Promise<User>{
 }
 
 /*
- * ジャンルを取得
+ * ジャンルのIDを取得
  */
 export async function getGenreIDs( genres: string[] ) {
     return await prisma.Genre.findMany({
@@ -32,8 +32,32 @@ export async function getGenreIDs( genres: string[] ) {
         select: {
             id: true,
         }
-    })
-    
+    });
+}
+
+/* 
+ * ジャンルを取得
+ */
+export async function getGenreNamesOfThread( tid: string ) {
+    const gidList: {id: string}[] = await prisma.ThreadOnGenre.findMany({
+        where: {
+            tid: tid,
+        },
+        select: {
+            gid: true,
+        }
+    });
+
+    const gids = gidList.map(g => g.id);
+
+    return await prisma.Genre.findMany({
+        where: {
+            id: {
+                in: gids,
+            }
+        },
+    });
+
 }
 /* スレッドを取得する 
  * genreがundefinedの場合、絞り込まない */
@@ -41,8 +65,15 @@ export async function getThreads( genres: string[] ) {
     const gidList : {id: string}[] = await getGenreIDs(genres);
     const gids = gidList.map(g => g.id);
     
+    if (gids.length === 0) {
+        return await prisma.Thread.findMany({
+            orderBy: {
+                bdate: 'desc'
+            }
+        });
+    }
     return await prisma.Thread.findMany({
-        where: {
+        where: gids.length > 0 && {
             genres: {
                 some: {
                     gid: {

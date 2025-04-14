@@ -6,11 +6,11 @@ import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 export async function addThread(data: {uid: string, title: string, gids: string[], comment1: string, topImageList: string[]}) : Promise<boolean> {
     try {
         const thread = await prisma.Thread.create({
-            uid: data.uid,
-            title: data.title,
-            bdate: new Date(),
+            data: {
+                uid: data.uid,
+                title: data.title,
+            },
         });
-
         const tid = thread.id as string;
 
         const threadOnGenres = data.gids.map(gid => ({
@@ -21,7 +21,6 @@ export async function addThread(data: {uid: string, title: string, gids: string[
         await prisma.ThreadOnGenre.createMany({
             data: threadOnGenres,
         });
-
         return await addComment({tid: tid, uid: data.uid, talk: data.comment1, imageList: data.topImageList});
     } catch {
         return false;
@@ -35,25 +34,23 @@ export async function addComment(data: {tid: string, uid: string, talk: string, 
                 tid: data.tid,
                 uid: data.uid,
                 talk: data.talk,
-                cdata: new Date(),
             }
         });
+        const cid = comment.id as string;
 
         const commentImage = data.imageList.map(image => ({
             url: image,
-            cid: comment.id
+            cid: cid,
         }));
 
         await prisma.CommentImage.createMany({
             data: commentImage,
         });
-
         return true;
 
     } catch {
         return false;
     }
-
 }
 
 export async function editUserProfile(data: {

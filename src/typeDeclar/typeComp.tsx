@@ -2,11 +2,9 @@
 
 export type Thread = {
     id: string;
-    ename: string;
-    eid: string;
+    uid: string;
     title: string;
-    genre: string;
-    date: Date;
+    bdate: Date;
 };
 
 export type Comment = {
