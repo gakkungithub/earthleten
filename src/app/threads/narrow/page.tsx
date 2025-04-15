@@ -9,7 +9,7 @@ export default function NarrowThreadsPage(){
 
     const onsubmit = async () => {
         const genresString = genres.join(',');
-        redirect(`/threadsTemp2${genresString === '' ? '' : '?genres=' }${genresString}`);
+        redirect(`/threads${genresString === '' ? '' : '?genres=' }${genresString}`);
     }
 
     return (

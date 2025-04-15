@@ -97,7 +97,7 @@ export default function AddThreadsPage(){
         });
         
         if (response.ok) {
-            redirect('/threadsTemp2');
+            redirect('/threads');
         }
         else {
             // ここにエラーメッセージ表示用の関数を置く
