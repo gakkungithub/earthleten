@@ -18,7 +18,7 @@ export default async function LinkedThreadDetails( {thread} : {thread: Thread} )
             <div className="absolute h-fit bottom-1 right-1 z-11">
                 <Link className="flex items-center no-underline px-2 w-fit text-blue-600 hover:bg-gray-100 rounded" href={`/checkProfile/${user.name}`}>
                     {user.name}
-                    <Image src={user.image || '/defaultIcon.png'} alt="" width={16} height={16} className="ml-2 rounded-full"/>
+                    <Image src={user.image || '/defaultIcon.png'} alt="" width={24} height={24} className="ml-2 rounded-full"/>
                 </Link>
             </div>
         </div>
