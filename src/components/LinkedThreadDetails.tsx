@@ -11,9 +11,12 @@ export default async function LinkedThreadDetails( {thread} : {thread: Thread} )
 
     return (
         <div className="relative border-2 border-blue-600 rounded m-2 h-16">
-            <Link href={`/chat/${thread.id}`} className="absolute inset-0 hover:bg-green-50 z-10 flex justify-between items-start px-2">
+            <Link href={`/thread/${thread.id}`} className="absolute inset-0 hover:bg-green-50 z-10 flex justify-between items-start px-2">
                 <span className="font-bold text-xl">{thread.title}</span>
-                <span>{bdate.getFullYear()}年 {bdate.getMonth() + 1}月 {bdate.getDate()}日</span>
+                <span>
+                    {bdate.getFullYear()}/{bdate.getMonth() + 1}/{bdate.getDate()}/
+                    {String(bdate.getHours()).padStart(2, '0')}:{String(bdate.getMinutes()).padStart(2, '0')}:{String(bdate.getSeconds()).padStart(2, '0')}
+                </span>
             </Link>
             <div className="absolute h-fit bottom-1 right-1 z-11">
                 <Link className="flex items-center no-underline px-2 w-fit text-blue-600 hover:bg-gray-100 rounded" href={`/checkProfile/${user.name}`}>
