@@ -1,19 +1,38 @@
 import { getThread, getComments, getGenreNamesOfThread, getGenreLabelsByLanguage } from '@/lib/getter';
 import { Thread, Comment } from '@/typeDeclar/typeComp';
 import CommentComponent from '@/components/CommentComponent';
+import AddComment from '@/components/AddComment';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/authOptions';
+import Link from 'next/link';
+import Image from 'next/image';
 
-export default async function ChatPage({params} : {params: {id: string}}) {
-    const thread : Thread = await getThread((await params).id);
+export const dynamic  = 'force-dynamic';
+
+export default async function ChatPage({params} : {params: {tid: string}}) {
+    const thread : Thread = await getThread((await params).tid);
     const genreNames: string[] = await getGenreNamesOfThread(thread.id);
     const genreLabels: string[] = await getGenreLabelsByLanguage(genreNames, 'jp');
     const comments : Comment[] = await getComments(thread.id) || [];
 
+    const session = await getServerSession(authOptions);
+
     return (
         <div>
-            <div className="bg-blue-600 mb-4">
-                <p className="text-blue-300 text-2xl font-bold px-4 py-2">{thread.title || ""}</p>
+            <div className="bg-blue-600 mb-4 p-4">
+                <div className="flex text-blue-300 text-2xl font-bold py-2 justify-between">
+                    <span>{thread.title || ""}</span>
+                    <span>
+                    {thread.bdate.getFullYear()}/{thread.bdate.getMonth() + 1}/{thread.bdate.getDate()}/
+                    {String(thread.bdate.getHours()).padStart(2, '0')}:{String(thread.bdate.getMinutes()).padStart(2, '0')}:{String(thread.bdate.getSeconds()).padStart(2, '0')}
+                    </span>
+                </div>
+                <Link className="flex items-center no-underline w-fit text-blue-300 hover:bg-gray-100 py-2 rounded" href={`/checkProfile/${session?.user.name}`}>
+                <Image src={session?.user.image || '/defaultIcon.png'} alt="" width={24} height={24} className="mr-2 rounded-full"/>                   
+                {session?.user.name}
+                </Link>
                 {genreLabels.length > 0 &&
-                <div className="p-4">
+                <div>
                     <p className="text-white">ジャンル:</p>
                     <div className="overflow-x-auto py-4 px-2 bg-gray-400 border rounded">
                         <p className="text-black font-bold whitespace-nowrap">{`${genreLabels}`}</p>
@@ -25,6 +44,7 @@ export default async function ChatPage({params} : {params: {id: string}}) {
             {comments.map((comment, index) => (
                 <CommentComponent key={index} uid={comment.uid} talk={comment.talk} cdate={new Date(comment.cdate)}/>
             ))}
+            <AddComment uid={session?.user.id || ''} tid={(await params).tid}/>
             </div>
         </div>
 

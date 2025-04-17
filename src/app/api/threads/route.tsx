@@ -32,6 +32,7 @@ export async function GET(req: Request) {
 
     try {
         const threads = await getThreads(genres);
+
         return new Response(JSON.stringify(threads), { status: 200 });
     } catch {
         return new Response(JSON.stringify('Error fetching threads'), { status: 500 });
