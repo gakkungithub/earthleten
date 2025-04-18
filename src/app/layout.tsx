@@ -7,7 +7,7 @@ import { Inconsolata } from 'next/font/google';
 
 import { headers } from 'next/headers';
 
-import HeaderButtons from '@/components/HeaderButtons';
+import HeaderButtonsEdit from '@/components/HeaderButtonsEdit';
 
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/authOptions';
@@ -23,7 +23,7 @@ export default async function RootLayout({children,}: Readonly<{
     <html lang="ja">
       <body className={fnt.className}>
       <h1 className="text-4xl text-indigo-800 font-bold my-2">Earthlete</h1>
-        <HeaderButtons login={session !== null ? true : false} image={session?.user?.image || ''}/>
+        <HeaderButtonsEdit login={session !== null ? true : false} image={session?.user?.image || ''}/>
         <div className="mx-2">
             {children}
         </div>
