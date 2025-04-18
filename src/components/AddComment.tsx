@@ -85,7 +85,7 @@ export default function AddComment({uid, tid}: {uid: string, tid: string}) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onsubmit)} className="p-2 m-2 border-2">
+        <form onSubmit={handleSubmit(onsubmit)} className="p-2 m-2 border-2 text-center">
             <fieldset className="p-2 border text-center bg-white w-full">
                 <legend className="font-bold">コメント</legend>
                 <input id="add_sports_comment1" type="textarea" placeholder="コメント" 
@@ -105,7 +105,7 @@ export default function AddComment({uid, tid}: {uid: string, tid: string}) {
                         ))}
                     </div>
                 }
-                <label htmlFor="add_commentImageList" className={`cursor-pointer px-4 py-2 text-white rounded
+                <label htmlFor="add_commentImageList" className={`px-4 py-2 text-white rounded
                     ${commentImageList.length >= 4 ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-500"}`}>画像を追加</label>
                 <input id="add_commentImageList" type="file" accept="image/*"
                 {...register('imageList', {onChange: (e) => {

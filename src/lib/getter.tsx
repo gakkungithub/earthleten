@@ -153,13 +153,24 @@ const menuMapJP: { [key: string]: string } = {
     trackfield_throw_javelin: 'やり投',
     trackfield_mixed_heptathlon: '七種競技',
     trackfield_mixed_decathlon: '十種競技'
-    };
+};
 // #endregion
 
 export async function getGenreLabelsByLanguage(genres: string[], language: string): Promise<string[]> {
     // 後で言語によって変えられるようにする
     const genreLabels = genres.map((key) => menuMapJP[key]).filter((value) => value !== undefined);
     return genreLabels;
+}
+
+const genderMapJP: { [key: string]: string } = {
+    male: '男性',
+    female: '女性',
+    private: '非公開',
+};
+
+export async function getGenderByLanguage(gender: string, language: string) {
+    // 後で言語によって変えられるようにする
+    return genderMapJP[gender];
 }
 
 /* スレッドをジャンルで取得する 
@@ -188,6 +199,17 @@ export async function getThread( id: string ) {
     return await prisma.Thread.findUnique({
         where: {
             id: id,
+        },
+    });
+}
+
+export async function getThreadsByUserID( uid: string ) {
+    return await prisma.Thread.findMany({
+        where: {
+            uid: uid,
+        },
+        orderBy: {
+            bdate: 'desc'
         },
     });
 }

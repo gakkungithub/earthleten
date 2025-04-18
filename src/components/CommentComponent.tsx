@@ -16,12 +16,12 @@ export default async function CommentComponent({cid, uid, talk, cdate} : {cid: s
                 <p>{cdate.getFullYear()}/{cdate.getMonth() + 1}/{cdate.getDate()}/
                     {String(cdate.getHours()).padStart(2, '0')}:{String(cdate.getMinutes()).padStart(2, '0')}:{String(cdate.getSeconds()).padStart(2, '0')}</p>
             </div>
+            <p className="text-left px-2">{talk}</p>
             <div className="flex items-center overflow-x-auto">
                 {images.map((image, index) => (
-                    <Image key={index} src={image || '/defaultIcon.png'} alt="" width={128} height={128} className="m-4" />
+                    <Image key={index} src={image || '/defaultIcon.png'} alt="" width={128} height={128} className="m-4 shrink-0"/>
                 ))}
             </div>
-            <p className="text-right px-2">{talk}</p>
         </div>
     )
 }
