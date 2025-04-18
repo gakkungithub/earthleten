@@ -200,6 +200,19 @@ export async function getComments( tid: string ) {
     });
 }
 
+export async function getImageListOfComment( cid: string ) {
+    const imageList: {url: string}[] = await prisma.CommentImage.findMany({
+        where: {
+            cid: cid,
+        },
+        select: {
+            url: true,
+        }
+    });
+
+    return imageList.map(image => image.url);
+}
+
 /* ハッシュ値を取得する(主にパスワード用) 
  * もし仮にパスワードの安全性が失われそうになったらここを変形する 
  */

@@ -85,8 +85,8 @@ export default function AddComment({uid, tid}: {uid: string, tid: string}) {
     };
 
     return (
-        <form onSubmit={handleSubmit(onsubmit)} className="p-2">
-            <fieldset className="p-2 border text-center bg-white">
+        <form onSubmit={handleSubmit(onsubmit)} className="p-2 m-2 border-2">
+            <fieldset className="p-2 border text-center bg-white w-full">
                 <legend className="font-bold">コメント</legend>
                 <input id="add_sports_comment1" type="textarea" placeholder="コメント" 
                 {...register('comment')} className="border-2" /> 
@@ -94,9 +94,9 @@ export default function AddComment({uid, tid}: {uid: string, tid: string}) {
             <fieldset className="border text-center py-2 bg-white w-full">
                 <legend className="font-bold">画像</legend>
                 {commentImageList.length >= 1 &&
-                    <div className="flex w-full my-4 py-4 items-center overflow-x-auto border-y-2">
+                    <div className="flex my-4 py-4 items-center overflow-x-auto border-y-2 min-w-0">
                         {commentImageList.map((image) => (
-                        <div key={image} className="relative mx-4">
+                        <div key={image} className="relative mx-4 shrink-0">
                             <Image src={image} alt="" width={128} height={128} className="h-auto"/>
                             <button onClick={() => deleteCommentImage(image)}
                             className="absolute top-0 right-0 w-4 h-4 rounded-full bg-gray-400 text-white text-2xl leading-4">
@@ -114,8 +114,8 @@ export default function AddComment({uid, tid}: {uid: string, tid: string}) {
                 disabled={commentImageList.length >= 4 ? true : false} className="hidden" />
                 <p className="my-4">選択中: {commentImageList.length}/4</p>
             </fieldset>
-            <button type="submit" disabled={!isDirty} className="mx-auto w-fit text-white rounded p-2
-             bg-blue-600 hover:bg-blue-500">
+            <button type="submit" disabled={!isDirty && commentImageList.length === 0} className={`w-fit text-white rounded p-2 m-2
+             ${isDirty && commentImageList.length === 0 ? "bg-blue-300" : "bg-blue-600 hover:bg-blue-500"}`}>
                 投稿
             </button>
         </form>

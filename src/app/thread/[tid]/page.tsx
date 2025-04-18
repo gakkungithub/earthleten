@@ -42,7 +42,7 @@ export default async function ChatPage({params} : {params: {tid: string}}) {
             </div>
             <div className="w-2/3 lg:w-1/2 mx-auto">
             {comments.map((comment, index) => (
-                <CommentComponent key={index} uid={comment.uid} talk={comment.talk} cdate={new Date(comment.cdate)}/>
+                <CommentComponent key={index} cid={comment.id} uid={comment.uid} talk={comment.talk} cdate={comment.cdate}/>
             ))}
             <AddComment uid={session?.user.id || ''} tid={(await params).tid}/>
             </div>
