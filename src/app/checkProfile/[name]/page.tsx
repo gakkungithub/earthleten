@@ -24,7 +24,8 @@ export default async function checkProfilePage({params} : {params: {name: string
         </div>
     </div>
     <div className="overflow-y-auto border-2 m-4 h-128">
-        <p className="px-2">↓{user.name}さんが立てたスレッドです↓</p>
+        <p className="px-2">{threads.length > 0 ? 
+        `↓ ${user.name}さんが立てたスレッドです ↓` : `${user.name}さんのスレッドはありません`}</p>
         <ThreadDetails threads={threads} />
     </div>
     </>

@@ -2,12 +2,10 @@ import Link from 'next/link';
 import { Thread } from '@/typeDeclar/typeComp';
 import { getUserByID } from '@/lib/getter';
 import Image from 'next/image';
-// import { getGenreNamesOfThread } from '@/lib/getter';
 
 export default async function LinkedThreadDetails( {thread} : {thread: Thread} ){
     const bdate = new Date(thread.bdate);
     const user = await getUserByID(thread.uid);
-    // console.log(await isImageAvailable(user.image));
 
     return (
         <div className="relative border-2 border-blue-600 rounded m-2 h-16">
@@ -27,13 +25,3 @@ export default async function LinkedThreadDetails( {thread} : {thread: Thread} )
         </div>
     );
 }
-
-// async function isImageAvailable(url: string): Promise<boolean> {
-//     try {
-//         const res = await fetch(url, { method: 'HEAD' });
-//         return res.ok && (res.headers.get('content-type')?.startsWith('image/') || false);
-//     }
-//     catch {
-//         return false;
-//     }
-// }

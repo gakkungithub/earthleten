@@ -222,65 +222,70 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
 
     const MenuInput = ({label, value, level} : {label: string, value: string, level: number}) => {
         const regName = `sports.${level === 0 ? 'main' : `sub${level}` }` as 'sports.main' | 'sports.sub1' | 'sports.sub2';
-        return <label htmlFor={`narrow-sports-${value}`} className="flex items-center rounded">
-        <input id={`narrow-sports-${value}`} type="checkbox" value={value}
-        className="mr-2" checked={regName.includes(value)} {...register(regName, {onChange: (e) => {handleCheckSports({e, regName})}})} />{label}</label>
+        return (
+        <label htmlFor={`narrow-sports-${value}`} className="flex items-center rounded">
+            <input id={`narrow-sports-${value}`} type="checkbox" value={value}
+            className="mr-2" checked={regName.includes(value)} 
+            {...register(regName, 
+                {onChange: (e) => {handleCheckSports({e, regName})}})
+            } />
+            {label}
+        </label>);
     }
     // #endregion
     
     return (
-        <div className="mx-2 h-fit">
-        <fieldset className="border text-center bg-white h-fit">
-        <legend className="font-bold">ジャンルの絞り込み</legend>
-        <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full
-         bg-white text-black z-2 transition-transform duration-300 ease-in-out space-y-4">
-            <div className="grid grid-cols-9 w-full items-start">
-            {Object.entries(menuMap).map(([key, value]) => (
-            <React.Fragment key={key}>
-            { key === 'sports' ?
-                //最上層のメニュー
-                (<div className="col-span-3 flex flex-col space-y-1 pl-2">
-                    <p className="text-center">　　</p>
-                    {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
-                </div>) :
-                (<>
-                {!menuMap[value.genres[0]] ? 
-                    // 最下層のメニュー
-                    (<>
-                    {openMenu.includes(key) && 
-                    <div className="col-span-3 flex flex-col space-y-1 pl-2">
-                        <MenuInput label='すべて選択' value={key} level={value.level} />
-                        {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuInput label={menuMapJP[genre]} value={genre} level={value.level+1}/></React.Fragment> ))}
-                    </div>
+        <div className="h-fit w-full">
+            <fieldset className="border text-center bg-white h-fit">
+                <legend className="font-bold">ジャンルの絞り込み</legend>
+                <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full
+                bg-white text-black z-2 transition-transform duration-300 ease-in-out space-y-4">
+                    <div className="grid grid-cols-9 w-full items-start">
+                    {Object.entries(menuMap).map(([key, value]) => (
+                    <React.Fragment key={key}>
+                    { key === 'sports' ?
+                        //最上層のメニュー
+                        (<div className="col-span-3 flex flex-col space-y-1 pl-2">
+                            <p className="text-center">　　</p>
+                            {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
+                        </div>) :
+                        (<>
+                        {!menuMap[value.genres[0]] ? 
+                            // 最下層のメニュー
+                            (<>
+                            {openMenu.includes(key) && 
+                            <div className="col-span-3 flex flex-col space-y-1 pl-2">
+                                <MenuInput label='すべて選択' value={key} level={value.level} />
+                                {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuInput label={menuMapJP[genre]} value={genre} level={value.level+1}/></React.Fragment> ))}
+                            </div>
+                            }
+                            </>) :
+                            // 中間層のメニュー
+                            (<>
+                            {openMenu.includes(key) && 
+                            <div className="col-span-3 flex flex-col space-y-1 pl-2">
+                                <MenuInput label='すべて選択' value={key} level={value.level} />
+                                {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
+                            </div>
+                            }
+                            </>)
+                        }
+                        </>)
                     }
-                    </>) :
-                    // 中間層のメニュー
-                    (<>
-                    {openMenu.includes(key) && 
-                    <div className="col-span-3 flex flex-col space-y-1 pl-2">
-                        <MenuInput label='すべて選択' value={key} level={value.level} />
-                        {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
+                    </React.Fragment>
+                    ))}
                     </div>
-                    }
-                    </>)
-                }
-                </>)
-            }
-            </React.Fragment>
-            ))}
+                    <button type="submit" disabled={!isDirty} className={`w-fit text-white rounded p-2 mb-2 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
+                        ジャンルを決定
+                    </button>
+                </form>
+            </fieldset>
+            {narrowedGenres.length > 0 &&
+            <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full min-w-0 border">
+                <p className="text-white">絞り込み:</p>
+                <p className="text-black font-bold whitespace-nowrap">{`${narrowedGenres}`}</p>
             </div>
-            <button type="submit" disabled={!isDirty} className={`w-fit text-white rounded p-2 mb-2 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
-                ジャンルを決定
-            </button>
-        </form>
-        </fieldset>
-        {narrowedGenres.length > 0 &&
-        <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full min-w-0 border">
-            <p className="text-white">絞り込み:</p>
-            <p className="text-black font-bold whitespace-nowrap w-max">{`${narrowedGenres}`}</p>
+            }
         </div>
-        }
-        </div>
-
     );
 }

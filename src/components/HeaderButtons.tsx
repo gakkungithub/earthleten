@@ -14,7 +14,8 @@ import { redirect } from 'next/navigation';
 export default function HeaderButtons({ login, image } : { login: boolean, image: string}) {
     const [showLogoutMenu, setShowLogoutMenu] = useState<boolean>(false);
     const pathname = '/' + usePathname().split('/')[1];
-    console.log(image);
+
+    const [showThreadsMenu, setShowThreadsMenu] = useState<boolean>(false);
 
     const handleLogout = () => {
       signOut();
@@ -32,13 +33,25 @@ export default function HeaderButtons({ login, image } : { login: boolean, image
         {showLogoutMenu &&
             <div className="fixed top-0 left-0 bg-gray-300 opacity-50 h-full w-full z-20"></div>
         }
-        <ul className="flex bg-blue-600 mb-4 pl-2">
+        <ul className="flex bg-blue-600 pl-2 text-center">
           <li className={`block px-4 py-2 my-1 hover:bg-gray-100 rounded ${pathname === '/' ? "bg-fuchsia-600" : ""}`}>
               <Link className="no-underline text-blue-300" href="/">
               ホーム</Link></li>
-          <li className={`block text-blue-300 px-4 py-2 my-1 hover:bg-gray-100 rounded ${pathname === '/threads' && "bg-fuchsia-600"}`}>
-              <Link className="no-underline text-blue-300" href="/threads">
-              掲示板</Link></li>
+          <li className={`relative block text-blue-300 px-4 py-2 my-1 hover:bg-gray-100 hover:rounded-b-none rounded ${pathname === '/threads' && "bg-fuchsia-600"}`}
+          onMouseEnter={() => setShowThreadsMenu(true)} onMouseLeave={() => setShowThreadsMenu(false)}>
+              <Link className="no-underline text-blue-300" href="/threads" onClick={() => setShowThreadsMenu(false)}>
+              掲示板</Link>
+              {showThreadsMenu &&
+                <ul className="absolute left-0 top-full min-w-max">
+                    <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/narrow' && "bg-fuchsia-600"}`}>
+                    <Link className="no-underline text-blue-300" href='/threads/narrow' onClick={() => setShowThreadsMenu(false)}>
+                    絞り込み</Link></li>
+                    <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/add' && "bg-fuchsia-600"}`}>
+                    <Link className="no-underline text-blue-300" href='/threads/add' onClick={() => setShowThreadsMenu(false)}>
+                    追加</Link></li>
+                </ul>
+              }
+          </li>
         </ul>
         <ul className="flex fixed top-3 right-2">
           {pathname !== '/logIn' && !login &&
