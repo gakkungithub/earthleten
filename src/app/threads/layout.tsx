@@ -8,12 +8,12 @@ export default function ThreadsLayout({children,}: Readonly<{
   return (
       <>
           <ThreadsHeaderButtons />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="col-span-1 md:col-start-2">
+          <div className="flex items-start w-fit mx-auto">
+              <div className="w-fit">
                   <ChangeThreadsOrder />
                   <ChangeThreadsGenres />
               </div>
-              <div className="col-span-1 md:col-start-3">
+              <div className="w-fit">
                   {children}
               </div>
           </div>

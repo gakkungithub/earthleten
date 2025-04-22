@@ -17,7 +17,7 @@ export default function ChangeThreadsOrder() {
     }
 
     return (
-        <select onChange={handleChangeOrder}>
+        <select onChange={handleChangeOrder} className="border-blue-600 border-2 rounded-3xl">
             <option value="newest">新しい順</option>
             <option value="oldest">古い順</option>
             <option value="most_comments">コメントが多い順</option>

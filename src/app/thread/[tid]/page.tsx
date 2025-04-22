@@ -27,10 +27,13 @@ export default async function ChatPage({params} : {params: {tid: string}}) {
                     {String(thread.bdate.getHours()).padStart(2, '0')}:{String(thread.bdate.getMinutes()).padStart(2, '0')}:{String(thread.bdate.getSeconds()).padStart(2, '0')}
                     </span>
                 </div>
-                <Link className="flex items-center no-underline w-fit text-blue-300 hover:bg-gray-100 py-2 rounded" href={`/checkProfile/${session?.user.name}`}>
-                <Image src={session?.user.image || '/defaultIcon.png'} alt="" width={24} height={24} className="mr-2 rounded-full"/>                   
-                {session?.user.name}
-                </Link>
+                <div className="flex text-blue-300 font-bold py-2 justify-between">
+                    <Link className="flex items-center no-underline w-fit hover:bg-gray-100 py-2 rounded" href={`/checkProfile/${session?.user.name}`}>
+                    <Image src={session?.user.image || '/defaultIcon.png'} alt="" width={24} height={24} className="mr-2 rounded-full"/>                   
+                    {session?.user.name}
+                    </Link>
+                    <p>コメント数({comments.length})</p>
+                </div>
                 {genreLabels.length > 0 &&
                 <div>
                     <p className="text-white">ジャンル:</p>

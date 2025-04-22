@@ -5,6 +5,9 @@ export type Thread = {
     uid: string;
     title: string;
     bdate: Date;
+    _count: {
+        comments: number;
+    };
 };
 
 export type Comment = {

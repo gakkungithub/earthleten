@@ -175,11 +175,27 @@ export async function getGenderByLanguage(gender: string, language: string) {
 
 /* スレッドをジャンルで取得する 
  * genreがundefinedの場合、絞り込まない */
-export async function getThreads( genres: string[] ) {
+export async function getThreadsByGenresAndOrder( genres: string[], order: string ) {
     const gidList : {id: string}[] = await getGenreIDs(genres);
     const gids = gidList.map(g => g.id);
 
+    const orderBy = 
+        order === 'most_comments' 
+        ? {
+            comments: {
+                _count: 'desc',
+            },
+          } : 
+          {
+            bdate: order === 'oldest' ? 'asc' : 'desc',
+          };
+
     return await prisma.Thread.findMany({
+        include: {
+            _count: {
+                select: { comments: true},
+            }
+        },
         where: gids.length > 0 ? {
             genres: {
                 some: {
@@ -189,12 +205,11 @@ export async function getThreads( genres: string[] ) {
                 },
             },
         }: {},
-        orderBy: {
-            bdate: 'desc'
-        },
+        orderBy,
     });
 }
 
+// スレッドをidから取得
 export async function getThread( id: string ) {
     return await prisma.Thread.findUnique({
         where: {
@@ -203,8 +218,14 @@ export async function getThread( id: string ) {
     });
 }
 
+// スレッドをユーザーIDで取得
 export async function getThreadsByUserID( uid: string ) {
     return await prisma.Thread.findMany({
+        include: {
+            _count: {
+                select: { comments: true},
+            }
+        },
         where: {
             uid: uid,
         },

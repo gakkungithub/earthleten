@@ -223,7 +223,7 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
     const MenuInput = ({label, value, level} : {label: string, value: string, level: number}) => {
         const regName = `sports.${level === 0 ? 'main' : `sub${level}` }` as 'sports.main' | 'sports.sub1' | 'sports.sub2';
         return (
-        <label htmlFor={`narrow-sports-${value}`} className="flex items-center rounded">
+        <label htmlFor={`narrow-sports-${value}`} className="flex items-center rounded text-xs">
             <input id={`narrow-sports-${value}`} type="checkbox" value={value}
             className="mr-2" checked={regName.includes(value)} 
             {...register(regName, 
@@ -246,7 +246,7 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                     { key === 'sports' ?
                         //最上層のメニュー
                         (<div className="col-span-3 flex flex-col space-y-1 pl-2">
-                            <p className="text-center">　　</p>
+                            <p className="text-center text-xs">　　</p>
                             {value.genres.map((genre) => ( <React.Fragment key={genre}><MenuButton label={menuMapJP[genre]} menu={genre}/></React.Fragment> ))}
                         </div>) :
                         (<>
