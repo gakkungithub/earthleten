@@ -217,7 +217,7 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
     
     const MenuButton = ({label, menu} : {label: string, menu: string}) => {
         return <button onClick={() => controlOpenMenu(menu)} 
-                className={`text-center p-1 text-white rounded ${openMenu.includes(menu) ? "bg-fuchsia-600 hover:bg-fuchsia-500" : "bg-blue-600 hover:bg-blue-500" }`}>{label}</button>
+                className={`text-center p-1 whitespace-nowrap text-white rounded ${openMenu.includes(menu) ? "bg-fuchsia-600 hover:bg-fuchsia-500" : "bg-blue-600 hover:bg-blue-500" }`}>{label}</button>
     }
 
     const MenuInput = ({label, value, level} : {label: string, value: string, level: number}) => {
@@ -229,14 +229,14 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
             {...register(regName, 
                 {onChange: (e) => {handleCheckSports({e, regName})}})
             } />
-            {label}
+            <span className="whitespace-nowrap">{label}</span>
         </label>);
     }
     // #endregion
     
     return (
         <div className="h-fit w-full">
-            <fieldset className="border text-center bg-white h-fit">
+            <fieldset className="border text-center bg-white h-fit px-2">
                 <legend className="font-bold">ジャンルの絞り込み</legend>
                 <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full
                 bg-white text-black z-2 transition-transform duration-300 ease-in-out space-y-4">

@@ -43,9 +43,9 @@ export default function HeaderButtons({ login, image } : { login: boolean, image
               掲示板</Link>
               {showThreadsMenu &&
                 <ul className="absolute left-0 top-full min-w-max">
-                    <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/narrow' && "bg-fuchsia-600"}`}>
+                    {/* <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/narrow' && "bg-fuchsia-600"}`}>
                     <Link className="no-underline text-blue-300" href='/threads/narrow' onClick={() => setShowThreadsMenu(false)}>
-                    絞り込み</Link></li>
+                    絞り込み</Link></li> */}
                     <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/add' && "bg-fuchsia-600"}`}>
                     <Link className="no-underline text-blue-300" href='/threads/add' onClick={() => setShowThreadsMenu(false)}>
                     追加</Link></li>
