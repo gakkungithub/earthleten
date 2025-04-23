@@ -1,4 +1,4 @@
-import { getThreads, getGenreIDs } from '@/lib/getter';
+import { getThreadsByGenresAndOrder, getGenreIDs } from '@/lib/getter';
 import { addThread } from '@/lib/actions';
 
 // ジャンルを追加する
@@ -31,11 +31,10 @@ export async function GET(req: Request) {
     const genres = searchParams.get('genres')?.split(',') || [];
 
     try {
-        const threads = await getThreads(genres);
+        const threads = await getThreadsByGenresAndOrder(genres, 'newest');
 
         return new Response(JSON.stringify(threads), { status: 200 });
     } catch {
         return new Response(JSON.stringify('Error fetching threads'), { status: 500 });
-    } 
-
+    }
 }

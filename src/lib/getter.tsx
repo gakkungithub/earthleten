@@ -162,6 +162,13 @@ export async function getGenreLabelsByLanguage(genres: string[], language: strin
     return genreLabels;
 }
 
+export async function getGenreLabelsBySuggest(genreString: string) {
+    const genres = Object.entries(menuMapJP).filter(
+        ([key, value]) => value.includes(genreString) && key.split('_').length === 3
+    ) || [];
+    return genres;
+}
+
 const genderMapJP: { [key: string]: string } = {
     male: '男性',
     female: '女性',

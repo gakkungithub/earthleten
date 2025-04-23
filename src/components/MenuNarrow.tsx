@@ -131,6 +131,8 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
       };
     // #endregion
 
+    const [genreSuggests, setGenreSuggests] = useState<[string, string][]>([]);
+
     // #region formSettings
     const { register, handleSubmit, getValues, watch, setValue, formState: { isDirty } } = useForm<CboxData>({
         defaultValues: { sports: { main: [], sub1: [], sub2: [] } }
@@ -232,6 +234,24 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
             <span className="whitespace-nowrap">{label}</span>
         </label>);
     }
+
+    const updateSuggests = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.value) {
+            const response = await fetch(`/api/genres?genreString=${e.target.value}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+            if (response.ok) {
+                const genres = await response.json();
+                setGenreSuggests(genres);
+            }
+        }
+        else {
+            setGenreSuggests([]);
+        }
+    }
     // #endregion
     
     return (
@@ -240,6 +260,18 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                 <legend className="font-bold">ジャンルの絞り込み</legend>
                 <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full
                 bg-white text-black z-2 transition-transform duration-300 ease-in-out space-y-4">
+                    <div>
+                        <label htmlFor='genreSuggests'>
+                            🔍 <input type="text" id='genreSuggests' className="border-2 rounded"
+                            onChange={updateSuggests}/>
+                        </label>
+                        <ul>
+                            {genreSuggests.map((genreSuggest, index) => (
+                                <p key={index}>{genreSuggest[1]}</p>
+                            ))
+                            }
+                        </ul>
+                    </div>
                     <div className="grid grid-cols-9 w-full items-start">
                     {Object.entries(menuMap).map(([key, value]) => (
                     <React.Fragment key={key}>
