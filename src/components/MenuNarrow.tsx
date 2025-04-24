@@ -260,14 +260,14 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                 <legend className="font-bold">ジャンルの絞り込み</legend>
                 <form onSubmit={handleSubmit(onsubmit)} className="flex flex-col items-center h-fit w-full
                 bg-white text-black z-2 transition-transform duration-300 ease-in-out space-y-4">
-                    <div>
+                    <div className="relative">
                         <label htmlFor='genreSuggests'>
                             🔍 <input type="text" id='genreSuggests' className="border-2 rounded"
                             onChange={updateSuggests}/>
                         </label>
-                        <ul>
+                        <ul className="absolute left-1/2 top-full">
                             {genreSuggests.map((genreSuggest, index) => (
-                                <p key={index}>{genreSuggest[1]}</p>
+                                <li key={index} className="border rounded text-white bg-blue-600">{genreSuggest[1]}</li>
                             ))
                             }
                         </ul>
