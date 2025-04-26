@@ -16,11 +16,11 @@ export default async function ThreadsPage({ searchParams } : { searchParams: { g
                 <ChangeThreadsOrder />
                 <ChangeThreadsGenres />
             </div>
-            <div className="relative w-fit h-128 border-2 mx-2 overflow-y-auto">
+            <div className="relative w-1/2 xl:w-1/4 h-128 border-2 mx-2 overflow-y-auto">
                 {genreLabels.length > 0 &&
-                <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full min-w-0 border">
+                <div className="flex flex-col px-2 py-4 bg-gray-400 w-full border">
                     <p className="text-white">絞り込み:</p>
-                    <p className="text-black font-bold whitespace-nowrap w-max">{`${genreLabels}`}</p>
+                    <p className="text-black font-bold">{genreLabels.join(', ')}</p>
                 </div>
                 }
                 <ThreadDetails threads={threads} />

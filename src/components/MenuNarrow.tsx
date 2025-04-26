@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Dispatch, SetStateAction } from 'react';
 import { useForm } from 'react-hook-form';
 import { getGenreLabelsByLanguage } from '@/lib/getter';
 
@@ -12,7 +12,7 @@ type CboxData = {
     }
 }
 
-export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) => void }) {
+export default function MenuNarrow({setGenres} : {setGenres: Dispatch<SetStateAction<string[]>> }) {
     // #region menuConst 
     const menuMap: {[key: string] : {genres: string[], level: number} } = {
         sports: {genres: ['baseball', 'football', 'trackfield'], level: -1},
@@ -142,9 +142,18 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
 
     const onsubmit = async () => {
         // 後で多言語対応もできるようにする
-        const genreLabels = await getGenreLabelsByLanguage(watchSub2, 'jp');
         setGenres(watchSub2);
+        const genreLabels = await getGenreLabelsByLanguage(watchSub2, 'jp');
         setNarrowedGenres(genreLabels);
+    }
+
+    const addNarrowedGenres = async ( e: React.MouseEvent<HTMLLIElement> ) => {
+        const genre = e.currentTarget.dataset.genre
+        if (genre) {
+            setGenres((prevGenres: string[]) => Array.from(new Set([...prevGenres, genre])));
+            const genreLabels = await getGenreLabelsByLanguage([genre], 'jp');
+            setNarrowedGenres(Array.from(new Set([...narrowedGenres, ...genreLabels])));
+        }
     }
 
     const [openMenu, setOpenMenu] = useState<string>('');
@@ -265,12 +274,17 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                             🔍 <input type="text" id='genreSuggests' className="border-2 rounded"
                             onChange={updateSuggests}/>
                         </label>
-                        <ul className="absolute left-1/2 top-full">
+                        {genreSuggests.length > 0 &&
+                            <ul className="absolute top-full z-12 overflow-y-auto w-full h-64 bg-white border-2">
                             {genreSuggests.map((genreSuggest, index) => (
-                                <li key={index} className="border rounded text-white bg-blue-600">{genreSuggest[1]}</li>
+                                <li key={index} data-genre={genreSuggest[0]} onClick={addNarrowedGenres}
+                                className="border rounded text-white bg-blue-600 w-fit px-4 mx-auto hover:cursor-pointer">
+                                    {genreSuggest[1]}
+                                </li>
                             ))
                             }
-                        </ul>
+                            </ul>
+                        }
                     </div>
                     <div className="grid grid-cols-9 w-full items-start">
                     {Object.entries(menuMap).map(([key, value]) => (
@@ -307,15 +321,16 @@ export default function MenuNarrow({setGenres} : {setGenres: (genres: string[]) 
                     </React.Fragment>
                     ))}
                     </div>
-                    <button type="submit" disabled={!isDirty} className={`w-fit text-white rounded p-2 mb-2 ${isDirty ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
+                    <button type="submit" disabled={!(watchSub2.length || narrowedGenres.length)} 
+                    className={`w-fit text-white rounded p-2 mb-2 ${watchSub2.length || narrowedGenres.length ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
                         ジャンルを決定
                     </button>
                 </form>
             </fieldset>
             {narrowedGenres.length > 0 &&
-            <div className="flex flex-col overflow-x-auto px-2 py-4 bg-gray-400 w-full min-w-0 border">
+            <div className="flex flex-col px-2 py-4 bg-gray-400 border">
                 <p className="text-white">絞り込み:</p>
-                <p className="text-black font-bold whitespace-nowrap">{`${narrowedGenres}`}</p>
+                <p className="text-black font-bold whitespace-normal">{narrowedGenres.join(', ')}</p>
             </div>
             }
         </div>

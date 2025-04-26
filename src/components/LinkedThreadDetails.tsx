@@ -9,9 +9,9 @@ export default async function LinkedThreadDetails( {thread} : {thread: Thread} )
 
     return (
         <div className="relative border-blue-600 border-2 rounded m-2">
-            <Link href={`/thread/${thread.id}`} className="grid grid-cols-2 grid-rows-2 hover:bg-green-50 w-fit px-2">
+            <Link href={`/thread/${thread.id}`} className="grid grid-cols-2 grid-rows-2 hover:bg-green-50 px-2">
                 <p className="font-bold text-xl">{thread.title}</p>
-                <p>
+                <p className="text-right">
                     {bdate.getFullYear()}/{bdate.getMonth() + 1}/{bdate.getDate()}/
                     {String(bdate.getHours()).padStart(2, '0')}:{String(bdate.getMinutes()).padStart(2, '0')}:{String(bdate.getSeconds()).padStart(2, '0')}
                 </p>
