@@ -105,7 +105,7 @@ export default function AddThreadsPage(){
     };
 
     return (
-        <div className="h-fit w-full pb-15 bg-gray-300 text-black z-2 
+        <div className="h-fit pb-15 bg-gray-300 text-black z-2 
         transition-transform duration-300 ease-in-out relative">
         <form onSubmit={handleSubmit(onsubmit)} className="h-fit w-full">
             <div className="mx-2">

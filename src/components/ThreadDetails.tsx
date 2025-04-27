@@ -5,11 +5,11 @@ import { Thread } from '@/typeDeclar/typeComp';
 export default function ThreadDetails({threads}: {threads: Thread[]}){
     return (
         <div className="relative w-full mx-auto">
-            <div className="absolute top-1 left-1 z-10 w-1/2">
+            <div className="absolute z-10 w-full">
                 <NarrowMenu />
             </div>
-            <div className="w-3/5 border-2 mx-auto">
-            {threads && threads.length > 0 ?
+            <div className="w-full h-128 border-2 pt-10 overflow-y-auto">
+            {threads.length > 0 ?
                 <>
                     {threads.map((t: Thread) => (
                         <LinkedThreadDetails thread={t} key={t.id}/>

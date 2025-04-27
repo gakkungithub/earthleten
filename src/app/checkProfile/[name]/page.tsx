@@ -8,8 +8,8 @@ export default async function checkProfilePage({params} : {params: {name: string
     const threads = await getThreadsByUserID(user.id);
 
     return (
-    <>
-    <div className="w-2/3 mx-auto border-2 px-2 rounded">
+    <div className="w-2/3 mx-auto">
+    <div className="border-2 px-2 rounded my-4">
         <li className="flex items-center no-underline w-fit rounded">
             <Image src={user.image || '/defaultIcon.png'} alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
             <span className="mx-2">{user.name}</span>
@@ -24,13 +24,12 @@ export default async function checkProfilePage({params} : {params: {name: string
             </ul>
         </div>
     </div>
-    <div className="overflow-y-auto m-4 h-128 w-full mx-auto">
+    <div className="w-full">
         <p className="px-2 text-center">{threads.length > 0 ? 
         `↓ ${user.name}さんが立てたスレッドです ↓` : `${user.name}さんのスレッドはありません`}</p>
         <ThreadDetails threads={threads} />
     </div>
-    </>
-
+    </div>
     );
 
 }
