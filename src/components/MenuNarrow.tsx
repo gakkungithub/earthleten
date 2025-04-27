@@ -134,7 +134,7 @@ export default function MenuNarrow({setGenres} : {setGenres: Dispatch<SetStateAc
     const [genreSuggests, setGenreSuggests] = useState<[string, string][]>([]);
 
     // #region formSettings
-    const { register, handleSubmit, getValues, watch, setValue, formState: { isDirty } } = useForm<CboxData>({
+    const { register, handleSubmit, getValues, watch, setValue } = useForm<CboxData>({
         defaultValues: { sports: { main: [], sub1: [], sub2: [] } }
     });
 
@@ -329,7 +329,7 @@ export default function MenuNarrow({setGenres} : {setGenres: Dispatch<SetStateAc
             </fieldset>
             {narrowedGenres.length > 0 &&
             <div className="flex flex-col px-2 py-4 bg-gray-400 border">
-                <p className="text-white">絞り込み:</p>
+                <p className="text-white">選択したジャンル:</p>
                 <p className="text-black font-bold whitespace-normal">{narrowedGenres.join(', ')}</p>
             </div>
             }
