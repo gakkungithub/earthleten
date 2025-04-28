@@ -8,7 +8,7 @@ export default function ThreadDetails({threads}: {threads: Thread[]}){
             <div className="absolute z-10 w-full">
                 <NarrowMenu />
             </div>
-            <div className="w-full h-128 border-2 pt-10 overflow-y-auto">
+            <div className="w-full h-128 border-2 pt-10 rounded overflow-y-auto">
             {threads.length > 0 ?
                 <>
                     {threads.map((t: Thread) => (

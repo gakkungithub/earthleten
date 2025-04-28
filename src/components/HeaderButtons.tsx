@@ -49,6 +49,9 @@ export default function HeaderButtons({ login, image } : { login: boolean, image
                 </ul>
               }
           </li>
+          <li className={`block px-4 py-2 my-1 hover:bg-gray-100 rounded ${pathname === '/playerCoachProfiles' ? "bg-fuchsia-600" : ""}`}>
+              <Link className="no-underline text-blue-300" href="/playerCoachProfiles">
+              選手・監督</Link></li>
         </ul>
         <ul className="flex fixed top-3 right-2">
           {pathname !== '/logIn' && !login &&

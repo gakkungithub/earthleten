@@ -30,6 +30,12 @@ export default async function checkProfilePage({params, searchParams} : {params:
     <div className="w-full">
         <p className="px-2 text-center">{threads.length > 0 ? 
         `↓ ${user.name}さんが立てたスレッドです ↓` : `${user.name}さんのスレッドはありません`}</p>
+        {genreLabels.length > 0 &&
+        <div className="flex flex-col px-2 py-4 bg-gray-400 w-full border border-b-0 rounded-t-2xl">
+            <p className="text-white">絞り込み:</p>
+            <p className="text-black font-bold">{genreLabels.join(', ')}</p>
+        </div>
+        }
         <ThreadDetails threads={threads} />
     </div>
     </div>
