@@ -76,3 +76,20 @@ model User {
   weight    Float?
   image     String
 }
+
+model PCProfile {
+  id        String    @id default(cuid())
+  name      String    
+  genres    PCPOnGenre[]
+  bdate     DateTime?
+  image     String
+}
+
+model PCPOnGenre {
+  pcp       PCProfile @relation(fields: [pid], references: [id])
+  pid       String
+  genre     Genre     @relation(fields: [gid], references: [id])
+  gid       String
+
+  @@id([pid, gid])
+}
