@@ -13,7 +13,7 @@ import { redirect } from 'next/navigation';
 //ここにはloginとimageしか使わない(idやnameはクライアントコンポーネントでuseSessionを使って取得する)
 export default function HeaderButtons({ login, image } : { login: boolean, image: string}) {
     const [showLogoutMenu, setShowLogoutMenu] = useState<boolean>(false);
-    const pathname = '/' + usePathname().split('/')[1];
+    const pathname = usePathname();
 
     const [showThreadsMenu, setShowThreadsMenu] = useState<boolean>(false);
 
@@ -37,17 +37,14 @@ export default function HeaderButtons({ login, image } : { login: boolean, image
           <li className={`block px-4 py-2 my-1 hover:bg-gray-100 rounded ${pathname === '/' ? "bg-fuchsia-600" : ""}`}>
               <Link className="no-underline text-blue-300" href="/">
               ホーム</Link></li>
-          <li className={`relative block text-blue-300 px-4 py-2 my-1 hover:bg-gray-100 hover:rounded-b-none rounded ${pathname === '/threads' && "bg-fuchsia-600"}`}
+          <li className={`relative block text-blue-300 px-4 py-2 my-1 hover:bg-gray-100 hover:rounded-b-none rounded ${pathname.includes('/threads') && "bg-fuchsia-600"}`}
           onMouseEnter={() => setShowThreadsMenu(true)} onMouseLeave={() => setShowThreadsMenu(false)}>
               <Link className="no-underline text-blue-300" href="/threads" onClick={() => setShowThreadsMenu(false)}>
               掲示板</Link>
               {showThreadsMenu &&
-                <ul className="absolute left-0 top-full min-w-max">
-                    {/* <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/narrow' && "bg-fuchsia-600"}`}>
-                    <Link className="no-underline text-blue-300" href='/threads/narrow' onClick={() => setShowThreadsMenu(false)}>
-                    絞り込み</Link></li> */}
+                <ul className="absolute left-0 top-full min-w-max z-11">
                     <li className={`block px-4 py-2 bg-blue-600 hover:bg-gray-100 ${pathname === '/threads/add' && "bg-fuchsia-600"}`}>
-                    <Link className="no-underline text-blue-300" href='/threads/add' onClick={() => setShowThreadsMenu(false)}>
+                    <Link className="no-underline text-white" href='/threads/add' onClick={() => setShowThreadsMenu(false)}>
                     追加</Link></li>
                 </ul>
               }

@@ -1,11 +1,14 @@
-import { getUserByName, getGenderByLanguage, getThreadsByUserID } from '@/lib/getter';
+import { getUserByName, getGenderByLanguage, getGenreLabelsByLanguage, getThreadsByUserID } from '@/lib/getter';
 import Image from 'next/image';
 import ThreadDetails from '@/components/ThreadDetails';
 
-export default async function checkProfilePage({params} : {params: {name: string}}) {
+export default async function checkProfilePage({params, searchParams} : {params: {name: string}, searchParams: { genres: string, order: string }}) {
     const user = await getUserByName((await params).name);
+    const genreArray = ((await searchParams).genres || '').split(',');
+    const genreLabels = await getGenreLabelsByLanguage(genreArray, 'jp');
+    const order = (await searchParams).order || ''
     // ここで並び替えを適用する必要あり。
-    const threads = await getThreadsByUserID(user.id);
+    const threads = await getThreadsByUserID(user.id, genreArray, order);
 
     return (
     <div className="w-2/3 mx-auto">

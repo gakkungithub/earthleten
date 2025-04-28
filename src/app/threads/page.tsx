@@ -2,10 +2,10 @@ import ThreadDetails from '@/components/ThreadDetails';
 import { getGenreLabelsByLanguage, getThreadsByGenresAndOrder } from '@/lib/getter';
 
 export default async function ThreadsPage({ searchParams } : { searchParams: { genres: string, order: string }}) {
-    const genreString = ((await searchParams).genres || '');
-    const genreLabels = await getGenreLabelsByLanguage(genreString.split(','), 'jp');
+    const genreArray = ((await searchParams).genres || '').split(',');
+    const genreLabels = await getGenreLabelsByLanguage(genreArray, 'jp');
     const order = (await searchParams).order || ''
-    const threads = await getThreadsByGenresAndOrder(genreString.split(','), order);
+    const threads = await getThreadsByGenresAndOrder(genreArray, order);
     
     return (
         <div className="relative h-128 mx-auto overflow-y-auto">

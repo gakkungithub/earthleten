@@ -226,7 +226,21 @@ export async function getThread( id: string ) {
 }
 
 // スレッドをユーザーIDで取得
-export async function getThreadsByUserID( uid: string ) {
+export async function getThreadsByUserID( uid: string, genres: string[], order: string ) {
+    const gidList : {id: string}[] = await getGenreIDs(genres);
+    const gids = gidList.map(g => g.id);
+
+    const orderBy = 
+        order === 'most_comments' 
+        ? {
+            comments: {
+                _count: 'desc',
+            },
+          } : 
+          {
+            bdate: order === 'oldest' ? 'asc' : 'desc',
+          };
+
     return await prisma.Thread.findMany({
         include: {
             _count: {
@@ -234,11 +248,22 @@ export async function getThreadsByUserID( uid: string ) {
             }
         },
         where: {
-            uid: uid,
+            AND: [
+                gids.length > 0 ? {
+                    genres: {
+                        some: {
+                            gid: {
+                                in: gids,
+                            },
+                        },
+                    },
+                }: {},
+                {
+                    uid: uid,
+                }
+            ]
         },
-        orderBy: {
-            bdate: 'desc'
-        },
+        orderBy,
     });
 }
 
