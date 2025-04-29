@@ -2,16 +2,21 @@ import Image from 'next/image';
 import fs from 'fs';
 // import path from 'path';
 
-type Records = {
+type Script = {
+    section: string;
+    texts: string[];
+}
+
+type Result = {
     position: string;
     columns: string[];
     rows: (string | number | null)[][];
-  };
+};
 
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha.json', 'utf-8');
-    const records: Records[] = JSON.parse(jsonData);
+    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_1.json', 'utf-8');
+    const {scripts, results}: {scripts: Script[], results: Result[]} = JSON.parse(jsonData);
 
     return (
         <>
@@ -23,7 +28,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                     <li className="flex gap-x-2 items-center">
                         <p className="text-4xl font-bold">{(await params).id}</p>
                         <p className="text-2xl whitespace-nowrap font-bold">[野球]</p>
-                        <p>ショート, セカンド</p>
+                        <p>ピッチャー, ライト</p>
                     </li>
                     <li>がっくんウォーリアーズ</li>
                 </ul>
@@ -38,15 +43,25 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 </ul>
             </div>
         </div>
-            {records.map((record, recordIndex) => (
+        <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2">
+            {scripts.map((script, scriptIndex) => (
+                <div key={scriptIndex}>
+                    <p className="border-b-2">{script.section}</p>
+                    {script.texts.map((text, textIndex) => (
+                        <p key={textIndex}>{text}</p>
+                    ))}
+                </div>
+            ))}
+        </div>
+            {results.map((result, recordIndex) => (
             <div key={recordIndex} className="overflow-x-auto">
                 <table className="table-auto w-full border-collapse border border-gray-300">
                 <caption className="caption-top text-left font-semibold text-lg mb-2">
-                    {record.position}
+                    {result.position}
                 </caption>
                 <thead className="bg-gray-200">
                     <tr>
-                        {record.columns.map((col, colIndex) => (
+                        {result.columns.map((col, colIndex) => (
                             <th key={colIndex} className="border p-2">
                                 {col}
                             </th>
@@ -54,11 +69,11 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                     </tr>
                 </thead>
                 <tbody>
-                    {record.rows.map((row, index) => (
+                    {result.rows.map((row, index) => (
                         <tr key={index} className="text-center">
                             {row.map((cell, cellIndex) => (
                                 <td key={cellIndex} className="border px-4 py-2">
-                                    {cell}
+                                    {cell !== null ? cell : "-"}
                                 </td>
                             ))}
                         </tr>
