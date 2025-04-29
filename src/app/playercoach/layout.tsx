@@ -1,4 +1,4 @@
-export default function PlayerCoachLayout({children,}: Readonly<{
+export default async function PlayerCoachLayout({children,}: Readonly<{
     children: React.ReactNode;
   }>) {
   return (

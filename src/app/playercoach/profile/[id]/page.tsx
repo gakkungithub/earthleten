@@ -1,6 +1,18 @@
 import Image from 'next/image';
+import fs from 'fs';
+// import path from 'path';
 
+type Records = {
+    position: string;
+    columns: string[];
+    rows: (string | number | null)[][];
+  };
+
+  
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
+    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha.json', 'utf-8');
+    const records: Records[] = JSON.parse(jsonData);
+
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
@@ -26,9 +38,46 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 </ul>
             </div>
         </div>
-        <table>
-            {/* ここにオンラインで取得した選手の成績表を掲載する */}
-        </table>
+            {records.map((record, recordIndex) => (
+            <div key={recordIndex} className="overflow-x-auto">
+                <table className="table-auto w-full border-collapse border border-gray-300">
+                <caption className="caption-top text-left font-semibold text-lg mb-2">
+                    {record.position}
+                </caption>
+                <thead className="bg-gray-200">
+                    <tr>
+                        {record.columns.map((col, colIndex) => (
+                            <th key={colIndex} className="border p-2">
+                                {col}
+                            </th>
+                        ))}
+                    </tr>
+                </thead>
+                <tbody>
+                    {record.rows.map((row, index) => (
+                        <tr key={index} className="text-center">
+                            {row.map((cell, cellIndex) => (
+                                <td key={cellIndex} className="border px-4 py-2">
+                                    {cell}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+                </table>
+            </div>
+            ))}
         </>
     )
 }
+
+// {
+//     "year": 2015,
+//     "team": "大阪ホワイトタイガース",
+//     "stats": {
+//         "試合数": 25,
+//         "勝利": 15,
+//         "敗北": 5,
+//         "防御率": 2.30
+//       }
+// },
