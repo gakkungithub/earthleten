@@ -7,25 +7,52 @@ type Script = {
     texts: string[];
 }
 
+type HighlightCell = {
+    value: string | number;
+    color: string;
+}
+
+type HighlightInfo = {
+    color: string;
+    sentence: string;
+}
+
 type Result = {
     position: string;
     columns: string[];
-    rows: (string | number | null)[][];
+    rows: (string | number | null | HighlightCell)[][];
 };
 
 type Award = {
     section: string;
     titles: {name: string; years: number[]}[];
 }
+
+type Color = {
+    bgcolor: string;
+    textcolor: string;
+}
+
+function isHighlightCell(obj: unknown): obj is HighlightCell {
+    return (
+      typeof obj === "object" &&
+      obj !== null &&
+      "value" in obj &&
+      "color" in obj &&
+      (typeof obj.value === "string" || typeof obj.value === "number") &&
+      typeof obj.color === "string"
+    );
+}
+  
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_2.json', 'utf-8');
-    const {scripts, results, awards}: {scripts: Script[], results: Result[], awards: Award[]} = JSON.parse(jsonData);
+    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_5.json', 'utf-8');
+    const {scripts, data, awards, color}: {scripts: Script[], data: {results: Result[], highlightInfo?: HighlightInfo[]}, awards: Award[], color: Color | null} = JSON.parse(jsonData);
 
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className="border-2 px-2 rounded-3xl my-4 text-white bg-gray-400">
+        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor || "text-white"} ${color?.bgcolor || "bg-gray-400"}`}>
             <div className="flex items-center no-underline w-fit rounded">
                 <Image src='/defaultIcon.png' alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
                 <ul>
@@ -58,36 +85,56 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
             ))}
         </div>
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
-        <div className="h-128 overflow-y-auto border-2 p-2">
-            {results.map((result, recordIndex) => (
-            <div key={recordIndex} className="overflow-x-auto">
-                <table className="table-auto w-full border-collapse border border-gray-300">
-                    <caption className="caption-top text-left font-semibold text-lg mb-2">
-                        {result.position}
-                    </caption>
-                    <thead className="bg-gray-200">
-                        <tr>
-                            {result.columns.map((col, colIndex) => (
-                                <th key={colIndex} className="border p-2 whitespace-nowrap">
-                                    {col}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {result.rows.map((row, index) => (
-                            <tr key={index} className="text-center">
-                                {row.map((cell, cellIndex) => (
-                                    <td key={cellIndex} className="border px-4 py-2 whitespace-nowrap">
-                                        {cell !== null ? cell : "-"}
-                                    </td>
+        <div className="border-2">
+            <div className="h-128 overflow-y-auto p-2">
+                {data.results.map((result, recordIndex) => (
+                <div key={recordIndex} className="overflow-x-auto">
+                    <table className="table-auto w-full border-collapse border border-gray-300">
+                        <caption className="caption-top text-left font-semibold text-lg mb-2">
+                            {result.position}
+                        </caption>
+                        <thead className="bg-gray-200">
+                            <tr>
+                                {result.columns.map((col, colIndex) => (
+                                    <th key={colIndex} className="border p-2 whitespace-nowrap">
+                                        {col}
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {result.rows.map((row, index) => (
+                                <tr key={index} className="text-center">
+                                    {row.map((cell, cellIndex) => {
+                                        if (isHighlightCell(cell)) {
+                                            return (
+                                                <td key={cellIndex} className={`border-black border px-4 py-2 whitespace-nowrap ${cell.color}`}>
+                                                {cell.value}
+                                                </td>
+                                            )
+                                        } 
+                                        else {
+                                            return (
+                                                <td key={cellIndex} className="border px-4 py-2 whitespace-nowrap">
+                                                { cell !== null ? cell : "-"}
+                                                </td>
+                                            )
+                                        }
+                                    })}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+                ))}
             </div>
-            ))}
+            <ul className="list-disc mx-6">
+                {data.highlightInfo &&
+                    data.highlightInfo.map((hl, hlIndex) => (
+                        <li key={hlIndex} className={`my-2 ${hl.color}`}>{hl.sentence}</li>
+                    ))
+                }
+            </ul>
         </div>
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
         <div className="h-128 overflow-y-auto border-2 p-2">
