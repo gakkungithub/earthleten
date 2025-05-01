@@ -73,9 +73,9 @@ export default function PlayerCoachProfileEditPage(){
                 <form>
                     <fieldset className="p-2 border text-center">
                         <legend className="font-bold">自画像</legend>
-                        <div className="mx-auto mb-4 h-16 w-16 rounded-full border">
+                        <div className="mx-auto mb-4 h-32 w-32 rounded-full border">
                             {currentImage !== "" &&
-                            <Image src={currentImage} alt="" width={64} height={64} className="m-auto rounded-full"/>
+                            <Image src={currentImage} alt="" width={128} height={128} className="m-auto rounded-full"/>
                             }
                         </div>
                         <label htmlFor="self-image" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500">画像を選択</label>
@@ -103,30 +103,61 @@ export default function PlayerCoachProfileEditPage(){
                                 </li>
                                 <li className="flex">
                                     <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)} 
-                                    className="w-fit text-white rounded">ジャンル: </button>
-                                    <div className="w-64 border rounded mx-2">
-                                        <p className="w-64 overflow-x-auto">{genres.join(',')}</p>
+                                    className={`w-fit rounded ${openGenreMenu ? "bg-white text-black" : "text-white"}`}>ジャンル: </button>
+                                    <div className="w-60 border rounded mx-2">
+                                        <p className="overflow-x-auto">{genres.join(',')}</p>
                                     </div>
                                 </li>
                             </ul>
                         </fieldset>
                     </form>
                     {openGenreMenu &&
-                        <div className="absolute top-full left-0 text-black">
+                        <div className="absolute top-full left-2 text-black">
                             <MenuNarrow setGenres={setGenres}/>
                         </div>
                     }
                 </div>
             </div>
-            <div className="border-t-2">
+            <form className="border-t-2 py-2">
                 <p className="font-bold">プロフィール</p>
-                <ul className="list-none ml-4">
-                    <li>性別:男</li>
-                    <li>誕生日:12/29/1993</li>
-                    <li>身長: 171cm</li>
-                    <li>体重: 67kg</li>
+                <ul className="list-none ml-4 space-y-2">
+                    <li className="flex items-center">
+                        性別: 
+                        <div className="flex flex-col">
+                            <label htmlFor="gender-male" className="mx-2">
+                                <input id="gender-male" type="radio" value="male" /> 男性
+                            </label>                    
+                            <label htmlFor="gender-female" className="mx-2">
+                                <input id="gender-female" type="radio" value="female" /> 女性
+                            </label>
+                            <label htmlFor="gender-private" className="mx-2">
+                                <input id="gender-private" type="radio" value="private" /> 非公開
+                            </label>
+                        </div>
+                    </li>
+                    <li className="flex items-center">
+                        誕生日:
+                        <div className="flex justify-center items-center">
+                            <input id="bdate" type="number" step="1" className="border w-12 m-2" />
+                            <p>年</p>
+                            <input id="bdate" type="number" step="1" className="border w-12 m-2" />
+                            <p>月</p>
+                            <input id="bdate" type="number" step="1" className="border w-12 m-2" />
+                            <p>日</p> 
+                        </div>                  
+                    </li>
+                    <li className="flex items-center">
+                        <label htmlFor="height">身長:</label>
+                        <input id="height" type="number" step="0.1" className="border w-12 mx-2" />
+                        <p>cm</p>
+                    </li>
+                    <li className="flex items-center">
+                        <label htmlFor="weight">体重:</label>
+                        <input id="weight" type="number" step="0.1" className="border w-12 mx-2" />
+                        <p>kg</p>
+                    </li>
                 </ul>
-            </div>
+            </form>
         </div>
         <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded">
             {(profile?.scripts || []).map((script, scriptIndex) => (
