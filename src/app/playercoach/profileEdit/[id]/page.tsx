@@ -1,6 +1,10 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import fs from 'fs';
-import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import MenuNarrow from '@/components/MenuNarrow';
 // import path from 'path';
 
 type Script = {
@@ -44,26 +48,75 @@ function isHighlightCell(obj: unknown): obj is HighlightCell {
       typeof obj.color === "string"
     );
 }
-  
-  
-export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha.json', 'utf-8');
-    const {scripts, data, awards, color}: {scripts: Script[], data: {results: Result[], highlightInfo?: HighlightInfo[]}, awards: Award[], color: Color | null} = JSON.parse(jsonData);
 
+export default function PlayerCoachProfileEditPage(){
+    const [profile, setProfile] = useState<{scripts: Script[], data: {results: Result[], highlightInfo?: HighlightInfo[]}, awards: Award[], color: Color | null} | null>(null);
+    const [currentImage, setCurrentImage] = useState<string>("");
+    const [genres, setGenres] = useState<string[]>([]);
+    const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
+    const params = useParams();
+
+    useEffect(() => {
+        fetch('/jsonfile/sports_kgavvaaxha.json')
+        .then((res) => res.json())
+        .then((json) => setProfile(json))
+        .catch(() => redirect(`/playercoach/profile/${params.id}`));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+    
+    // <div className={`border-2 px-2 rounded-3xl my-4 ${profile?.color?.textcolor || "text-white"} ${profile?.color?.bgcolor || "bg-gray-400"}`}>
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor || "text-white"} ${color?.bgcolor || "bg-gray-400"}`}>
-            <div className="flex items-center no-underline w-fit rounded">
-                <Image src='/defaultIcon.png' alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
-                <ul>
-                    <li className="flex gap-x-2 items-center">
-                        <p className="text-4xl font-bold">{(await params).id}</p>
-                        <p className="text-2xl whitespace-nowrap font-bold">[野球]</p>
-                        <p>ピッチャー, ライト</p>
-                    </li>
-                    <li>がっくんウォーリアーズ</li>
-                </ul>
+        <div className="border-2 px-2 rounded-3xl my-4 text-white bg-gray-400">
+            <div className="flex items-start no-underline w-fit rounded my-2">
+                <form>
+                    <fieldset className="p-2 border text-center">
+                        <legend className="font-bold">自画像</legend>
+                        <div className="mx-auto mb-4 h-16 w-16 rounded-full border">
+                            {currentImage !== "" &&
+                            <Image src={currentImage} alt="" width={64} height={64} className="m-auto rounded-full"/>
+                            }
+                        </div>
+                        <label htmlFor="self-image" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500">画像を選択</label>
+                        <input id="self-image" type="file" accept="image/*" className="hidden" 
+                            onChange={(e) => {
+                                const file = e.currentTarget.files ? window.URL.createObjectURL(e.currentTarget.files[0]) : currentImage;
+                                setCurrentImage((prevImage) => file || prevImage)
+                            }} />
+                        {/* <div>{errors.image?.message}</div> */}
+                    </fieldset>
+                </form>
+                <div className="relative m-2">
+                    <form>
+                        <fieldset className="mx-2">
+                            <ul className="space-y-2">
+                                <li>
+                                    <label htmlFor="name">名前: 
+                                        <input id="name" type="text" defaultValue={params.id} className="ml-2 border w-48 h-8 rounded text-3xl" />
+                                    </label>
+                                </li>
+                                <li>
+                                    <label htmlFor="teamname">チームネーム: 
+                                        <input id="teamname" type="text" defaultValue="がっくんウォーリアーズ" className="ml-2 border w-48 rounded" />
+                                    </label>
+                                </li>
+                                <li className="flex">
+                                    <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)} 
+                                    className="w-fit text-white rounded">ジャンル: </button>
+                                    <div className="w-64 border rounded mx-2">
+                                        <p className="w-64 overflow-x-auto">{genres.join(',')}</p>
+                                    </div>
+                                </li>
+                            </ul>
+                        </fieldset>
+                    </form>
+                    {openGenreMenu &&
+                        <div className="absolute top-full left-0 text-black">
+                            <MenuNarrow setGenres={setGenres}/>
+                        </div>
+                    }
+                </div>
             </div>
             <div className="border-t-2">
                 <p className="font-bold">プロフィール</p>
@@ -76,7 +129,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
             </div>
         </div>
         <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded">
-            {scripts.map((script, scriptIndex) => (
+            {(profile?.scripts || []).map((script, scriptIndex) => (
                 <div key={scriptIndex}>
                     <p className="border-b-2 font-bold">{script.section}</p>
                     {script.texts.map((text, textIndex) => (
@@ -88,7 +141,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
         <div className="border-2">
             <div className="h-128 overflow-y-auto p-2">
-                {data.results.map((result, recordIndex) => (
+                {(profile?.data?.results || []).map((result, recordIndex) => (
                 <div key={recordIndex} className="overflow-x-auto">
                     <table className="table-auto w-full border-collapse border border-gray-300">
                         <caption className="caption-top text-left font-semibold text-lg mb-2">
@@ -130,7 +183,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 ))}
             </div>
             <ul className="list-disc mx-6">
-                {(data.highlightInfo || []).map((hl, hlIndex) => (
+                {(profile?.data?.highlightInfo || []).map((hl, hlIndex) => (
                         <li key={hlIndex} className={`my-2 ${hl.color}`}>{hl.sentence}</li>
                     ))
                 }
@@ -138,7 +191,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         </div>
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
         <div className="h-128 overflow-y-auto border-2 p-2">
-            {awards.map((award, awardIndex) => (
+            {(profile?.awards || []).map((award, awardIndex) => (
             <div key={awardIndex} className="overflow-x-auto">
                 <table className="table-auto w-full border-collapse border border-gray-300">
                 <caption className="caption-top text-left font-semibold text-lg mb-2">
@@ -171,7 +224,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
             </div>
             ))}
         </div>
-        <Link href={`/playercoach/profileEdit/${(await params).id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-blue-600 hover:bg-blue-500">編集</Link>
+        
         </>
     )
 }
