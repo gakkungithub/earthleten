@@ -47,7 +47,7 @@ export default function AddComment({uid, tid}: {uid: string, tid: string}) {
         }
     }
 
-    const deleteCommentImage = async (imageName: string) => {
+    const deleteCommentImage = (imageName: string) => {
         setImageList(prevCommentImageList => prevCommentImageList.filter(image => image !== imageName))
     }
 

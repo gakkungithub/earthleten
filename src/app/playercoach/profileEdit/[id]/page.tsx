@@ -4,10 +4,14 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import MenuNarrow from '@/components/MenuNarrow';
+
+import { v4 } from 'uuid';
 // import path from 'path';
 
 type Script = {
+    id: string;
     section: string;
     texts: string[];
 }
@@ -56,6 +60,9 @@ export default function PlayerCoachProfileEditPage(){
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
     const params = useParams();
 
+    const bgcolor: string = profile?.color?.bgcolor || "gray-400";
+    const textcolor: string = profile?.color?.textcolor || "white"
+
     useEffect(() => {
         fetch('/jsonfile/sports_kgavvaaxha.json')
         .then((res) => res.json())
@@ -63,12 +70,35 @@ export default function PlayerCoachProfileEditPage(){
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
+
+    const addScript = () => {
+        if(!profile) return;
+
+        const newScript: Script = { id: v4(), section: "", texts: []};
+        setProfile({
+            ...profile,
+            scripts: [...profile.scripts, newScript]
+        });
+    }
+
+    const deleteScript = (id: string) => {
+        if(!profile?.scripts) return;
+
+        const confirmed = window.confirm("本当に削除しますか?");
+
+        if (confirmed) {
+            const newScripts = profile.scripts.filter(script => script.id !== id);
+            setProfile({
+                ...profile,
+                scripts: newScripts
+            });
+        }
+    }
     
-    // <div className={`border-2 px-2 rounded-3xl my-4 ${profile?.color?.textcolor || "text-white"} ${profile?.color?.bgcolor || "bg-gray-400"}`}>
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className="border-2 px-2 rounded-3xl my-4 text-white bg-gray-400">
+        <div className={`border-2 px-2 rounded-3xl my-4 text-${textcolor} bg-${bgcolor}`}>
             <div className="flex items-start no-underline w-fit rounded my-2">
                 <form>
                     <fieldset className="p-2 border text-center">
@@ -78,7 +108,7 @@ export default function PlayerCoachProfileEditPage(){
                             <Image src={currentImage} alt="" width={128} height={128} className="m-auto rounded-full"/>
                             }
                         </div>
-                        <label htmlFor="self-image" className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500">画像を選択</label>
+                        <label htmlFor="self-image" className={`cursor-pointer px-4 py-2 bg-${textcolor} text-${bgcolor}`}>画像を選択</label>
                         <input id="self-image" type="file" accept="image/*" className="hidden" 
                             onChange={(e) => {
                                 const file = e.currentTarget.files ? window.URL.createObjectURL(e.currentTarget.files[0]) : currentImage;
@@ -103,7 +133,7 @@ export default function PlayerCoachProfileEditPage(){
                                 </li>
                                 <li className="flex">
                                     <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)} 
-                                    className={`w-fit rounded ${openGenreMenu ? "bg-white text-black" : "text-white"}`}>ジャンル: </button>
+                                    className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>ジャンル: </button>
                                     <div className="w-60 border rounded mx-2">
                                         <p className="overflow-x-auto">{genres.join(',')}</p>
                                     </div>
@@ -159,15 +189,17 @@ export default function PlayerCoachProfileEditPage(){
                 </ul>
             </form>
         </div>
-        <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded">
-            {(profile?.scripts || []).map((script, scriptIndex) => (
-                <div key={scriptIndex}>
-                    <p className="border-b-2 font-bold">{script.section}</p>
-                    {script.texts.map((text, textIndex) => (
-                        <p key={textIndex}>{text}</p>
-                    ))}
+        <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded text-center">
+            {(profile?.scripts || []).map((script) => (
+                <div key={script.id} className="flex flex-col py-2">
+                    <div className="flex justify-between border-b-2 font-bold">
+                        <input type="text" defaultValue={script.section} />
+                        <button onClick={() => deleteScript(script.id)} className="w-fit bg-gray-600 hover:bg-gray-500 text-white rounded p-2 my-2">削除</button>
+                    </div>
+                    <textarea defaultValue={script.texts.join('\n')} className="h-32"/>
                 </div>
             ))}
+            <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目の追加▼</button>
         </div>
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
         <div className="border-2">
@@ -255,7 +287,7 @@ export default function PlayerCoachProfileEditPage(){
             </div>
             ))}
         </div>
-        
+        <Link href={`/playercoach/profile/${params.id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-orange-600 hover:bg-orange-500">編集終了</Link>
         </>
     )
 }

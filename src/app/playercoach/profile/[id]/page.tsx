@@ -53,7 +53,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor || "text-white"} ${color?.bgcolor || "bg-gray-400"}`}>
+        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor ? `text-${color.textcolor}` : "text-white"} ${color?.bgcolor ? `bg-${color.bgcolor}` : "bg-gray-400"}`}>
             <div className="flex items-center no-underline w-fit rounded">
                 <Image src='/defaultIcon.png' alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
                 <ul>
@@ -171,7 +171,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
             </div>
             ))}
         </div>
-        <Link href={`/playercoach/profileEdit/${(await params).id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-blue-600 hover:bg-blue-500">編集</Link>
+        <Link href={`/playercoach/profileEdit/${(await params).id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-blue-600 hover:bg-blue-500">編集開始</Link>
         </>
     )
 }

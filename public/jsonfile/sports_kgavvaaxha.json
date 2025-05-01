@@ -1,6 +1,7 @@
 {
     "scripts": [
         {
+            "id": "aaabadgdgaaef",
             "section": "概要",
             "texts": [
                 "新人から3年間だけエースレベルの活躍をした伝説のピッチャー。",
@@ -9,6 +10,7 @@
             ]
         },
         {
+            "id": "agaeetagaettt",
             "section": "経歴",
             "texts": [
                 "小学4年生の時に野球を始める",
@@ -21,6 +23,7 @@
             ]
         },
         {
+            "id": "aaeetegagbbba",
             "section": "選手としての特徴", 
             "texts": [
                 "ストレート、フォーク、スイーパーの3球種を織り交ぜ打者を翻弄した。",
@@ -81,7 +84,7 @@
     ],
     "color": 
         {
-            "bgcolor": "bg-blue-600",
-            "textcolor": "text-white"
+            "bgcolor": "blue-600",
+            "textcolor": "white"
         }
 }
