@@ -56,16 +56,10 @@
                 ]
             }
         ],
-        "highlightInfo": [
-            {
-                "color": "text-red-600",
-                "sentence": "各年度の最高記録"
-            },
-            {
-                "color": "text-blue-600",
-                "sentence": "各年度の最低記録"
-            }
-        ]
+        "highlightInfo": {
+            "red-600": "各年度の最高記録",
+            "blue-600": "各年度の最低記録"
+        }
     },
     "awards": [
         {

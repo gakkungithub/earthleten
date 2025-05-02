@@ -21,11 +21,6 @@ type HighlightCell = {
     color: string;
 }
 
-type HighlightInfo = {
-    color: string;
-    sentence: string;
-}
-
 type Result = {
     position: string;
     columns: string[];
@@ -54,10 +49,16 @@ function isHighlightCell(obj: unknown): obj is HighlightCell {
 }
 
 export default function PlayerCoachProfileEditPage(){
-    const [profile, setProfile] = useState<{scripts: Script[], data: {results: Result[], highlightInfo?: HighlightInfo[]}, awards: Award[], color: Color | null} | null>(null);
+    const [profile, setProfile] = useState<{scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} | null>(null);
+    const highlightColors = ["red-600", "blue-600", "gray-600", "green-600", "yellow-600"];
+    const usedHColors = highlightColors.filter(color => profile?.data.highlightInfo[color] !== undefined);
+    const unusedHColors = highlightColors.filter(color => profile?.data.highlightInfo[color] === undefined);
+
     const [currentImage, setCurrentImage] = useState<string>("");
     const [genres, setGenres] = useState<string[]>([]);
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
+    const [openHighlightMenu, setOpenHighlightMenu] = useState<boolean>(false);
+
     const params = useParams();
 
     const bgcolor: string = profile?.color?.bgcolor || "gray-400";
@@ -93,6 +94,13 @@ export default function PlayerCoachProfileEditPage(){
                 scripts: newScripts
             });
         }
+    }
+
+    const addHColor = (colorName: string) => {
+        if(!profile?.data) return;
+
+        profile.data.highlightInfo[colorName] = "";
+        setOpenHighlightMenu(!openHighlightMenu);
     }
     
     return (
@@ -203,18 +211,18 @@ export default function PlayerCoachProfileEditPage(){
         </div>
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
         <div className="border-2">
-            <div className="h-128 overflow-y-auto p-2">
+            <div className="h-128 overflow-y-auto p-2 space-y-2">
                 {(profile?.data?.results || []).map((result, recordIndex) => (
                 <div key={recordIndex} className="overflow-x-auto">
                     <table className="table-auto w-full border-collapse border border-gray-300">
                         <caption className="caption-top text-left font-semibold text-lg mb-2">
-                            {result.position}
+                            <input type="text" defaultValue={result.position} className="border rounded" />
                         </caption>
                         <thead className="bg-gray-200">
                             <tr>
                                 {result.columns.map((col, colIndex) => (
                                     <th key={colIndex} className="border p-2 whitespace-nowrap">
-                                        {col}
+                                        <input type="text" defaultValue={col} className="border rounded" />
                                     </th>
                                 ))}
                             </tr>
@@ -226,14 +234,14 @@ export default function PlayerCoachProfileEditPage(){
                                         if (isHighlightCell(cell)) {
                                             return (
                                                 <td key={cellIndex} className={`border-black border px-4 py-2 whitespace-nowrap ${cell.color}`}>
-                                                {cell.value}
+                                                <input type="text" defaultValue={cell.value} className="border rounded" />
                                                 </td>
                                             )
                                         } 
                                         else {
                                             return (
                                                 <td key={cellIndex} className="border px-4 py-2 whitespace-nowrap">
-                                                { cell !== null ? cell : "-"}
+                                                <input type="text" defaultValue={ cell !== null ? cell : ""} className="border rounded" />
                                                 </td>
                                             )
                                         }
@@ -245,12 +253,37 @@ export default function PlayerCoachProfileEditPage(){
                 </div>
                 ))}
             </div>
-            <ul className="list-disc mx-6">
-                {(profile?.data?.highlightInfo || []).map((hl, hlIndex) => (
-                        <li key={hlIndex} className={`my-2 ${hl.color}`}>{hl.sentence}</li>
-                    ))
+            <ul className="mx-4">
+                {profile?.data &&
+                    <>
+                    {usedHColors.map((color) => (
+                        <li key={color} className={`flex my-2 text-${color} items-center`}> 
+                            <p className={`w-4 h-4 rounded ${
+                                color === "red-600" ? "bg-red-600" :
+                                color === "blue-600" ? "bg-blue-600" :
+                                color === "green-600" ? "bg-green-600" :
+                                color === "yellow-600" ? "bg-yellow-600" :
+                                color === "gray-600" ? "bg-gray-600" : ""
+                            }`}></p>
+                            <input type="text" defaultValue={profile.data.highlightInfo[color]} className="mx-2 border rounded" />
+                        </li>
+                    ))}
+                    </>
                 }
             </ul>
+            <div className="relative m-2">
+                <button type="button" onClick={() => setOpenHighlightMenu(!openHighlightMenu)} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼ハイライトの追加▼</button>
+                {openHighlightMenu &&
+                    <div className="absolute top-full left-0 z-10 bg-white border-2 rounded">
+                        <p>↓追加するハイライトの色を選んでください↓</p>
+                        <div className="flex m-2 w-full space-x-2">
+                            {unusedHColors.map((color) => (
+                                <button key={color} onClick={() => addHColor(color)} className={`w-4 h-4 bg-${color} rounded`}></button>
+                            ))}
+                        </div>
+                    </div>
+                }
+            </div>
         </div>
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
         <div className="h-128 overflow-y-auto border-2 p-2">

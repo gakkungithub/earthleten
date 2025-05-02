@@ -13,11 +13,6 @@ type HighlightCell = {
     color: string;
 }
 
-type HighlightInfo = {
-    color: string;
-    sentence: string;
-}
-
 type Result = {
     position: string;
     columns: string[];
@@ -48,7 +43,8 @@ function isHighlightCell(obj: unknown): obj is HighlightCell {
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
     const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha.json', 'utf-8');
-    const {scripts, data, awards, color}: {scripts: Script[], data: {results: Result[], highlightInfo?: HighlightInfo[]}, awards: Award[], color: Color | null} = JSON.parse(jsonData);
+    const {scripts, data, awards, color}: {scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} 
+        = JSON.parse(jsonData);
 
     return (
         <>
@@ -130,8 +126,8 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 ))}
             </div>
             <ul className="list-disc mx-6">
-                {(data.highlightInfo || []).map((hl, hlIndex) => (
-                        <li key={hlIndex} className={`my-2 ${hl.color}`}>{hl.sentence}</li>
+                {Object.entries(data.highlightInfo).map(([color, sentence]) => (
+                        <li key={color} className={`my-2 text-${color}`}>{sentence}</li>
                     ))
                 }
             </ul>
