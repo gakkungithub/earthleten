@@ -8,15 +8,27 @@ type Script = {
     texts: string[];
 }
 
-type HighlightCell = {
-    value: string | number;
-    color: string;
+type TableCell = {
+    value: string | number | null;
+    id: string;
+    highlightColor?: string;
+}
+
+type TableColCell = {
+    value: string;
+    id: string;
+}
+
+type TableRow = {
+    id: string;
+    cells: TableCell[];
 }
 
 type Result = {
     position: string;
-    columns: string[];
-    rows: (string | number | null | HighlightCell)[][];
+    id: string;
+    columns: TableColCell[];
+    rows: TableRow[];
 };
 
 type Award = {
@@ -28,18 +40,6 @@ type Color = {
     bgcolor: string;
     textcolor: string;
 }
-
-function isHighlightCell(obj: unknown): obj is HighlightCell {
-    return (
-      typeof obj === "object" &&
-      obj !== null &&
-      "value" in obj &&
-      "color" in obj &&
-      (typeof obj.value === "string" || typeof obj.value === "number") &&
-      typeof obj.color === "string"
-    );
-}
-  
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
     const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha.json', 'utf-8');
@@ -84,40 +84,29 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
         <div className="border-2">
             <div className="h-128 overflow-y-auto p-2">
-                {data.results.map((result, recordIndex) => (
-                <div key={recordIndex} className="overflow-x-auto">
+                {data.results.map((result) => (
+                <div key={result.id} className="overflow-x-auto">
                     <table className="table-auto w-full border-collapse border border-gray-300">
                         <caption className="caption-top text-left font-semibold text-lg mb-2">
                             {result.position}
                         </caption>
                         <thead className="bg-gray-200">
                             <tr>
-                                {result.columns.map((col, colIndex) => (
-                                    <th key={colIndex} className="border p-2 whitespace-nowrap">
-                                        {col}
+                                {result.columns.map((tableColCell) => (
+                                    <th key={tableColCell.id} className="border p-2 whitespace-nowrap">
+                                        {tableColCell.value}
                                     </th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {result.rows.map((row, index) => (
-                                <tr key={index} className="text-center">
-                                    {row.map((cell, cellIndex) => {
-                                        if (isHighlightCell(cell)) {
-                                            return (
-                                                <td key={cellIndex} className={`border-black border px-4 py-2 whitespace-nowrap ${cell.color}`}>
-                                                {cell.value}
-                                                </td>
-                                            )
-                                        } 
-                                        else {
-                                            return (
-                                                <td key={cellIndex} className="border px-4 py-2 whitespace-nowrap">
-                                                { cell !== null ? cell : "-"}
-                                                </td>
-                                            )
-                                        }
-                                    })}
+                            {result.rows.map((row) => (
+                                <tr key={row.id} className="text-center">
+                                    {row.cells.map((cell) => (
+                                        <td key={cell.id} className={`border-black border px-4 py-2 whitespace-nowrap ${cell?.highlightColor || ""}`}>
+                                        {cell.value !== null ? cell.value : "-"}
+                                        </td>
+                                    ))}
                                 </tr>
                             ))}
                         </tbody>

@@ -37,23 +37,120 @@
         "results": [
             { 
                 "position": "ピッチャー",
-                "columns": ["年度", "チーム", "試合数", "勝利", "敗北", "防御率"],
+                "id": "aagbaeegagga",
+                "columns": [{"value": "年度", "id": "atagdvagaa"}, {"value": "チーム", "id": "atagdvagcc"}, {"value": "試合数", "id": "atagdvdfa"}, 
+                                {"value": "勝利", "id": "atagdvaaffaa"}, {"value": "敗北", "id": "atadafaeagaa"}, {"value": "防御率", "id": "atagdefdagegaa"}],
                 "rows": [
-                    [2015, "大阪ホワイトタイガース", 25, 15, 5, 2.30],
-                    [2016, "大阪ホワイトタイガース", 23, 12, 4, 2.90],
-                    [2017, "大阪ホワイトタイガース", { "value": 25, "color": "text-red-600" }, { "value": 19, "color": "text-red-600" }, 6, { "value": 1.06, "color": "text-red-600" }],
-                    [2019, "大阪ホワイトタイガース", 2, 0, 2, { "value": 8.26, "color": "text-blue-600" }]
-                ]
+                    {
+                        "id": "agkkkfihtf",
+                        "cells": [
+                            { "id": "id-2015", "value": 2015 },
+                            { "id": "id-osaka1", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-25a", "value": 25 },
+                            { "id": "id-15", "value": 15 },
+                            { "id": "id-5", "value": 5 },
+                            { "id": "id-2.30", "value": 2.30 }
+                        ]
+                    },
+                    {
+                        "id": "ajjjbaufah",
+                        "cells": [
+                            { "id": "id-2016", "value": 2016 },
+                            { "id": "id-osaka2", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-23", "value": 23 },
+                            { "id": "id-12", "value": 12 },
+                            { "id": "id-4", "value": 4 },
+                            { "id": "id-2.90", "value": 2.90 }
+                        ]
+                    },
+                    {
+                        "id": "akkbaiifha",
+                        "cells": [
+                            { "id": "id-2017", "value": 2017 },
+                            { "id": "id-osaka3", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-25b", "value": 25, "highlightColor": "text-red-600" },
+                            { "id": "id-19", "value": 19, "highlightColor": "text-red-600" },
+                            { "id": "id-6", "value": 6 },
+                            { "id": "id-1.06", "value": 1.06, "highlightColor": "text-red-600" }
+                        ]
+                    },
+                    {
+                        "id": "akbaiihfa",
+                        "cells": [
+                            { "id": "id-2019", "value": 2019 },
+                            { "id": "id-osaka4", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-2", "value": 2 },
+                            { "id": "id-0", "value": 0 },
+                            { "id": "id-2b", "value": 2 },
+                            { "id": "id-8.26", "value": 8.26, "highlightColor": "text-blue-600" }
+                        ]
+                    }
+                  ]   
             },
             { 
                 "position": "ライト",
-                "columns": ["年度", "チーム", "試合数", "刺殺", "補殺", "失策", "守備率"],
+                "id": "ageggedddga",
+                "columns": [
+                    { "id": "col-1", "value": "年度" },
+                    { "id": "col-2", "value": "チーム" },
+                    { "id": "col-3", "value": "試合数" },
+                    { "id": "col-4", "value": "刺殺" },
+                    { "id": "col-5", "value": "補殺" },
+                    { "id": "col-6", "value": "失策" },
+                    { "id": "col-7", "value": "守備率" }
+                  ]
+                  ,
                 "rows": [
-                    [2015, "大阪ホワイトタイガース", 54, 75, 7, 1, 0.988],
-                    [2016, "大阪ホワイトタイガース", 8, 15, 5, 0, 1.000],
-                    [2017, "大阪ホワイトタイガース", null, null, null, null, null],
-                    [2019, "大阪ホワイトタイガース", null, null, null, null, null]
-                ]
+                    {
+                        "id": "aehgdidifig",
+                        "cells": [
+                            { "id": "row-1-col-1", "value": 2015 },
+                            { "id": "row-1-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-1-col-3", "value": 54 },
+                            { "id": "row-1-col-4", "value": 75 },
+                            { "id": "row-1-col-5", "value": 7 },
+                            { "id": "row-1-col-6", "value": 1 },
+                            { "id": "row-1-col-7", "value": 0.988 }
+                        ]
+
+                    },
+                    {
+                        "id": "akbkaidfia",
+                        "cells": [
+                            { "id": "row-2-col-1", "value": 2016 },
+                            { "id": "row-2-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-2-col-3", "value": 8 },
+                            { "id": "row-2-col-4", "value": 15 },
+                            { "id": "row-2-col-5", "value": 5 },
+                            { "id": "row-2-col-6", "value": 0 },
+                            { "id": "row-2-col-7", "value": 1.000 }
+                        ]
+                    },
+                    {
+                        "id": "aabavgadda",
+                        "cells": [
+                            { "id": "row-3-col-1", "value": 2017 },
+                            { "id": "row-3-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-3-col-3", "value": null },
+                            { "id": "row-3-col-4", "value": null },
+                            { "id": "row-3-col-5", "value": null },
+                            { "id": "row-3-col-6", "value": null },
+                            { "id": "row-3-col-7", "value": null }
+                        ]
+                    },
+                    {
+                        "id": "abbhhdiahf",
+                        "cells": [
+                            { "id": "row-4-col-1", "value": 2019 },
+                            { "id": "row-4-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-4-col-3", "value": null },
+                            { "id": "row-4-col-4", "value": null },
+                            { "id": "row-4-col-5", "value": null },
+                            { "id": "row-4-col-6", "value": null },
+                            { "id": "row-4-col-7", "value": null }
+                        ]
+                    }
+                  ]                  
             }
         ],
         "highlightInfo": {

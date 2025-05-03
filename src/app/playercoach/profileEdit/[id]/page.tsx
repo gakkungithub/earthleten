@@ -16,15 +16,27 @@ type Script = {
     texts: string[];
 }
 
-type HighlightCell = {
-    value: string | number;
-    color: string;
+type TableCell = {
+    value: string | number | null;
+    id: string;
+    highlightColor?: string;
+}
+
+type TableColCell = {
+    value: string;
+    id: string;
+}
+
+type TableRow = {
+    id: string;
+    cells: TableCell[];
 }
 
 type Result = {
     position: string;
-    columns: string[];
-    rows: (string | number | null | HighlightCell)[][];
+    id: string;
+    columns: TableColCell[];
+    rows: TableRow[];
 };
 
 type Award = {
@@ -37,15 +49,30 @@ type Color = {
     textcolor: string;
 }
 
-function isHighlightCell(obj: unknown): obj is HighlightCell {
+function SetHighlightColor({usedHColors, currentColor}: { usedHColors: string[]; currentColor: string;}) {
+    
     return (
-      typeof obj === "object" &&
-      obj !== null &&
-      "value" in obj &&
-      "color" in obj &&
-      (typeof obj.value === "string" || typeof obj.value === "number") &&
-      typeof obj.color === "string"
-    );
+        <div className="absolute top-full left-0 z-10 flex w-full px-4 space-x-2">
+        {usedHColors.map((usedHColor) => (
+            <p key={usedHColor} className={`w-4 h-4 bg-${usedHColor} ${currentColor.includes(usedHColor) ? "rounded" : "rounded-full"}`}></p>
+        ))}
+        </div>
+    )
+}
+
+function ResultTableCell({tableCell, usedHColors } : {tableCell: TableCell; usedHColors: string[]; }){
+    const [openHighlightColorMenu, setOpenHighlightColorMenu] = useState<boolean>(false);
+    
+    return (
+        <td className={`relative border-black border px-4 whitespace-nowrap ${tableCell?.highlightColor || ""}`}>
+            <input type="text" onFocus={() => setOpenHighlightColorMenu(true)} 
+            onBlur={() => setOpenHighlightColorMenu(false)}
+            defaultValue={tableCell.value !== null ? tableCell.value : ""} className="border rounded" />
+            {openHighlightColorMenu &&
+                <SetHighlightColor usedHColors={usedHColors} currentColor={tableCell.highlightColor || ""} />
+            }
+        </td>
+    )
 }
 
 export default function PlayerCoachProfileEditPage(){
@@ -211,41 +238,62 @@ export default function PlayerCoachProfileEditPage(){
         </div>
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
         <div className="border-2">
-            <div className="h-128 overflow-y-auto p-2 space-y-2">
+            <div className="h-128 border-2 m-2 overflow-y-auto p-2 space-y-2">
                 {(profile?.data?.results || []).map((result, recordIndex) => (
                 <div key={recordIndex} className="overflow-x-auto">
-                    <table className="table-auto w-full border-collapse border border-gray-300">
-                        <caption className="caption-top text-left font-semibold text-lg mb-2">
+                    <table className="table-auto w-full border-gray-300">
+                        <caption className="caption-top text-left font-semibold text-lg mb-3">
                             <input type="text" defaultValue={result.position} className="border rounded" />
                         </caption>
-                        <thead className="bg-gray-200">
+                        <thead>
                             <tr>
-                                {result.columns.map((col, colIndex) => (
-                                    <th key={colIndex} className="border p-2 whitespace-nowrap">
-                                        <input type="text" defaultValue={col} className="border rounded" />
+                                <th></th>
+                                {result.columns.map((tableColCell, colIndex) => (
+                                    <th key={tableColCell.id} className="relative border bg-gray-200">
+                                        <button onClick={() => {
+                                            if (profile?.data.results) {
+                                                const result = profile.data.results[recordIndex];
+                                                const newCols = result.columns.filter((_, index) => index !== colIndex);
+                                                const newRows = result.rows.map(row => ({
+                                                    id: row.id,
+                                                    cells: row.cells.filter((_, index) => index !== colIndex)
+                                                }));
+                                                
+
+                                                const newProfile = {
+                                                    ...profile,
+                                                    data: {
+                                                        ...profile.data,
+                                                        results: profile.data.results.map((res, index) => 
+                                                            index === recordIndex
+                                                                ? {
+                                                                    ...res,
+                                                                    columns: newCols,
+                                                                    rows: newRows
+                                                                }: res
+                                                            )
+                                                    }
+                                                };
+
+                                                setProfile(newProfile);
+                                            }
+                                        }} className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">
+                                            &times;
+                                        </button>
+                                        <input type="text" defaultValue={tableColCell.value} className="border rounded my-2" />
                                     </th>
                                 ))}
                             </tr>
                         </thead>
                         <tbody>
-                            {result.rows.map((row, index) => (
-                                <tr key={index} className="text-center">
-                                    {row.map((cell, cellIndex) => {
-                                        if (isHighlightCell(cell)) {
-                                            return (
-                                                <td key={cellIndex} className={`border-black border px-4 py-2 whitespace-nowrap ${cell.color}`}>
-                                                <input type="text" defaultValue={cell.value} className="border rounded" />
-                                                </td>
-                                            )
-                                        } 
-                                        else {
-                                            return (
-                                                <td key={cellIndex} className="border px-4 py-2 whitespace-nowrap">
-                                                <input type="text" defaultValue={ cell !== null ? cell : ""} className="border rounded" />
-                                                </td>
-                                            )
-                                        }
-                                    })}
+                            {result.rows.map((tableRow) => (
+                                <tr key={tableRow.id} className="text-center">
+                                    <td className="relative pl-2">
+                                        <button className="absolute left-0 top-1/2 -translate-y-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">&times;</button>
+                                    </td>
+                                    {tableRow.cells.map((cell) => (
+                                        <ResultTableCell key={cell.id} tableCell={cell} usedHColors={usedHColors}/>
+                                    ))}
                                 </tr>
                             ))}
                         </tbody>
