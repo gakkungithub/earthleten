@@ -89,15 +89,28 @@ function ResultTableCell({tableCell, usedHColors } : {tableCell: TableCell; used
 
 function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Result, resultIndex: number, usedHColors: string[], setProfile: Dispatch<SetStateAction<Profile | null>>}){
     const [openAddLineMenu, setOpenAddLineMenu] = useState<boolean>(false);
+    const [rowOrColumn, setRowOrColumn] = useState<string>('none');
+    const [rocNum, setRocNum] = useState<number>(1);
+
+    const max = rowOrColumn === 'row' ? result.rows.length : result.columns.length;
+
+    useEffect(() => {
+        if (rocNum > max) {
+            setRocNum(max);
+        }
+        else if (rocNum < 0) {
+            setRocNum(0);
+        }
+    }, [rocNum, max]);
 
     return (
     <div className="relative overflow-x-auto">
         <table className="table-auto w-full border-gray-300 my-2">
-            <caption className="relative caption-top font-semibold text-left text-lg mb-4">
+            <caption className="relative caption-top font-semibold text-left text-lg mb-4 w-fit">
                 <input type="text" defaultValue={result.position} className="border rounded" />
-                <div className="absolute -top-2 left-1/6 z-12">
+                <div className="absolute flex -top-2 left-full w-fit z-12">
                     <button onClick={() => {setOpenAddLineMenu(!openAddLineMenu)}} 
-                    className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2 mx-2">
+                    className="w-fit bg-blue-600 hover:bg-blue-500 text-white whitespace-nowrap rounded p-2 mx-2">
                         行・列の追加
                     </button>
                     <button onClick={() => {
@@ -113,7 +126,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                             }
                         })
                     }}
-                    className="w-fit bg-gray-600 hover:bg-gray-500 text-white rounded p-2 mx-2">
+                    className="w-fit bg-gray-600 hover:bg-gray-500 text-white whitespace-nowrap rounded p-2 mx-2">
                         表を削除
                     </button>
                 </div>
@@ -157,7 +170,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
             </thead>
             <tbody>
                 {result.rows.map((tableRow, rowIndex) => (
-                    <tr key={tableRow.id} className="text-center">
+                    <tr key={tableRow.id} className={rowOrColumn === 'row' && rocNum === rowIndex ? "border-t-3 border-fuchsia-600 mx-2": ""}>
                         <td className="relative pl-2">
                             <button onClick={() => {
                                 setProfile((prevProfile) => {
@@ -190,15 +203,19 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
         </table>
         {openAddLineMenu &&
         <div className="absolute top-0 left-0 flex justify-center items-center h-full w-full z-11">
-            <form className="flex flex-col gap-y-2 bg-white rounded w-fit border p-2">
-                <label>
-                    行: 
-                    <input type="text" className="w-24 border rounded" />
-                </label>
-                <label>
-                    列: 
-                    <input type="text" className="w-24 border rounded" />
-                </label>
+            <form className="flex items-center bg-white rounded w-fit border p-2">
+                <select name="rowOrColumn" value={rowOrColumn} onChange={(e) => {setRowOrColumn(e.target.value)}} className="mr-2">
+                    <option value="none"></option>
+                    <option value="row">行</option>
+                    <option value="column">列</option>
+                </select>
+                {rowOrColumn !== 'none' ?
+                <>
+                    <input type="number" step="1" value={rocNum} onChange={(e) => {setRocNum(Number(e.target.value))}} min={0} max={max} className="w-24 border rounded" />
+                    <p>に追加</p>
+                </> :
+                <p>行か列かを選んでください</p>
+                }
                 {/* if (profile?.data.results) {
                 //     const newResults = profile.data.results.filter((_, index) => index !== recordIndex);
                     
