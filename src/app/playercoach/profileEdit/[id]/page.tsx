@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -39,6 +39,18 @@ type Result = {
     rows: TableRow[];
 };
 
+type Data = {
+    results: Result[];
+    highlightInfo: Partial<Record<string, string>>;
+}
+
+type Profile = {
+    scripts: Script[];
+    data: Data;
+    awards: Award[];
+    color: Color | null;
+}
+
 type Award = {
     section: string;
     titles: {name: string; years: number[]}[];
@@ -75,16 +87,196 @@ function ResultTableCell({tableCell, usedHColors } : {tableCell: TableCell; used
     )
 }
 
-export default function PlayerCoachProfileEditPage(){
-    const [profile, setProfile] = useState<{scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} | null>(null);
+function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Result, resultIndex: number, usedHColors: string[], setProfile: Dispatch<SetStateAction<Profile | null>>}){
+    const [openAddLineMenu, setOpenAddLineMenu] = useState<boolean>(false);
+
+    return (
+    <div className="relative overflow-x-auto">
+        <table className="table-auto w-full border-gray-300 my-2">
+            <caption className="relative caption-top font-semibold text-left text-lg mb-4">
+                <input type="text" defaultValue={result.position} className="border rounded" />
+                <div className="absolute -top-2 left-1/6 z-12">
+                    <button onClick={() => {setOpenAddLineMenu(!openAddLineMenu)}} 
+                    className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2 mx-2">
+                        行・列の追加
+                    </button>
+                    <button onClick={() => {
+                        setProfile((prevProfile) => {
+                            if (!prevProfile) return prevProfile;
+
+                            return {
+                                ...prevProfile,
+                                data: {
+                                    ...prevProfile.data,
+                                    results: prevProfile.data.results.filter((_, index) => index !== resultIndex)
+                                }
+                            }
+                        })
+                    }}
+                    className="w-fit bg-gray-600 hover:bg-gray-500 text-white rounded p-2 mx-2">
+                        表を削除
+                    </button>
+                </div>
+            </caption>
+            <thead>
+                <tr>
+                    <th></th>
+                    {result.columns.map((tableColCell, colIndex) => (
+                        <th key={tableColCell.id} className="relative border bg-gray-200">
+                            <button onClick={() => {
+                                setProfile((prevProfile) => {
+                                    const newCols = result.columns.filter((_, index) => index !== colIndex);
+                                    const newRows = result.rows.map(row => ({
+                                        id: row.id,
+                                        cells: row.cells.filter((_, index) => index !== colIndex)
+                                    }));
+                                    if (!prevProfile) return prevProfile;
+
+                                    return {
+                                        ...prevProfile,
+                                        data: {
+                                            ...prevProfile.data,
+                                            results: prevProfile.data.results.map((res, index) => 
+                                                index === resultIndex
+                                                    ? {
+                                                        ...res,
+                                                        columns: newCols,
+                                                        rows: newRows
+                                                    }: res
+                                            )
+                                        }
+                                    }
+                                })
+                            }} className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">
+                                &times;
+                            </button>
+                            <input type="text" defaultValue={tableColCell.value} className="border rounded my-2" />
+                        </th>
+                    ))}
+                </tr>
+            </thead>
+            <tbody>
+                {result.rows.map((tableRow, rowIndex) => (
+                    <tr key={tableRow.id} className="text-center">
+                        <td className="relative pl-2">
+                            <button onClick={() => {
+                                setProfile((prevProfile) => {
+                                    const newRows = result.rows.filter((_, index) => index !== rowIndex);
+                                    if (!prevProfile) return prevProfile;
+
+                                    return {
+                                        ...prevProfile,
+                                        data: {
+                                            ...prevProfile.data,
+                                            results: prevProfile.data.results.map((res, index) => 
+                                                index === resultIndex
+                                                    ? {
+                                                        ...res,
+                                                        rows: newRows
+                                                    }: res
+                                            )
+                                        }
+                                    }
+                                })
+                            }}
+                            className="absolute left-0 top-1/2 -translate-y-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">&times;</button>
+                        </td>
+                        {tableRow.cells.map((cell) => (
+                            <ResultTableCell key={cell.id} tableCell={cell} usedHColors={usedHColors}/>
+                        ))}
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+        {openAddLineMenu &&
+        <div className="absolute top-0 left-0 flex justify-center items-center h-full w-full z-11">
+            <form className="flex flex-col gap-y-2 bg-white rounded w-fit border p-2">
+                <label>
+                    行: 
+                    <input type="text" className="w-24 border rounded" />
+                </label>
+                <label>
+                    列: 
+                    <input type="text" className="w-24 border rounded" />
+                </label>
+                {/* if (profile?.data.results) {
+                //     const newResults = profile.data.results.filter((_, index) => index !== recordIndex);
+                    
+                //     const newProfile = {
+                //         ...profile,
+                //         data: {
+                //             ...profile.data,
+                //             results: newResults
+                //         }
+                //     };
+
+                //     setProfile(newProfile);
+                // } */}
+            </form>
+        </div>
+        }
+    </div>
+    );
+}
+
+function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetStateAction<Profile | null>>}){
     const highlightColors = ["red-600", "blue-600", "gray-600", "green-600", "yellow-600"];
-    const usedHColors = highlightColors.filter(color => profile?.data.highlightInfo[color] !== undefined);
-    const unusedHColors = highlightColors.filter(color => profile?.data.highlightInfo[color] === undefined);
+    const usedHColors = highlightColors.filter(color => data.highlightInfo[color] !== undefined);
+    const unusedHColors = highlightColors.filter(color => data.highlightInfo[color] === undefined);
+    const [openHighlightMenu, setOpenHighlightMenu] = useState<boolean>(false);
+
+    const addHColor = (colorName: string) => {
+        data.highlightInfo[colorName] = "";
+        setOpenHighlightMenu(!openHighlightMenu);
+    }
+
+    return (
+        <>
+        <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
+        <div className="border-2">
+            <div className="h-128 border-2 m-2 overflow-y-auto p-2 space-y-2">
+                {data.results.map((result, resultIndex) => (
+                    <ResultTable key={result.id} result={result} resultIndex={resultIndex} usedHColors={usedHColors} setProfile={setProfile} />
+                ))}
+            </div>
+            <ul className="mx-4">
+                {usedHColors.map((color) => (
+                    <li key={color} className={`flex my-2 text-${color} items-center`}> 
+                        <p className={`w-4 h-4 rounded ${
+                            color === "red-600" ? "bg-red-600" :
+                            color === "blue-600" ? "bg-blue-600" :
+                            color === "green-600" ? "bg-green-600" :
+                            color === "yellow-600" ? "bg-yellow-600" :
+                            color === "gray-600" ? "bg-gray-600" : ""
+                        }`}></p>
+                        <input type="text" defaultValue={data.highlightInfo[color]} className="mx-2 border rounded" />
+                    </li>
+                ))}
+            </ul>
+            <div className="relative m-2">
+                <button type="button" onClick={() => setOpenHighlightMenu(!openHighlightMenu)} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼ハイライトの追加▼</button>
+                {openHighlightMenu &&
+                    <div className="absolute top-full left-0 z-10 bg-white border-2 rounded">
+                        <p>↓追加するハイライトの色を選んでください↓</p>
+                        <div className="flex m-2 w-full space-x-2">
+                            {unusedHColors.map((color) => (
+                                <button key={color} onClick={() => addHColor(color)} className={`w-4 h-4 bg-${color} rounded`}></button>
+                            ))}
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+        </>
+    );
+}
+
+export default function PlayerCoachProfileEditPage(){
+    const [profile, setProfile] = useState<Profile | null>(null);
 
     const [currentImage, setCurrentImage] = useState<string>("");
     const [genres, setGenres] = useState<string[]>([]);
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
-    const [openHighlightMenu, setOpenHighlightMenu] = useState<boolean>(false);
 
     const params = useParams();
 
@@ -121,13 +313,6 @@ export default function PlayerCoachProfileEditPage(){
                 scripts: newScripts
             });
         }
-    }
-
-    const addHColor = (colorName: string) => {
-        if(!profile?.data) return;
-
-        profile.data.highlightInfo[colorName] = "";
-        setOpenHighlightMenu(!openHighlightMenu);
     }
     
     return (
@@ -236,103 +421,9 @@ export default function PlayerCoachProfileEditPage(){
             ))}
             <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目の追加▼</button>
         </div>
-        <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
-        <div className="border-2">
-            <div className="h-128 border-2 m-2 overflow-y-auto p-2 space-y-2">
-                {(profile?.data?.results || []).map((result, recordIndex) => (
-                <div key={recordIndex} className="overflow-x-auto">
-                    <table className="table-auto w-full border-gray-300">
-                        <caption className="caption-top text-left font-semibold text-lg mb-3">
-                            <input type="text" defaultValue={result.position} className="border rounded" />
-                        </caption>
-                        <thead>
-                            <tr>
-                                <th></th>
-                                {result.columns.map((tableColCell, colIndex) => (
-                                    <th key={tableColCell.id} className="relative border bg-gray-200">
-                                        <button onClick={() => {
-                                            if (profile?.data.results) {
-                                                const result = profile.data.results[recordIndex];
-                                                const newCols = result.columns.filter((_, index) => index !== colIndex);
-                                                const newRows = result.rows.map(row => ({
-                                                    id: row.id,
-                                                    cells: row.cells.filter((_, index) => index !== colIndex)
-                                                }));
-                                                
-
-                                                const newProfile = {
-                                                    ...profile,
-                                                    data: {
-                                                        ...profile.data,
-                                                        results: profile.data.results.map((res, index) => 
-                                                            index === recordIndex
-                                                                ? {
-                                                                    ...res,
-                                                                    columns: newCols,
-                                                                    rows: newRows
-                                                                }: res
-                                                            )
-                                                    }
-                                                };
-
-                                                setProfile(newProfile);
-                                            }
-                                        }} className="absolute -top-2.5 left-1/2 -translate-x-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">
-                                            &times;
-                                        </button>
-                                        <input type="text" defaultValue={tableColCell.value} className="border rounded my-2" />
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {result.rows.map((tableRow) => (
-                                <tr key={tableRow.id} className="text-center">
-                                    <td className="relative pl-2">
-                                        <button className="absolute left-0 top-1/2 -translate-y-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">&times;</button>
-                                    </td>
-                                    {tableRow.cells.map((cell) => (
-                                        <ResultTableCell key={cell.id} tableCell={cell} usedHColors={usedHColors}/>
-                                    ))}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                ))}
-            </div>
-            <ul className="mx-4">
-                {profile?.data &&
-                    <>
-                    {usedHColors.map((color) => (
-                        <li key={color} className={`flex my-2 text-${color} items-center`}> 
-                            <p className={`w-4 h-4 rounded ${
-                                color === "red-600" ? "bg-red-600" :
-                                color === "blue-600" ? "bg-blue-600" :
-                                color === "green-600" ? "bg-green-600" :
-                                color === "yellow-600" ? "bg-yellow-600" :
-                                color === "gray-600" ? "bg-gray-600" : ""
-                            }`}></p>
-                            <input type="text" defaultValue={profile.data.highlightInfo[color]} className="mx-2 border rounded" />
-                        </li>
-                    ))}
-                    </>
-                }
-            </ul>
-            <div className="relative m-2">
-                <button type="button" onClick={() => setOpenHighlightMenu(!openHighlightMenu)} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼ハイライトの追加▼</button>
-                {openHighlightMenu &&
-                    <div className="absolute top-full left-0 z-10 bg-white border-2 rounded">
-                        <p>↓追加するハイライトの色を選んでください↓</p>
-                        <div className="flex m-2 w-full space-x-2">
-                            {unusedHColors.map((color) => (
-                                <button key={color} onClick={() => addHColor(color)} className={`w-4 h-4 bg-${color} rounded`}></button>
-                            ))}
-                        </div>
-                    </div>
-                }
-            </div>
-        </div>
+        {profile?.data &&
+            <ResultTables data={profile.data} setProfile={setProfile} />
+        }
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
         <div className="h-128 overflow-y-auto border-2 p-2">
             {(profile?.awards || []).map((award, awardIndex) => (
