@@ -32,8 +32,9 @@ type Result = {
 };
 
 type Award = {
+    id: string;
     section: string;
-    titles: {name: string; years: number[]}[];
+    titles: {id: string; name: string; years: number[]}[];
 }
 
 type Color = {
@@ -42,7 +43,7 @@ type Color = {
 }
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha.json', 'utf-8');
+    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_1.json', 'utf-8');
     const {scripts, data, awards, color}: {scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} 
         = JSON.parse(jsonData);
 
@@ -124,7 +125,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
         <div className="h-128 overflow-y-auto border-2 p-2">
             {awards.map((award, awardIndex) => (
-            <div key={awardIndex} className="overflow-x-auto">
+            <div key={award.id} className="overflow-x-auto">
                 <table className="table-auto w-full border-collapse border border-gray-300">
                 <caption className="caption-top text-left font-semibold text-lg mb-2">
                     {award.section}
@@ -141,7 +142,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 </thead>
                 <tbody>
                     {award.titles.map((title, titleIndex) => (
-                        <tr key={titleIndex} className="text-center">
+                        <tr key={title.id} className="text-center">
                             <td className="border px-4 py-2 whitespace-nowrap">
                                 {title.name}
                             </td>

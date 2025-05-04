@@ -54,9 +54,16 @@ type Profile = {
     color: Color | null;
 }
 
+type Title = {
+    id: string; 
+    name: string; 
+    years: number[];
+}
+
 type Award = {
+    id: string;
     section: string;
-    titles: {name: string; years: number[]}[];
+    titles: Title[];
 }
 
 type Color = {
@@ -251,7 +258,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                 </select>
                 {rowOrColumn !== 'none' ?
                 <>
-                    <input type="number" step="1" value={rocNum} onChange={(e) => {setRocNum(Number(e.target.value))}} min={0} max={max} className="w-24 border rounded mx-2" />に
+                    <input type="number" step={1} value={rocNum} onChange={(e) => {setRocNum(Number(e.target.value))}} min={0} max={max} className="w-24 border rounded mx-2" />に
                     <button className="w-fit text-white whitespace-nowrap rounded p-2 mx-2 bg-blue-600 hover:bg-blue-500"
                     onClick={() => {
                         if (rowOrColumn === 'row') {
@@ -412,6 +419,103 @@ function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetSt
     );
 }
 
+function TitleTable({title, titleLocation, crntYear, setProfile}:{title: Title, titleLocation: [number, number], crntYear: string, setProfile: Dispatch<SetStateAction<Profile | null>>}){
+    const [year, setYear] = useState<string>(crntYear);
+
+    const [awardIndex, titleIndex] = titleLocation;
+    useEffect(() => {
+        if (Number(year) > Number(crntYear)) {
+            setYear(crntYear);
+        }
+    }, [year, crntYear]);
+    
+    return (
+        <tr key={title.id} className="text-center">
+        <td className="border whitespace-nowrap">
+            <input type="text" defaultValue={title.name} className="border rounded" />
+        </td>
+        <td className="border whitespace-nowrap text-left">
+            <p className="p-2 border-b-2">{title.years.join(',')}</p>
+            <input type="number" step={1} max={crntYear} value={year} onChange={(e) => {setYear(e.target.value)}} className="m-2 border rounded w-12" />
+            <button type="button" className="w-fit text-white whitespace-nowrap rounded p-2 my-2 bg-blue-600 hover:bg-blue-500"
+            onClick={() => {
+                setProfile((prevProfile) => {
+                    const newYear = Number(year);
+
+                    if (!prevProfile || title.years.includes(newYear)) return prevProfile;
+                    
+                    const insertIndex = title.years.findIndex(y => y > newYear);
+
+                    return {
+                        ...prevProfile, 
+                        awards: [
+                            ...prevProfile.awards.slice(0, awardIndex),
+                            {...prevProfile.awards[awardIndex], 
+                                titles: [
+                                    ...prevProfile.awards[awardIndex].titles.slice(0, titleIndex),
+                                    {
+                                        ...title,
+                                        years: 
+                                            insertIndex === -1
+                                            ? [...title.years, newYear]
+                                            : [
+                                                ...title.years.slice(0, insertIndex),
+                                                newYear,
+                                                ...title.years.slice(insertIndex)
+                                            ]
+                                    },
+                                    ...prevProfile.awards[awardIndex].titles.slice(titleIndex+1)
+                                ] 
+                            },
+                            ...prevProfile.awards.slice(awardIndex+1)
+                        ]
+                    }
+
+                })
+            }}>
+                追加
+            </button>
+        </td>               
+        </tr>
+    );
+}
+
+function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<SetStateAction<Profile | null>>}){
+    const crntYear = String((new Date()).getFullYear());
+
+    return (
+        <>
+        <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
+        <div className="h-128 overflow-y-auto border-2 p-2">
+            {awards.map((award, awardIndex) => (
+            <div key={award.id} className="overflow-x-auto">
+                <table className="table-auto w-full border-collapse border border-gray-300">
+                <caption className="caption-top text-left font-semibold text-lg mb-2">
+                <input type="text" defaultValue={award.section} className="border rounded" />
+                </caption>
+                <thead className="bg-gray-200">
+                    <tr>
+                        <th className="border p-2 whitespace-nowrap">
+                            タイトル名 
+                        </th>
+                        <th className="border p-2 whitespace-nowrap">
+                            年度
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {award.titles.map((title, titleIndex) => (
+                        <TitleTable key={title.id} title={title} titleLocation={[awardIndex, titleIndex]} crntYear={crntYear} setProfile={setProfile} />
+                    ))}
+                </tbody>
+                </table>
+            </div>
+            ))}
+        </div>
+        </>
+    );
+}
+
 export default function PlayerCoachProfileEditPage(){
     const [profile, setProfile] = useState<Profile | null>(null);
 
@@ -425,7 +529,7 @@ export default function PlayerCoachProfileEditPage(){
     const textcolor: string = profile?.color?.textcolor || "white"
 
     useEffect(() => {
-        fetch('/jsonfile/sports_kgavvaaxha.json')
+        fetch('/jsonfile/sports_kgavvaaxha_1.json')
         .then((res) => res.json())
         .then((json) => setProfile(json))
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
@@ -565,41 +669,9 @@ export default function PlayerCoachProfileEditPage(){
         {profile?.data &&
             <ResultTables data={profile.data} setProfile={setProfile} />
         }
-        <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
-        <div className="h-128 overflow-y-auto border-2 p-2">
-            {(profile?.awards || []).map((award, awardIndex) => (
-            <div key={awardIndex} className="overflow-x-auto">
-                <table className="table-auto w-full border-collapse border border-gray-300">
-                <caption className="caption-top text-left font-semibold text-lg mb-2">
-                    {award.section}
-                </caption>
-                <thead className="bg-gray-200">
-                    <tr>
-                        <th className="border p-2 whitespace-nowrap">
-                            タイトル名 
-                        </th>
-                        <th className="border p-2 whitespace-nowrap">
-                            年度
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {award.titles.map((title, titleIndex) => (
-                        <tr key={titleIndex} className="text-center">
-                            <td className="border px-4 py-2 whitespace-nowrap">
-                                {title.name}
-                            </td>
-                            <td className="border px-4 py-2 whitespace-nowrap">
-                                {title.years.length != 1 && `${title.years.length}回 `}
-                                ({title.years.join(',')})
-                            </td>               
-                        </tr>
-                    ))}
-                </tbody>
-                </table>
-            </div>
-            ))}
-        </div>
+        {profile?.awards &&
+            <AwardTables awards={profile.awards} setProfile={setProfile} />
+        }
         <Link href={`/playercoach/profile/${params.id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-orange-600 hover:bg-orange-500">編集終了</Link>
         </>
     )

@@ -1,0 +1,184 @@
+{
+    "scripts": [
+        {
+            "id": "aaabadgdgaaef",
+            "section": "概要",
+            "texts": [
+                "新人から3年間だけエースレベルの活躍をした伝説のピッチャー。",
+                "全ての年で防御率は3を下回り、3年目は19勝を記録し、沢村賞のみならずMVPも取得した。",
+                "しかし、4年目以降は怪我により再びトップレベルに戻ることなく引退した。"
+            ]
+        },
+        {
+            "id": "agaeetagaettt",
+            "section": "経歴",
+            "texts": [
+                "小学4年生の時に野球を始める",
+                "中学生の時に球速140km/hを記録するほどの剛腕となり、中学生の全国大会で2連覇した。",
+                "しかし、高校では2年の春に甲午園に出場して2回戦に進出した以外は目立った成績を残せなかった。",
+                "高校卒業後はNPBドラフト3巡目で大阪ホワイトタイガースに指名され入団した。",
+                "プロ1年目、平均158km/hのストレートと落差70cmのフォーク、ベース2つ分曲がるスイーパーを武器に新人記録タイの15勝を挙げ、新人賞と沢村賞を受賞した。",
+                "プロ2年目も12勝と好成績。プロ3年目は防御率1.06と当時の高卒3年目歴代最多勝を記録し、投手3冠達成、沢村賞とMVPをダブル受賞した。",
+                "しかし、4年目以降は背中の怪我により、5年目の2登板を最後に引退した。"
+            ]
+        },
+        {
+            "id": "aaeetegagbbba",
+            "section": "選手としての特徴", 
+            "texts": [
+                "ストレート、フォーク、スイーパーの3球種を織り交ぜ打者を翻弄した。",
+                "ストレートは平均158km、最速で163kmを記録した。",
+                "フォークボールは最大70cmの落差を記録し、ワンバウンドして空振りを奪うことも多々あった。",
+                "スイーパーは一度右に膨らんでから打者からベース2つ分曲がるので、上2つの球種の効果を更に高めた。"
+            ]
+        }
+    ],
+    "data": {
+        "results": [
+            { 
+                "position": "ピッチャー",
+                "id": "aagbaeegagga",
+                "columns": [{"value": "年度", "id": "atagdvagaa"}, {"value": "チーム", "id": "atagdvagcc"}, {"value": "試合数", "id": "atagdvdfa"}, 
+                                {"value": "勝利", "id": "atagdvaaffaa"}, {"value": "敗北", "id": "atadafaeagaa"}, {"value": "防御率", "id": "atagdefdagegaa"}],
+                "rows": [
+                    {
+                        "id": "agkkkfihtf",
+                        "cells": [
+                            { "id": "id-2015", "value": 2015 },
+                            { "id": "id-osaka1", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-25a", "value": 25 },
+                            { "id": "id-15", "value": 15 },
+                            { "id": "id-5", "value": 5 },
+                            { "id": "id-2.30", "value": 2.30 }
+                        ]
+                    },
+                    {
+                        "id": "ajjjbaufah",
+                        "cells": [
+                            { "id": "id-2016", "value": 2016 },
+                            { "id": "id-osaka2", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-23", "value": 23 },
+                            { "id": "id-12", "value": 12 },
+                            { "id": "id-4", "value": 4 },
+                            { "id": "id-2.90", "value": 2.90 }
+                        ]
+                    },
+                    {
+                        "id": "akkbaiifha",
+                        "cells": [
+                            { "id": "id-2017", "value": 2017 },
+                            { "id": "id-osaka3", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-25b", "value": 25, "highlightColor": "text-red-600" },
+                            { "id": "id-19", "value": 19, "highlightColor": "text-red-600" },
+                            { "id": "id-6", "value": 6 },
+                            { "id": "id-1.06", "value": 1.06, "highlightColor": "text-red-600" }
+                        ]
+                    },
+                    {
+                        "id": "akbaiihfa",
+                        "cells": [
+                            { "id": "id-2019", "value": 2019 },
+                            { "id": "id-osaka4", "value": "大阪ホワイトタイガース" },
+                            { "id": "id-2", "value": 2 },
+                            { "id": "id-0", "value": 0 },
+                            { "id": "id-2b", "value": 2 },
+                            { "id": "id-8.26", "value": 8.26, "highlightColor": "text-blue-600" }
+                        ]
+                    }
+                  ]   
+            },
+            { 
+                "position": "ライト",
+                "id": "ageggedddga",
+                "columns": [
+                    { "id": "col-1", "value": "年度" },
+                    { "id": "col-2", "value": "チーム" },
+                    { "id": "col-3", "value": "試合数" },
+                    { "id": "col-4", "value": "刺殺" },
+                    { "id": "col-5", "value": "補殺" },
+                    { "id": "col-6", "value": "失策" },
+                    { "id": "col-7", "value": "守備率" }
+                  ]
+                  ,
+                "rows": [
+                    {
+                        "id": "aehgdidifig",
+                        "cells": [
+                            { "id": "row-1-col-1", "value": 2015 },
+                            { "id": "row-1-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-1-col-3", "value": 54 },
+                            { "id": "row-1-col-4", "value": 75 },
+                            { "id": "row-1-col-5", "value": 7 },
+                            { "id": "row-1-col-6", "value": 1 },
+                            { "id": "row-1-col-7", "value": 0.988 }
+                        ]
+
+                    },
+                    {
+                        "id": "akbkaidfia",
+                        "cells": [
+                            { "id": "row-2-col-1", "value": 2016 },
+                            { "id": "row-2-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-2-col-3", "value": 8 },
+                            { "id": "row-2-col-4", "value": 15 },
+                            { "id": "row-2-col-5", "value": 5 },
+                            { "id": "row-2-col-6", "value": 0 },
+                            { "id": "row-2-col-7", "value": 1.000 }
+                        ]
+                    },
+                    {
+                        "id": "aabavgadda",
+                        "cells": [
+                            { "id": "row-3-col-1", "value": 2017 },
+                            { "id": "row-3-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-3-col-3", "value": null },
+                            { "id": "row-3-col-4", "value": null },
+                            { "id": "row-3-col-5", "value": null },
+                            { "id": "row-3-col-6", "value": null },
+                            { "id": "row-3-col-7", "value": null }
+                        ]
+                    },
+                    {
+                        "id": "abbhhdiahf",
+                        "cells": [
+                            { "id": "row-4-col-1", "value": 2019 },
+                            { "id": "row-4-col-2", "value": "大阪ホワイトタイガース" },
+                            { "id": "row-4-col-3", "value": null },
+                            { "id": "row-4-col-4", "value": null },
+                            { "id": "row-4-col-5", "value": null },
+                            { "id": "row-4-col-6", "value": null },
+                            { "id": "row-4-col-7", "value": null }
+                        ]
+                    }
+                  ]                  
+            }
+        ],
+        "highlightInfo": {
+            "red-600": "各年度の最高記録",
+            "blue-600": "各年度の最低記録"
+        }
+    },
+    "awards": [
+        {
+            "id": "aageegadxag",
+            "section": "NPB",
+            "titles": [
+                {
+                    "id": "abadeeadga",
+                    "name": "沢村賞",
+                    "years": [2015, 2017] 
+                },
+                {
+                    "id": "akkbaiegae",
+                    "name": "ファリーグMVP",
+                    "years": [2017]
+                }
+            ]
+        }
+    ],
+    "color": 
+        {
+            "bgcolor": "blue-600",
+            "textcolor": "white"
+        }
+}
