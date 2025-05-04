@@ -217,7 +217,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
             </thead>
             <tbody className={rowOrColumn === 'row' && rocNum === max ? "border-b-4 border-fuchsia-600": ""}>
                 {result.rows.map((tableRow, rowIndex) => (
-                    <tr key={tableRow.id} className={rowOrColumn === 'row' && rocNum === rowIndex ? "border-t-4 border-fuchsia-600 mx-2": ""}>
+                    <tr key={tableRow.id} className={rowOrColumn === 'row' && rocNum === rowIndex ? "border-t-4 border-fuchsia-600": ""}>
                         <td className="relative pl-2">
                             <button onClick={() => {
                                 setProfile((prevProfile) => {
@@ -431,51 +431,76 @@ function TitleTable({title, titleLocation, crntYear, setProfile}:{title: Title, 
     
     return (
         <tr key={title.id} className="text-center">
-        <td className="border whitespace-nowrap">
-            <input type="text" defaultValue={title.name} className="border rounded" />
-        </td>
-        <td className="border whitespace-nowrap text-left">
-            <p className="p-2 border-b-2">{title.years.join(',')}</p>
-            <input type="number" step={1} max={crntYear} value={year} onChange={(e) => {setYear(e.target.value)}} className="m-2 border rounded w-12" />
-            <button type="button" className="w-fit text-white whitespace-nowrap rounded p-2 my-2 bg-blue-600 hover:bg-blue-500"
-            onClick={() => {
-                setProfile((prevProfile) => {
-                    const newYear = Number(year);
+            <td className="pl-2"></td>
+            <td className="relative border whitespace-nowrap">
+                <button onClick={() => {
+                        // setProfile((prevProfile) => {
+                        //     const newRows = result.rows.filter((_, index) => index !== rowIndex);
+                        //     if (!prevProfile) return prevProfile;
 
-                    if (!prevProfile || title.years.includes(newYear)) return prevProfile;
-                    
-                    const insertIndex = title.years.findIndex(y => y > newYear);
+                        //     return {
+                        //         ...prevProfile,
+                        //         data: {
+                        //             ...prevProfile.data,
+                        //             results: prevProfile.data.results.map((res, index) => 
+                        //                 index === resultIndex
+                        //                     ? {
+                        //                         ...res,
+                        //                         rows: newRows
+                        //                     }: res
+                        //             )
+                        //         }
+                        //     }
+                        // })
+                    }}
+                    className="absolute -left-2 top-1/2 -translate-y-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">&times;
+                </button>
+                <input type="text" defaultValue={title.name} className="border rounded" />
+            </td>
+            <td className="border whitespace-nowrap text-left">
+                {title.years.length > 0 &&
+                    <p className="p-2 border-b-2">{title.years.join(',')}</p>
+                }
+                <input type="number" step={1} max={crntYear} value={year} onChange={(e) => {setYear(e.target.value)}} className="m-2 border rounded w-12" />
+                <button type="button" className="w-fit text-white whitespace-nowrap rounded p-2 my-2 bg-blue-600 hover:bg-blue-500"
+                onClick={() => {
+                    setProfile((prevProfile) => {
+                        const newYear = Number(year);
 
-                    return {
-                        ...prevProfile, 
-                        awards: [
-                            ...prevProfile.awards.slice(0, awardIndex),
-                            {...prevProfile.awards[awardIndex], 
-                                titles: [
-                                    ...prevProfile.awards[awardIndex].titles.slice(0, titleIndex),
-                                    {
-                                        ...title,
-                                        years: 
-                                            insertIndex === -1
-                                            ? [...title.years, newYear]
-                                            : [
-                                                ...title.years.slice(0, insertIndex),
-                                                newYear,
-                                                ...title.years.slice(insertIndex)
-                                            ]
-                                    },
-                                    ...prevProfile.awards[awardIndex].titles.slice(titleIndex+1)
-                                ] 
-                            },
-                            ...prevProfile.awards.slice(awardIndex+1)
-                        ]
-                    }
+                        if (!prevProfile || title.years.includes(newYear)) return prevProfile;
+                        
+                        const insertIndex = title.years.findIndex(y => y > newYear);
 
-                })
-            }}>
-                追加
-            </button>
-        </td>               
+                        return {
+                            ...prevProfile, 
+                            awards: [
+                                ...prevProfile.awards.slice(0, awardIndex),
+                                {...prevProfile.awards[awardIndex], 
+                                    titles: [
+                                        ...prevProfile.awards[awardIndex].titles.slice(0, titleIndex),
+                                        {
+                                            ...title,
+                                            years: 
+                                                insertIndex === -1
+                                                ? [...title.years, newYear]
+                                                : [
+                                                    ...title.years.slice(0, insertIndex),
+                                                    newYear,
+                                                    ...title.years.slice(insertIndex)
+                                                ]
+                                        },
+                                        ...prevProfile.awards[awardIndex].titles.slice(titleIndex+1)
+                                    ] 
+                                },
+                                ...prevProfile.awards.slice(awardIndex+1)
+                            ]
+                        }
+
+                    })
+                }}>
+                    追加
+                </button>
+            </td>               
         </tr>
     );
 }
@@ -486,31 +511,95 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
     return (
         <>
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
-        <div className="h-128 overflow-y-auto border-2 p-2">
+        <div className="h-128 overflow-y-auto border-2 p-2 space-y-2">
             {awards.map((award, awardIndex) => (
-            <div key={award.id} className="overflow-x-auto">
-                <table className="table-auto w-full border-collapse border border-gray-300">
-                <caption className="caption-top text-left font-semibold text-lg mb-2">
-                <input type="text" defaultValue={award.section} className="border rounded" />
-                </caption>
-                <thead className="bg-gray-200">
-                    <tr>
-                        <th className="border p-2 whitespace-nowrap">
-                            タイトル名 
-                        </th>
-                        <th className="border p-2 whitespace-nowrap">
-                            年度
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {award.titles.map((title, titleIndex) => (
-                        <TitleTable key={title.id} title={title} titleLocation={[awardIndex, titleIndex]} crntYear={crntYear} setProfile={setProfile} />
-                    ))}
-                </tbody>
+            <div key={award.id} className="overflow-x-auto border-2 p-2">
+                <table className="table-auto w-full border-collapse">
+                    <caption className="caption-top text-left font-semibold text-lg mb-2">
+                        <input type="text" defaultValue={award.section} className="border rounded" />
+                        <button onClick={() => {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    awards: prevProfile.awards.filter((_, index) => index !== awardIndex)
+                                }
+                            })
+                        }} className="w-fit text-white whitespace-nowrap rounded p-2 m-2 bg-gray-600 hover:bg-gray-500">
+                            表を削除
+                        </button>
+                    </caption>
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th className="border bg-gray-200 py-2 whitespace-nowrap">
+                                タイトル名 
+                            </th>
+                            <th className="border bg-gray-200 py-2 whitespace-nowrap">
+                                年度
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {award.titles.map((title, titleIndex) => (
+                            <TitleTable key={title.id} title={title} titleLocation={[awardIndex, titleIndex]} crntYear={crntYear} setProfile={setProfile} />
+                        ))}
+                    </tbody>
                 </table>
+                <button onClick={() => {
+                    setProfile((prevProfile) => {
+                        if (!prevProfile) return prevProfile;
+
+                        return {
+                            ...prevProfile,
+                            awards: [
+                                ...prevProfile.awards.slice(0,awardIndex),
+                                {
+                                    ...prevProfile.awards[awardIndex],
+                                    titles: [
+                                        ...prevProfile.awards[awardIndex].titles,
+                                        {
+                                            id: v4(),
+                                            name: "", 
+                                            years: []
+                                        }
+                                    ]
+                                },
+                                ...prevProfile.awards.slice(awardIndex+1)
+                            ]
+                        }
+                    })
+                }} className="w-fit text-white whitespace-nowrap rounded p-2 m-2 bg-blue-600 hover:bg-blue-500">
+                    ▼タイトルを追加▼
+                </button>
             </div>
             ))}
+        <button onClick={() => {
+            setProfile((prevProfile) => {
+                if (!prevProfile) return prevProfile;
+
+                return {
+                    ...prevProfile,
+                    awards: [
+                        ...prevProfile.awards,
+                        {
+                            id: v4(),
+                            section: "",
+                            titles: [
+                                {
+                                    id: v4(),
+                                    name: "", 
+                                    years: []
+                                }
+                            ]
+                        }
+                    ]
+                }
+            })
+        }} className="w-fit text-white whitespace-nowrap rounded p-2 m-2 bg-blue-600 hover:bg-blue-500">
+            ▼セクションを追加▼
+        </button>
         </div>
         </>
     );
