@@ -72,11 +72,12 @@ function SetHighlightColor({usedHColors, currentColor}: { usedHColors: string[];
     )
 }
 
-function ResultTableCell({tableCell, usedHColors } : {tableCell: TableCell; usedHColors: string[]; }){
+function ResultTableCell({tableCell, usedHColors, isAddLinePlace} : {tableCell: TableCell; usedHColors: string[]; isAddLinePlace: boolean;}){
     const [openHighlightColorMenu, setOpenHighlightColorMenu] = useState<boolean>(false);
     
     return (
-        <td className={`relative border-black border px-4 whitespace-nowrap ${tableCell?.highlightColor || ""}`}>
+        <td className={`relative border-black border px-4 whitespace-nowrap 
+            ${tableCell?.highlightColor || ""} ${isAddLinePlace && "border-l-4 border-l-fuchsia-600"}`}>
             <input type="text" onFocus={() => setOpenHighlightColorMenu(true)} 
             onBlur={() => setOpenHighlightColorMenu(false)}
             defaultValue={tableCell.value !== null ? tableCell.value : ""} className="border rounded" />
@@ -105,12 +106,16 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
 
     return (
     <div className="relative overflow-x-auto">
-        <table className="table-auto w-full border-gray-300 my-2">
+        <table className={`table-auto w-full border-gray-300 my-2 ${rowOrColumn === 'column' && rocNum === max ? "border-r-4 border-r-fuchsia-600": ""}`}>
             <caption className="relative caption-top font-semibold text-left text-lg mb-4 w-fit">
                 <input type="text" defaultValue={result.position} className="border rounded" />
                 <div className="absolute flex -top-2 left-full w-fit z-12">
-                    <button onClick={() => {setOpenAddLineMenu(!openAddLineMenu)}} 
-                    className="w-fit bg-blue-600 hover:bg-blue-500 text-white whitespace-nowrap rounded p-2 mx-2">
+                    <button onClick={() => {
+                        if (openAddLineMenu) {
+                            setRowOrColumn('none');
+                        }
+                        setOpenAddLineMenu(!openAddLineMenu)}
+                    } className="w-fit bg-blue-600 hover:bg-blue-500 text-white whitespace-nowrap rounded p-2 mx-2">
                         行・列の追加
                     </button>
                     <button onClick={() => {
@@ -135,7 +140,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                 <tr>
                     <th></th>
                     {result.columns.map((tableColCell, colIndex) => (
-                        <th key={tableColCell.id} className="relative border bg-gray-200">
+                        <th key={tableColCell.id} className={`relative border bg-gray-200 ${rowOrColumn === 'column' && rocNum === colIndex && "border-l-4 border-l-fuchsia-600"}`}>
                             <button onClick={() => {
                                 setProfile((prevProfile) => {
                                     const newCols = result.columns.filter((_, index) => index !== colIndex);
@@ -168,9 +173,9 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                     ))}
                 </tr>
             </thead>
-            <tbody>
+            <tbody className={rowOrColumn === 'row' && rocNum === max ? "border-b-4 border-fuchsia-600": ""}>
                 {result.rows.map((tableRow, rowIndex) => (
-                    <tr key={tableRow.id} className={rowOrColumn === 'row' && rocNum === rowIndex ? "border-t-3 border-fuchsia-600 mx-2": ""}>
+                    <tr key={tableRow.id} className={rowOrColumn === 'row' && rocNum === rowIndex ? "border-t-4 border-fuchsia-600 mx-2": ""}>
                         <td className="relative pl-2">
                             <button onClick={() => {
                                 setProfile((prevProfile) => {
@@ -194,8 +199,8 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                             }}
                             className="absolute left-0 top-1/2 -translate-y-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">&times;</button>
                         </td>
-                        {tableRow.cells.map((cell) => (
-                            <ResultTableCell key={cell.id} tableCell={cell} usedHColors={usedHColors}/>
+                        {tableRow.cells.map((cell, cellIndex) => (
+                            <ResultTableCell key={cell.id} tableCell={cell} usedHColors={usedHColors} isAddLinePlace={rowOrColumn === 'column' && rocNum === cellIndex}/>
                         ))}
                     </tr>
                 ))}
