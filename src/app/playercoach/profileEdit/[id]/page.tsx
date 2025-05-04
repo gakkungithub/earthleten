@@ -76,7 +76,7 @@ function ResultTableCell({tableCell, usedHColors, isAddLinePlace} : {tableCell: 
     const [openHighlightColorMenu, setOpenHighlightColorMenu] = useState<boolean>(false);
     
     return (
-        <td className={`relative border-black border px-4 whitespace-nowrap 
+        <td className={`relative border-black border px-4 whitespace-nowrap text-center
             ${tableCell?.highlightColor || ""} ${isAddLinePlace && "border-l-4 border-l-fuchsia-600"}`}>
             <input type="text" onFocus={() => setOpenHighlightColorMenu(true)} 
             onBlur={() => setOpenHighlightColorMenu(false)}
@@ -115,7 +115,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                             setRowOrColumn('none');
                         }
                         setOpenAddLineMenu(!openAddLineMenu)}
-                    } className="w-fit bg-blue-600 hover:bg-blue-500 text-white whitespace-nowrap rounded p-2 mx-2">
+                    } className={`w-fit text-white whitespace-nowrap rounded p-2 mx-2 ${openAddLineMenu ? "bg-fuchsia-600" : "bg-blue-600 hover:bg-blue-500"}`}>
                         行・列の追加
                     </button>
                     <button onClick={() => {
@@ -208,7 +208,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
         </table>
         {openAddLineMenu &&
         <div className="absolute top-0 left-0 flex justify-center items-center h-full w-full z-11">
-            <form className="flex items-center bg-white rounded w-fit border p-2">
+            <div className="flex items-center bg-white rounded w-fit border p-2">
                 <select name="rowOrColumn" value={rowOrColumn} onChange={(e) => {setRowOrColumn(e.target.value)}} className="mr-2">
                     <option value="none"></option>
                     <option value="row">行</option>
@@ -216,25 +216,77 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                 </select>
                 {rowOrColumn !== 'none' ?
                 <>
-                    <input type="number" step="1" value={rocNum} onChange={(e) => {setRocNum(Number(e.target.value))}} min={0} max={max} className="w-24 border rounded" />
-                    <p>に追加</p>
+                    <input type="number" step="1" value={rocNum} onChange={(e) => {setRocNum(Number(e.target.value))}} min={0} max={max} className="w-24 border rounded mx-2" />に
+                    <button className="w-fit text-white whitespace-nowrap rounded p-2 mx-2 bg-blue-600 hover:bg-blue-500"
+                    onClick={() => {
+                        if (rowOrColumn === 'row') {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+    
+                                return {
+                                    ...prevProfile,
+                                    data: {
+                                        ...prevProfile.data,
+                                        results: prevProfile.data.results.map((res, resIndex) => {
+                                            if (resIndex === resultIndex) {
+                                                return {
+                                                    ...result,
+                                                    rows: [
+                                                        ...result.rows.slice(0, rocNum), 
+                                                        {id: v4(), cells: Array.from({length: result.columns.length},() => (
+                                                            {id: v4(), value: null}
+                                                        ))}, 
+                                                        ...result.rows.slice(rocNum)
+                                                    ]
+                                                };
+                                            }
+                                            return res;
+                                        }
+                                    )
+                                    }
+                                }
+                            })
+                        }
+                        else if (rowOrColumn === 'column') {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+    
+                                return {
+                                    ...prevProfile,
+                                    data: {
+                                        ...prevProfile.data,
+                                        results: prevProfile.data.results.map((res, resIndex) => {
+                                            if (resIndex === resultIndex) {
+                                                return {
+                                                    ...result,
+                                                    rows: result.rows.map((row) => ({
+                                                        ...row,
+                                                        cells: [...row.cells.slice(0, rocNum), 
+                                                            {id: v4(), value: ""}, 
+                                                            ...row.cells.slice(rocNum)
+                                                        ]
+                                                    })),
+                                                    columns: [
+                                                        ...result.columns.slice(0, rocNum),
+                                                        {id: v4(), value: ""},
+                                                        ...result.columns.slice(rocNum)
+                                                    ]
+                                                };
+                                            }
+                                            return res;
+                                        }
+                                    )
+                                    }
+                                }
+                            })
+                        }
+                    }}>
+                        追加する
+                    </button>
                 </> :
                 <p>行か列かを選んでください</p>
                 }
-                {/* if (profile?.data.results) {
-                //     const newResults = profile.data.results.filter((_, index) => index !== recordIndex);
-                    
-                //     const newProfile = {
-                //         ...profile,
-                //         data: {
-                //             ...profile.data,
-                //             results: newResults
-                //         }
-                //     };
-
-                //     setProfile(newProfile);
-                // } */}
-            </form>
+            </div>
         </div>
         }
     </div>
