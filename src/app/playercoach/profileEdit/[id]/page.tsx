@@ -16,6 +16,9 @@ type Script = {
     texts: string[];
 }
 
+type CellLocation = 
+    [number, number, number]
+
 type TableCell = {
     value: string | number | null;
     id: string;
@@ -61,28 +64,60 @@ type Color = {
     textcolor: string;
 }
 
-function SetHighlightColor({usedHColors, currentColor}: { usedHColors: string[]; currentColor: string;}) {
-    
-    return (
-        <div className="absolute top-full left-0 z-10 flex w-full px-4 space-x-2">
-        {usedHColors.map((usedHColor) => (
-            <p key={usedHColor} className={`w-4 h-4 bg-${usedHColor} ${currentColor.includes(usedHColor) ? "rounded" : "rounded-full"}`}></p>
-        ))}
-        </div>
-    )
-}
-
-function ResultTableCell({tableCell, usedHColors, isAddLinePlace} : {tableCell: TableCell; usedHColors: string[]; isAddLinePlace: boolean;}){
+function ResultTableCell({tableCellInfo, usedHColors, isAddLinePlace, setProfile} : 
+    {tableCellInfo: {tableCell: TableCell, cellLocation: CellLocation;}; usedHColors: string[]; isAddLinePlace: boolean; setProfile: Dispatch<SetStateAction<Profile | null>>}){
     const [openHighlightColorMenu, setOpenHighlightColorMenu] = useState<boolean>(false);
-    
+    const {tableCell, cellLocation} = tableCellInfo;
+    const [resultIndex, rowIndex, cellIndex] = cellLocation;
+
+    const currentColor = tableCell.highlightColor || "";
     return (
         <td className={`relative border-black border px-4 whitespace-nowrap text-center
-            ${tableCell?.highlightColor || ""} ${isAddLinePlace && "border-l-4 border-l-fuchsia-600"}`}>
+            ${tableCell?.highlightColor ? tableCell?.highlightColor : ""} ${isAddLinePlace && "border-l-4 border-l-fuchsia-600"}`}>
             <input type="text" onFocus={() => setOpenHighlightColorMenu(true)} 
             onBlur={() => setOpenHighlightColorMenu(false)}
             defaultValue={tableCell.value !== null ? tableCell.value : ""} className="border rounded" />
             {openHighlightColorMenu &&
-                <SetHighlightColor usedHColors={usedHColors} currentColor={tableCell.highlightColor || ""} />
+                <div className="absolute top-full left-0 z-10 flex w-full px-4 space-x-2">
+                {usedHColors.map((usedHColor) => (
+                    <button type="button" key={usedHColor} 
+                    onMouseDown={() => {
+                        setProfile((prevProfile) => {
+                            if (!prevProfile) return prevProfile;
+
+                            return {
+                                ...prevProfile,
+                                data: {
+                                    ...prevProfile.data,
+                                    results: [
+                                        ...prevProfile.data.results.slice(0, resultIndex),
+                                        {
+                                            ...prevProfile.data.results[resultIndex],
+                                            rows: [
+                                                ...prevProfile.data.results[resultIndex].rows.slice(0, rowIndex),
+                                                {
+                                                    ...prevProfile.data.results[resultIndex].rows[rowIndex],
+                                                    cells: [
+                                                        ...prevProfile.data.results[resultIndex].rows[rowIndex].cells.slice(0, cellIndex),
+                                                        {...prevProfile.data.results[resultIndex].rows[rowIndex].cells[cellIndex], highlightColor: `text-${usedHColor}`},
+                                                        ...prevProfile.data.results[resultIndex].rows[rowIndex].cells.slice(cellIndex+1)
+                                                    ]
+                                                },
+                                                ...prevProfile.data.results[resultIndex].rows.slice(rowIndex+1)
+                                            ]
+                                        },
+                                        ...prevProfile.data.results.slice(resultIndex+1)
+
+                                    ]
+                                }
+                            }
+                        })
+                    }}
+                    className={`w-4 h-4 bg-${usedHColor} ${currentColor.includes(usedHColor) ? "rounded" : "rounded-full"}`}>
+                    </button>
+                ))}
+                </div>
+                // <SetHighlightColor usedHColors={usedHColors} currentColor={tableCell.highlightColor || ""} cellLocation={cellLocation} />
             }
         </td>
     )
@@ -116,7 +151,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                         }
                         setOpenAddLineMenu(!openAddLineMenu)}
                     } className={`w-fit text-white whitespace-nowrap rounded p-2 mx-2 ${openAddLineMenu ? "bg-fuchsia-600" : "bg-blue-600 hover:bg-blue-500"}`}>
-                        行・列の追加
+                        行・列を追加
                     </button>
                     <button onClick={() => {
                         setProfile((prevProfile) => {
@@ -200,7 +235,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                             className="absolute left-0 top-1/2 -translate-y-1/2 flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center z-10">&times;</button>
                         </td>
                         {tableRow.cells.map((cell, cellIndex) => (
-                            <ResultTableCell key={cell.id} tableCell={cell} usedHColors={usedHColors} isAddLinePlace={rowOrColumn === 'column' && rocNum === cellIndex}/>
+                            <ResultTableCell key={cell.id} tableCellInfo={{tableCell: cell, cellLocation: [resultIndex, rowIndex, cellIndex]}} usedHColors={usedHColors} isAddLinePlace={rowOrColumn === 'column' && rocNum === cellIndex} setProfile={setProfile}/>
                         ))}
                     </tr>
                 ))}
@@ -309,9 +344,41 @@ function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetSt
         <h2 className="font-bold text-3xl my-2">- 成績 -</h2>
         <div className="border-2">
             <div className="h-128 border-2 m-2 overflow-y-auto p-2 space-y-2">
+                <>
                 {data.results.map((result, resultIndex) => (
                     <ResultTable key={result.id} result={result} resultIndex={resultIndex} usedHColors={usedHColors} setProfile={setProfile} />
                 ))}
+                <button type="button" onClick={() => 
+                    setProfile((prevProfile) => {
+                        if (!prevProfile) return prevProfile;
+
+                        return {
+                            ...prevProfile,
+                            data: {
+                                ...prevProfile.data,
+                                results: [
+                                    ...prevProfile.data.results,
+                                    {
+                                        position: "",
+                                        id: v4(),
+                                        columns: Array.from({length: 2},() => (
+                                            {id: v4(), value: ""}
+                                        )),
+                                        rows: [
+                                            {
+                                                id: v4(),
+                                                cells: Array.from({length: 2},() => (
+                                                    {id: v4(), value: null}
+                                                ))
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    })
+                    } className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼表を追加▼</button>
+                </>
             </div>
             <ul className="mx-4">
                 {usedHColors.map((color) => (
@@ -328,7 +395,7 @@ function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetSt
                 ))}
             </ul>
             <div className="relative m-2">
-                <button type="button" onClick={() => setOpenHighlightMenu(!openHighlightMenu)} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼ハイライトの追加▼</button>
+                <button type="button" onClick={() => setOpenHighlightMenu(!openHighlightMenu)} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼ハイライトを追加▼</button>
                 {openHighlightMenu &&
                     <div className="absolute top-full left-0 z-10 bg-white border-2 rounded">
                         <p>↓追加するハイライトの色を選んでください↓</p>
@@ -493,7 +560,7 @@ export default function PlayerCoachProfileEditPage(){
                     <textarea defaultValue={script.texts.join('\n')} className="h-32"/>
                 </div>
             ))}
-            <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目の追加▼</button>
+            <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目を追加▼</button>
         </div>
         {profile?.data &&
             <ResultTables data={profile.data} setProfile={setProfile} />
