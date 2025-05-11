@@ -1,7 +1,18 @@
 import Image from 'next/image';
 import fs from 'fs';
 import Link from 'next/link';
+import { getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 // import path from 'path';
+
+type Stats = {
+    name: string;
+    teamname?: string[];
+    genres?: string[];
+    gender: string;
+    bdate?: string;
+    height?: number;
+    weight?: number;
+}
 
 type Script = {
     section: string;
@@ -43,9 +54,11 @@ type Color = {
 }
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_1.json', 'utf-8');
-    const {scripts, data, awards, color}: {scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} 
+    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_2.json', 'utf-8');
+    const {stats, scripts, data, awards, color}: {stats: Stats, scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} 
         = JSON.parse(jsonData);
+
+    const genreLabels = await getGenreLabelsByLanguage(stats.genres || [], 'jp');
 
     return (
         <>
@@ -55,20 +68,20 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 <Image src='/defaultIcon.png' alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
                 <ul>
                     <li className="flex gap-x-2 items-center">
-                        <p className="text-4xl font-bold">{(await params).id}</p>
+                        <p className="text-4xl font-bold">{stats.name}</p>
                         <p className="text-2xl whitespace-nowrap font-bold">[野球]</p>
-                        <p>ピッチャー, ライト</p>
+                        <p>{genreLabels.join(', ')}</p>
                     </li>
-                    <li>がっくんウォーリアーズ</li>
+                    <li>{stats.teamname?.join(' -> ') || ""}</li>
                 </ul>
             </div>
             <div className="border-t-2">
                 <p className="font-bold">プロフィール</p>
                 <ul className="list-none ml-4">
-                    <li>性別:男</li>
-                    <li>誕生日:12/29/1993</li>
-                    <li>身長: 171cm</li>
-                    <li>体重: 67kg</li>
+                    <li>性別: {await getGenderByLanguage(stats.gender, 'jp')}</li>
+                    <li>誕生日: {stats.bdate || "不明"}</li>
+                    <li>身長: {stats.height || "?"}cm</li>
+                    <li>体重: {stats.weight || "?"}kg</li>
                 </ul>
             </div>
         </div>

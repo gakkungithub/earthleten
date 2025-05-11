@@ -10,6 +10,16 @@ import MenuNarrow from '@/components/MenuNarrow';
 import { v4 } from 'uuid';
 // import path from 'path';
 
+type Stats = {
+    name: string;
+    teamname?: string[];
+    genres?: string[];
+    gender: string;
+    bdate?: string;
+    height?: number;
+    weight?: number;
+}
+
 type Script = {
     id: string;
     section: string;
@@ -48,6 +58,7 @@ type Data = {
 }
 
 type Profile = {
+    stats: Stats;
     scripts: Script[];
     data: Data;
     awards: Award[];
