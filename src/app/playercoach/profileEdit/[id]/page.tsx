@@ -13,6 +13,7 @@ import { v4 } from 'uuid';
 type Stats = {
     name: string;
     teamname?: string[];
+    sports: string[];
     genres?: string[];
     gender: string;
     bdate?: string;
@@ -625,14 +626,106 @@ export default function PlayerCoachProfileEditPage(){
 
     const params = useParams();
 
+    const bdate: [number, number, number] = (profile?.stats?.bdate || "").split("/").map(part => Number(part));
     const bgcolor: string = profile?.color?.bgcolor || "gray-400";
     const textcolor: string = profile?.color?.textcolor || "white"
 
+    const menuMapJP: { [key: string]: string } = {
+        baseball: '野球',
+        football: 'サッカー',
+        trackfield: '陸上',
+        baseball_pitcher: '投手',
+        baseball_fielder: '野手',
+        baseball_other: 'その他',
+        baseball_pitcher_starter: '先発',
+        baseball_pitcher_setupman: '中継',
+        baseball_pitcher_closer: '抑え',
+        baseball_fielder_catcher: 'キャッチャー',
+        baseball_fielder_first: 'ファースト',
+        baseball_fielder_second: 'セカンド',
+        baseball_fielder_third: 'サード',
+        baseball_fielder_shortstop: 'ショート',
+        baseball_fielder_left: 'レフト',
+        baseball_fielder_center: 'センター',
+        baseball_fielder_right: 'ライト',
+        baseball_other_DH: 'DH',
+        baseball_other_PH: 'PH',
+        baseball_other_twoway: '二刀流',
+        baseball_other_coach: '監督',
+        football_GK: 'GK',
+        football_FW: 'FW',
+        football_MF: 'MF',
+        football_DF: 'DF',
+        football_GK_GK: 'GK',
+        football_FW_CF: 'CF',
+        football_FW_WG: 'WG',
+        football_FW_ST: 'ST',
+        football_MF_AM: 'AM',
+        football_MF_CM: 'CM',
+        football_MF_LM: 'LM',
+        football_MF_RM: 'RM',
+        football_MF_DM: 'DM',
+        football_DF_RWB: 'RWB',
+        football_DF_LWB: 'LWB',
+        football_DF_CB: 'CB',
+        football_DF_RB: 'RB',
+        football_DF_LB: 'LB',
+        football_DF_SW: 'SW',
+        trackfield_short: '短距離',
+        trackfield_hurdle: 'ハードル',
+        trackfield_middle: '中距離',
+        trackfield_long: '長距離',
+        trackfield_relay: 'リレー',
+        trackfield_marathon: 'マラソン',
+        trackfield_walk: '競歩',
+        trackfield_jump: '跳躍',
+        trackfield_throw: '投てき',
+        trackfield_mixed: '混成競技',
+        trackfield_short_100m: '100m',
+        trackfield_short_200m: '200m',
+        trackfield_short_400m: '400m',
+        trackfield_hurdle_100m: '100mハードル',
+        trackfield_hurdle_110m: '110mハードル',
+        trackfield_hurdle_400m: '400mハードル',
+        trackfield_middle_800m: '800m',
+        trackfield_middle_1000m: '1000m',
+        trackfield_middle_1500m: '1500m',
+        trackfield_middle_1mile: '1マイル',
+        trackfield_middle_3000mSC: '3000m障害',
+        trackfield_long_5000m: '5000m',
+        trackfield_long_10000m: '10000m',
+        trackfield_long_1h: '1時間',
+        trackfield_relay_100m: '4×100m',
+        trackfield_relay_200m: '4×200m',
+        trackfield_relay_400m: '4×400m',
+        trackfield_relay_800m: '4×800m',
+        trackfield_marathon_1mile: '1マイル',
+        trackfield_marathon_half: 'ハーフ',
+        trackfield_marathon_full: 'フル',
+        trackfield_marathon_100km: '100km',
+        trackfield_walk_10000m: '10000m競歩',
+        trackfield_walk_20000m: '20000m競歩',
+        trackfield_walk_50000m: '50000m競歩',
+        trackfield_walk_20km: '20km競歩',
+        trackfield_walk_50km: '50km競歩',
+        trackfield_jump_high: '走高跳',
+        trackfield_jump_pole: '棒高跳',
+        trackfield_jump_long: '走幅跳',
+        trackfield_jump_triple: '三段跳',
+        trackfield_throw_shotput: '砲丸投',
+        trackfield_throw_disk: '円盤投',
+        trackfield_throw_hammer: 'ハンマー投',
+        trackfield_throw_javelin: 'やり投',
+        trackfield_mixed_heptathlon: '七種競技',
+        trackfield_mixed_decathlon: '十種競技'
+      };
+
     useEffect(() => {
-        fetch('/jsonfile/sports_kgavvaaxha_1.json')
+        fetch('/jsonfile/sports_kgavvaaxha_2.json')
         .then((res) => res.json())
         .then((json) => setProfile(json))
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
+        setGenres(profile?.stats?.genres || [])
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -688,19 +781,21 @@ export default function PlayerCoachProfileEditPage(){
                             <ul className="space-y-2">
                                 <li>
                                     <label htmlFor="name">名前: 
-                                        <input id="name" type="text" defaultValue={params.id} className="ml-2 border w-48 h-8 rounded text-3xl" />
+                                        <input id="name" type="text" defaultValue={profile?.stats.name} className="ml-2 border w-48 h-8 rounded text-3xl" />
                                     </label>
                                 </li>
                                 <li>
                                     <label htmlFor="teamname">チームネーム: 
-                                        <input id="teamname" type="text" defaultValue="がっくんウォーリアーズ" className="ml-2 border w-48 rounded" />
+                                        <input id="teamname" type="text" defaultValue={(profile?.stats?.teamname || []).join(', ')} className="ml-2 border w-48 rounded" />
                                     </label>
                                 </li>
                                 <li className="flex">
                                     <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)} 
                                     className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>ジャンル: </button>
                                     <div className="w-60 border rounded mx-2">
-                                        <p className="overflow-x-auto">{genres.join(',')}</p>
+                                        <p className="overflow-x-auto">{
+                                            (profile?.stats?.genres || []).map((genre) => menuMapJP[genre]).join(', ')
+                                        }</p>
                                     </div>
                                 </li>
                             </ul>
@@ -720,35 +815,35 @@ export default function PlayerCoachProfileEditPage(){
                         性別: 
                         <div className="flex flex-col">
                             <label htmlFor="gender-male" className="mx-2">
-                                <input id="gender-male" type="radio" value="male" /> 男性
+                                <input id="gender-male" type="radio" value="male" defaultChecked={profile?.stats.gender === "male"}/> 男性
                             </label>                    
                             <label htmlFor="gender-female" className="mx-2">
-                                <input id="gender-female" type="radio" value="female" /> 女性
+                                <input id="gender-female" type="radio" value="female" defaultChecked={profile?.stats.gender === "female"}/> 女性
                             </label>
                             <label htmlFor="gender-private" className="mx-2">
-                                <input id="gender-private" type="radio" value="private" /> 非公開
+                                <input id="gender-private" type="radio" value="private" defaultChecked={profile?.stats.gender === "private"}/> 非公開
                             </label>
                         </div>
                     </li>
                     <li className="flex items-center">
                         誕生日:
                         <div className="flex justify-center items-center">
-                            <input id="bdate" type="number" step="1" className="border w-12 m-2" />
+                            <input id="bdate" type="number" step="1" defaultValue={bdate[2]} className="border w-12 m-2" />
                             <p>年</p>
-                            <input id="bdate" type="number" step="1" className="border w-12 m-2" />
+                            <input id="bdate" type="number" step="1" defaultValue={bdate[0]} className="border w-12 m-2" />
                             <p>月</p>
-                            <input id="bdate" type="number" step="1" className="border w-12 m-2" />
+                            <input id="bdate" type="number" step="1" defaultValue={bdate[1]} className="border w-12 m-2" />
                             <p>日</p> 
                         </div>                  
                     </li>
                     <li className="flex items-center">
                         <label htmlFor="height">身長:</label>
-                        <input id="height" type="number" step="0.1" className="border w-12 mx-2" />
+                        <input id="height" type="number" step="0.1" defaultValue={profile?.stats?.height} className="border w-12 mx-2" />
                         <p>cm</p>
                     </li>
                     <li className="flex items-center">
                         <label htmlFor="weight">体重:</label>
-                        <input id="weight" type="number" step="0.1" className="border w-12 mx-2" />
+                        <input id="weight" type="number" step="0.1" defaultValue={profile?.stats?.weight} className="border w-12 mx-2" />
                         <p>kg</p>
                     </li>
                 </ul>

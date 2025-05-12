@@ -5,6 +5,9 @@
             "ソーラーパワーズ", 
             "がっくんウォーリアーズ"
         ],
+        "sports": [
+            "baseball"
+        ],
         "genres": [
             "baseball_fielder_second",
             "baseball_fielder_shortstop"

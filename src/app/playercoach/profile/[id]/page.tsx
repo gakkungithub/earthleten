@@ -7,6 +7,7 @@ import { getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 type Stats = {
     name: string;
     teamname?: string[];
+    sports: string[];
     genres?: string[];
     gender: string;
     bdate?: string;
@@ -69,7 +70,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 <ul>
                     <li className="flex gap-x-2 items-center">
                         <p className="text-4xl font-bold">{stats.name}</p>
-                        <p className="text-2xl whitespace-nowrap font-bold">[野球]</p>
+                        <p className="text-2xl whitespace-nowrap font-bold">[{(await getGenreLabelsByLanguage(stats.sports, 'jp')).join(', ')}]</p>
                         <p>{genreLabels.join(', ')}</p>
                     </li>
                     <li>{stats.teamname?.join(' -> ') || ""}</li>
