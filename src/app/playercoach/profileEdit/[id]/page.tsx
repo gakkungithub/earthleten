@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, Dispatch, SetStateAction } from 'react';
+import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -16,7 +16,7 @@ type Stats = {
     sports: string[];
     genres?: string[];
     gender: string;
-    bdate?: [number, number, number];
+    bdate: [number, number, number];
     height?: number;
     weight?: number;
 }
@@ -622,14 +622,23 @@ export default function PlayerCoachProfileEditPage(){
 
     const [currentImage, setCurrentImage] = useState<string>("");
     const [genres, setGenres] = useState<string[]>([]);
-    const [gender, setGender] = useState<string>("");
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
 
-    const maxDay: Record<number, number> = {
-        1: 31, 2: 29, 3: 31, 4: 30,
-        5: 31, 6: 30, 7: 31, 8: 31,
-        9: 30, 10: 31, 11: 30, 12: 31,
-    };
+    function getMaxDayOfMonth(month: number, year: number): number {
+        if ([1, 3, 5, 7, 8, 10, 12].includes(month)) return 31;
+        if ([4, 6, 9, 11].includes(month)) return 30;
+        // 2月の処理
+        const isLeapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+        return isLeapYear ? 29 : 28;
+      }
+
+    const [month, day, year] = profile?.stats?.bdate || [1,1,1]
+
+    const correctedDay = useMemo(() => {
+        const maxDay = getMaxDayOfMonth(month, year);
+        return Math.min(day, maxDay);
+    }, [month, day, year]);
+      
 
     const params = useParams();
 
@@ -732,7 +741,6 @@ export default function PlayerCoachProfileEditPage(){
         .then((json) => {
             setProfile(json);
             setGenres(json.stats?.genres || [])
-            setGender(json.stats?.gender || "")
         })
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -877,7 +885,7 @@ export default function PlayerCoachProfileEditPage(){
                         <div className="flex justify-center items-center">
                             <input id="year" type="number" step="1" value={profile?.stats?.bdate?.[2] || 0}
                             onChange={(e) => setProfile((prevProfile) => {
-                                if (!prevProfile?.stats.bdate) return prevProfile;
+                                if (!prevProfile?.stats?.bdate) return prevProfile;
 
                                 return {
                                     ...prevProfile,
@@ -888,9 +896,9 @@ export default function PlayerCoachProfileEditPage(){
                                 }
                             })} className="border w-12 m-2" />
                             <p>年</p>
-                            <input id="month" type="number" step="1" value={profile?.stats?.bdate?.[0] || 0} min={0} max={12}
+                            <input id="month" type="number" step="1" value={profile?.stats?.bdate?.[0] || 0} min={1} max={12}
                             onChange={(e) => setProfile((prevProfile) => {
-                                if (!prevProfile?.stats.bdate) return prevProfile;
+                                if (!prevProfile?.stats?.bdate) return prevProfile;
 
                                 return {
                                     ...prevProfile,
@@ -901,18 +909,17 @@ export default function PlayerCoachProfileEditPage(){
                                 }
                             })} className="border w-12 m-2" />
                             <p>月</p>
-                            <input id="day" type="number" step="1" value={profile?.stats?.bdate?.[1] || 0} min={1} max={profile?.stats?.bdate?.[0] && maxDay[profile.stats.bdate[0]]}
-                            onChange={(e) => setProfile((prevProfile) => {
-                                if (!prevProfile?.stats.bdate) return prevProfile;
-
-                                return {
-                                    ...prevProfile,
-                                    stats: {
-                                        ...prevProfile.stats,
-                                        bdate: [prevProfile.stats.bdate[0], Number(e.target.value), prevProfile.stats.bdate?.[2]]
-                                    }
+                            <input id="day" type="number" step="1" value={correctedDay} min={1}
+                            onChange={(e) => {
+                                const inputDay = Number(e.target.value);
+                                setProfile((prevProfile) => ({
+                                ...prevProfile!,
+                                stats: {
+                                    ...prevProfile!.stats,
+                                    bdate: [month, inputDay, year],
                                 }
-                            })} className="border w-12 m-2" />
+                                }));
+                            }} className="border w-12 m-2" />
                             <p>日</p> 
                         </div>                  
                     </li>
