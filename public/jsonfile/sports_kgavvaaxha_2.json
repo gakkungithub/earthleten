@@ -13,7 +13,7 @@
             "baseball_fielder_shortstop"
         ],
         "gender": "male",
-        "bdate": "3/29/1997",
+        "bdate": [3, 29, 1997],
         "height": 171,
         "weight": 67
     },

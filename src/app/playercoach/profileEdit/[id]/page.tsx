@@ -16,7 +16,7 @@ type Stats = {
     sports: string[];
     genres?: string[];
     gender: string;
-    bdate?: string;
+    bdate?: [number, number, number];
     height?: number;
     weight?: number;
 }
@@ -622,11 +622,17 @@ export default function PlayerCoachProfileEditPage(){
 
     const [currentImage, setCurrentImage] = useState<string>("");
     const [genres, setGenres] = useState<string[]>([]);
+    const [gender, setGender] = useState<string>("");
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
+
+    const maxDay: Record<number, number> = {
+        1: 31, 2: 29, 3: 31, 4: 30,
+        5: 31, 6: 30, 7: 31, 8: 31,
+        9: 30, 10: 31, 11: 30, 12: 31,
+    };
 
     const params = useParams();
 
-    const bdate: [number, number, number] = (profile?.stats?.bdate || "").split("/").map(part => Number(part));
     const bgcolor: string = profile?.color?.bgcolor || "gray-400";
     const textcolor: string = profile?.color?.textcolor || "white"
 
@@ -723,9 +729,12 @@ export default function PlayerCoachProfileEditPage(){
     useEffect(() => {
         fetch('/jsonfile/sports_kgavvaaxha_2.json')
         .then((res) => res.json())
-        .then((json) => setProfile(json))
+        .then((json) => {
+            setProfile(json);
+            setGenres(json.stats?.genres || [])
+            setGender(json.stats?.gender || "")
+        })
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
-        setGenres(profile?.stats?.genres || [])
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -761,9 +770,9 @@ export default function PlayerCoachProfileEditPage(){
                 <form>
                     <fieldset className="p-2 border text-center">
                         <legend className="font-bold">自画像</legend>
-                        <div className="mx-auto mb-4 h-32 w-32 rounded-full border">
+                        <div className="mx-auto mb-4 w-32 h-fit border">
                             {currentImage !== "" &&
-                            <Image src={currentImage} alt="" width={128} height={128} className="m-auto rounded-full"/>
+                            <Image src={currentImage} alt="" width={128} height={256} className="m-auto"/>
                             }
                         </div>
                         <label htmlFor="self-image" className={`cursor-pointer px-4 py-2 bg-${textcolor} text-${bgcolor}`}>画像を選択</label>
@@ -789,12 +798,17 @@ export default function PlayerCoachProfileEditPage(){
                                         <input id="teamname" type="text" defaultValue={(profile?.stats?.teamname || []).join(', ')} className="ml-2 border w-48 rounded" />
                                     </label>
                                 </li>
+                                <li>
+                                    <label htmlFor="sports">スポーツ: 
+                                        <input id="sports" type="text" defaultValue={(profile?.stats?.sports || []).join(', ')} className="ml-2 border w-48 rounded" />
+                                    </label>
+                                </li>
                                 <li className="flex">
                                     <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)} 
                                     className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>ジャンル: </button>
                                     <div className="w-60 border rounded mx-2">
                                         <p className="overflow-x-auto">{
-                                            (profile?.stats?.genres || []).map((genre) => menuMapJP[genre]).join(', ')
+                                            genres.map((genre) => menuMapJP[genre]).join(', ')
                                         }</p>
                                     </div>
                                 </li>
@@ -802,7 +816,7 @@ export default function PlayerCoachProfileEditPage(){
                         </fieldset>
                     </form>
                     {openGenreMenu &&
-                        <div className="absolute top-full left-2 text-black">
+                        <div className="absolute top-full left-2 text-black z-11">
                             <MenuNarrow setGenres={setGenres}/>
                         </div>
                     }
@@ -815,24 +829,90 @@ export default function PlayerCoachProfileEditPage(){
                         性別: 
                         <div className="flex flex-col">
                             <label htmlFor="gender-male" className="mx-2">
-                                <input id="gender-male" type="radio" value="male" defaultChecked={profile?.stats.gender === "male"}/> 男性
+                                <input id="gender-male" type="radio" value="male" checked={profile?.stats?.gender === "male"} 
+                                onChange={(e) => setProfile((prevProfile) => {
+                                    if (!prevProfile) return prevProfile
+
+                                    return {
+                                        ...prevProfile,
+                                        stats: {
+                                            ...prevProfile.stats,
+                                            gender: e.target.value
+                                        }
+                                    }
+                                })}/> 男性
                             </label>                    
                             <label htmlFor="gender-female" className="mx-2">
-                                <input id="gender-female" type="radio" value="female" defaultChecked={profile?.stats.gender === "female"}/> 女性
+                                <input id="gender-female" type="radio" value="female" checked={profile?.stats?.gender === "female"} 
+                                    onChange={(e) => setProfile((prevProfile) => {
+                                        if (!prevProfile) return prevProfile
+
+                                        return {
+                                            ...prevProfile,
+                                            stats: {
+                                                ...prevProfile.stats,
+                                                gender: e.target.value
+                                            }
+                                        }
+                                    })}/> 女性
                             </label>
                             <label htmlFor="gender-private" className="mx-2">
-                                <input id="gender-private" type="radio" value="private" defaultChecked={profile?.stats.gender === "private"}/> 非公開
+                                <input id="gender-private" type="radio" value="private" checked={profile?.stats?.gender === "private"} 
+                                    onChange={(e) => setProfile((prevProfile) => {
+                                        if (!prevProfile) return prevProfile
+
+                                        return {
+                                            ...prevProfile,
+                                            stats: {
+                                                ...prevProfile.stats,
+                                                gender: e.target.value
+                                            }
+                                        }
+                                    })}/> 非公開
                             </label>
                         </div>
                     </li>
                     <li className="flex items-center">
                         誕生日:
                         <div className="flex justify-center items-center">
-                            <input id="bdate" type="number" step="1" defaultValue={bdate[2]} className="border w-12 m-2" />
+                            <input id="year" type="number" step="1" value={profile?.stats?.bdate?.[2] || 0}
+                            onChange={(e) => setProfile((prevProfile) => {
+                                if (!prevProfile?.stats.bdate) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    stats: {
+                                        ...prevProfile.stats,
+                                        bdate: [prevProfile.stats.bdate[0], prevProfile.stats.bdate?.[1], Number(e.target.value)]
+                                    }
+                                }
+                            })} className="border w-12 m-2" />
                             <p>年</p>
-                            <input id="bdate" type="number" step="1" defaultValue={bdate[0]} className="border w-12 m-2" />
+                            <input id="month" type="number" step="1" value={profile?.stats?.bdate?.[0] || 0} min={0} max={12}
+                            onChange={(e) => setProfile((prevProfile) => {
+                                if (!prevProfile?.stats.bdate) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    stats: {
+                                        ...prevProfile.stats,
+                                        bdate: [Number(e.target.value), prevProfile.stats.bdate[1], prevProfile.stats.bdate?.[2]]
+                                    }
+                                }
+                            })} className="border w-12 m-2" />
                             <p>月</p>
-                            <input id="bdate" type="number" step="1" defaultValue={bdate[1]} className="border w-12 m-2" />
+                            <input id="day" type="number" step="1" value={profile?.stats?.bdate?.[1] || 0} min={1} max={profile?.stats?.bdate?.[0] && maxDay[profile.stats.bdate[0]]}
+                            onChange={(e) => setProfile((prevProfile) => {
+                                if (!prevProfile?.stats.bdate) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    stats: {
+                                        ...prevProfile.stats,
+                                        bdate: [prevProfile.stats.bdate[0], Number(e.target.value), prevProfile.stats.bdate?.[2]]
+                                    }
+                                }
+                            })} className="border w-12 m-2" />
                             <p>日</p> 
                         </div>                  
                     </li>

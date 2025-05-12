@@ -10,7 +10,7 @@ type Stats = {
     sports: string[];
     genres?: string[];
     gender: string;
-    bdate?: string;
+    bdate?: [number, number, number];
     height?: number;
     weight?: number;
 }
