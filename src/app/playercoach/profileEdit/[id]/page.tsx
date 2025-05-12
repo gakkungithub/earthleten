@@ -12,13 +12,19 @@ import { v4 } from 'uuid';
 
 type Stats = {
     name: string;
-    teamname?: string[];
+    teamnames?: {name: string; id: string}[];
     sports: string[];
     genres?: string[];
     gender: string;
     bdate: [number, number, number];
     height?: number;
     weight?: number;
+}
+
+type TeamHistoryEntry = {
+    teamName: string;
+    startYear: number;
+    endYear: number;
 }
 
 type Script = {
@@ -617,12 +623,85 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
     );
 }
 
+function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: {name: string, id: string}[], setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+    const addEntry = () => 
+        setProfile((prevProfile) => {
+            if (!prevProfile?.stats?.teamnames) return prevProfile;
+
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    teamnames: [
+                        ...teamnames,
+                        {name: "", id: v4()}
+                    ]
+                }
+            }
+        });
+    
+    const updateEntry = (index: number, name: string) => {
+        setProfile((prevProfile) => {
+            if (!prevProfile?.stats?.teamnames) return prevProfile;
+
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    teamnames: [
+                        ...teamnames.slice(0, index),
+                        {name: name, id: teamnames[index].id},
+                        ...teamnames.slice(index+1)
+                    ]
+                }
+            }
+        });     
+    }
+  
+    const removeEntry = (index: number) => {
+        setProfile((prevProfile) => {
+            if (!prevProfile?.stats?.teamnames) return prevProfile;
+
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    teamnames: [
+                        ...teamnames.slice(0, index),
+                        ...teamnames.slice(index+1)
+                    ]
+                }
+            }
+        });
+    };
+  
+    return (
+        <div>
+            <h2 className="text-lg font-bold">チーム履歴</h2>
+            <button type="button" onClick={addEntry} className="mt-2 bg-blue-500 text-white px-2 py-1 rounded">＋ チーム追加</button>
+            {teamnames.map((teamname, teamNameIndex) => (
+            <div key={teamname.id} className="flex space-x-2 items-center mb-2">
+                <input
+                    type="text"
+                    value={teamname.name}
+                    placeholder="チーム名"
+                    onChange={(e) => updateEntry(teamNameIndex, e.target.value)}
+                    className="border rounded p-1"
+                />
+                <button type="button" onClick={() => removeEntry(teamNameIndex)} className="flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center">&times;</button>
+            </div>
+            ))}
+        </div>
+    );
+}
+
 export default function PlayerCoachProfileEditPage(){
     const [profile, setProfile] = useState<Profile | null>(null);
 
     const [currentImage, setCurrentImage] = useState<string>("");
-    const [genres, setGenres] = useState<string[]>([]);
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
+
+    const [genres, setGenres] = useState<string[]>([]);
 
     function getMaxDayOfMonth(month: number, year: number): number {
         if ([1, 3, 5, 7, 8, 10, 12].includes(month)) return 31;
@@ -639,7 +718,6 @@ export default function PlayerCoachProfileEditPage(){
         return Math.min(day, maxDay);
     }, [month, day, year]);
       
-
     const params = useParams();
 
     const bgcolor: string = profile?.color?.bgcolor || "gray-400";
@@ -733,14 +811,14 @@ export default function PlayerCoachProfileEditPage(){
         trackfield_throw_javelin: 'やり投',
         trackfield_mixed_heptathlon: '七種競技',
         trackfield_mixed_decathlon: '十種競技'
-      };
+    };
 
     useEffect(() => {
-        fetch('/jsonfile/sports_kgavvaaxha_2.json')
+        fetch('/jsonfile/sports_kgavvaaxha_3.json')
         .then((res) => res.json())
         .then((json) => {
             setProfile(json);
-            setGenres(json.stats?.genres || [])
+            setGenres(json?.stats?.genres || [])
         })
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -798,17 +876,30 @@ export default function PlayerCoachProfileEditPage(){
                             <ul className="space-y-2">
                                 <li>
                                     <label htmlFor="name">名前: 
-                                        <input id="name" type="text" defaultValue={profile?.stats.name} className="ml-2 border w-48 h-8 rounded text-3xl" />
+                                        <input id="name" type="text" defaultValue={profile?.stats.name || ""} 
+                                        onChange={(e) => setProfile((prevProfile) => {
+                                            if (!prevProfile?.stats?.bdate) return prevProfile;
+
+                                            return {
+                                                ...prevProfile,
+                                                stats: {
+                                                    ...prevProfile.stats,
+                                                    name: e.target.value
+                                                }
+                                            }
+                                        })}
+                                        className="ml-2 border w-48 h-8 rounded text-3xl" />
                                     </label>
                                 </li>
                                 <li>
-                                    <label htmlFor="teamname">チームネーム: 
-                                        <input id="teamname" type="text" defaultValue={(profile?.stats?.teamname || []).join(', ')} className="ml-2 border w-48 rounded" />
-                                    </label>
+                                    {profile?.stats?.teamnames &&
+                                        <TeamHistoryInputCopy teamnames={profile.stats.teamnames} setProfile={setProfile} />
+                                    }
                                 </li>
                                 <li>
                                     <label htmlFor="sports">スポーツ: 
-                                        <input id="sports" type="text" defaultValue={(profile?.stats?.sports || []).join(', ')} className="ml-2 border w-48 rounded" />
+                                        <input id="sports" type="text" defaultValue={(profile?.stats?.sports || []).map((sports) => menuMapJP[sports]).join(', ')} 
+                                        className="ml-2 border w-48 rounded" />
                                     </label>
                                 </li>
                                 <li className="flex">

@@ -6,7 +6,7 @@ import { getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 
 type Stats = {
     name: string;
-    teamname?: string[];
+    teamnames?: {name: string; id: string}[];
     sports: string[];
     genres?: string[];
     gender: string;
@@ -55,7 +55,7 @@ type Color = {
 }
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_2.json', 'utf-8');
+    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_3.json', 'utf-8');
     const {stats, scripts, data, awards, color}: {stats: Stats, scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} 
         = JSON.parse(jsonData);
 
@@ -73,7 +73,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                         <p className="text-2xl whitespace-nowrap font-bold">[{(await getGenreLabelsByLanguage(stats.sports, 'jp')).join(', ')}]</p>
                         <p>{genreLabels.join(', ')}</p>
                     </li>
-                    <li>{stats.teamname?.join(' -> ') || ""}</li>
+                    <li>{stats.teamnames?.join(' -> ') || ""}</li>
                 </ul>
             </div>
             <div className="border-t-2">
