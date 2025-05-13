@@ -10,21 +10,22 @@ import MenuNarrow from '@/components/MenuNarrow';
 import { v4 } from 'uuid';
 // import path from 'path';
 
+type Teamname = {
+    name: string;
+    start: number;
+    end: number | null;
+    id: string;
+}
+
 type Stats = {
     name: string;
-    teamnames?: {name: string; id: string}[];
+    teamnames?: Teamname[];
     sports: string[];
     genres?: string[];
     gender: string;
     bdate: [number, number, number];
     height?: number;
     weight?: number;
-}
-
-type TeamHistoryEntry = {
-    teamName: string;
-    startYear: number;
-    endYear: number;
 }
 
 type Script = {
@@ -623,7 +624,11 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
     );
 }
 
-function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: {name: string, id: string}[], setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[], setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+    const [teamInsertRow, setTeamInsertRow] = useState<number>(0);
+    const maxRow = teamnames.length;
+    const [isActive, setIsActive] = useState<boolean>(teamnames[maxRow-1].end === null);
+
     const addEntry = () => 
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
@@ -633,14 +638,15 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: {name: str
                 stats: {
                     ...prevProfile.stats,
                     teamnames: [
-                        ...teamnames,
-                        {name: "", id: v4()}
+                        ...teamnames.slice(0, teamInsertRow),
+                        {name: "", start: 0, end: null, id: v4()},
+                        ...teamnames.slice(teamInsertRow)
                     ]
                 }
             }
         });
     
-    const updateEntry = (index: number, name: string) => {
+    const updateEntry = (index: number, type: string, name: string | number) => {
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
 
@@ -650,7 +656,10 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: {name: str
                     ...prevProfile.stats,
                     teamnames: [
                         ...teamnames.slice(0, index),
-                        {name: name, id: teamnames[index].id},
+                        {
+                            ...teamnames[index], 
+                            [type]: name
+                        },
                         ...teamnames.slice(index+1)
                     ]
                 }
@@ -674,23 +683,77 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: {name: str
             }
         });
     };
+
+    const handleActive = (checked: boolean) => {
+        setIsActive(checked);
+
+        setProfile((prevProfile) => {
+            if (!prevProfile?.stats?.teamnames) return prevProfile;
+
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    teamnames: [
+                        ...teamnames.slice(0, maxRow-1),
+                        {
+                            ...teamnames[maxRow-1], 
+                            end: checked ? null : (new Date()).getFullYear()
+                        },
+                    ]
+                }
+            }
+        }); 
+    }
+
+    useEffect(() => {
+        if (teamInsertRow > maxRow) {
+            setTeamInsertRow(maxRow);
+        }
+    }, [teamInsertRow, maxRow])
   
     return (
-        <div>
+        <div className={`overflow-x-auto w-full ${teamInsertRow === teamnames.length ? "border-b-4 border-fuchsia-600" : ""}`}>
             <h2 className="text-lg font-bold">チーム履歴</h2>
-            <button type="button" onClick={addEntry} className="mt-2 bg-blue-500 text-white px-2 py-1 rounded">＋ チーム追加</button>
-            {teamnames.map((teamname, teamNameIndex) => (
-            <div key={teamname.id} className="flex space-x-2 items-center mb-2">
-                <input
-                    type="text"
-                    value={teamname.name}
-                    placeholder="チーム名"
-                    onChange={(e) => updateEntry(teamNameIndex, e.target.value)}
-                    className="border rounded p-1"
-                />
-                <button type="button" onClick={() => removeEntry(teamNameIndex)} className="flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center">&times;</button>
+            <button type="button" onClick={addEntry} className="my-2 bg-blue-500 text-white px-2 py-1 rounded">＋ チーム追加</button>
+            <label>
+                <span className="mx-2">追加列</span>
+                <input id="teamInsertCol" type="number" value={teamInsertRow} onChange={(e) => setTeamInsertRow(Number(e.target.value))} 
+                    min={0} max={maxRow} className="rounded border px-1" />
+            </label>
+            <label>
+                <span className="mx-2">現役?</span>
+                <input type="checkbox" checked={isActive} onChange={(e) => handleActive(e.target.checked)}/>
+            </label>
+            <div className="min-w-max">
+                {teamnames.map((teamname, teamNameIndex) => (
+                    <div key={teamname.id} className={`flex space-x-2 items-center mb-2 w-fit ${teamInsertRow === teamNameIndex ? "border-t-4 border-fuchsia-600" : ""}`}>
+                        <input
+                            type="text"
+                            value={teamname.name}
+                            placeholder="チーム名"
+                            onChange={(e) => updateEntry(teamNameIndex, "teamname", e.target.value)}
+                            className="border rounded p-1"
+                        />
+                        <input
+                            type="number"
+                            value={teamname.start}
+                            placeholder="入団年"
+                            onChange={(e) => updateEntry(teamNameIndex, "start", Number(e.target.value))}
+                            className="border rounded p-1 w-16"
+                        />
+                        <input
+                            type="number"
+                            value={teamname.end ?? ""}
+                            disabled={teamname.end === null}
+                            placeholder="退団年"
+                            onChange={(e) => updateEntry(teamNameIndex, "end", Number(e.target.value))}
+                            className="border rounded p-1 w-16"
+                        />
+                        <button type="button" onClick={() => removeEntry(teamNameIndex)} className="flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center">&times;</button>
+                    </div>
+                ))}
             </div>
-            ))}
         </div>
     );
 }
@@ -851,8 +914,8 @@ export default function PlayerCoachProfileEditPage(){
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 text-${textcolor} bg-${bgcolor}`}>
-            <div className="flex items-start no-underline w-fit rounded my-2">
+        <div className={`border-2 px-2 rounded-3xl my-4 w-fit mx-auto text-${textcolor} bg-${bgcolor}`}>
+            <div className="flex items-start no-underline rounded my-2">
                 <form>
                     <fieldset className="p-2 border text-center">
                         <legend className="font-bold">自画像</legend>
@@ -870,10 +933,11 @@ export default function PlayerCoachProfileEditPage(){
                         {/* <div>{errors.image?.message}</div> */}
                     </fieldset>
                 </form>
-                <div className="relative m-2">
+                <div className="relative mx-2">
                     <form>
-                        <fieldset className="mx-2">
-                            <ul className="space-y-2">
+                        <fieldset className="w-full border p-2">
+                            <legend className="font-bold text-center">選手情報</legend>
+                            <ul className="space-y-2 w-full">
                                 <li>
                                     <label htmlFor="name">名前: 
                                         <input id="name" type="text" defaultValue={profile?.stats.name || ""} 
@@ -891,7 +955,7 @@ export default function PlayerCoachProfileEditPage(){
                                         className="ml-2 border w-48 h-8 rounded text-3xl" />
                                     </label>
                                 </li>
-                                <li>
+                                <li className="w-full">
                                     {profile?.stats?.teamnames &&
                                         <TeamHistoryInputCopy teamnames={profile.stats.teamnames} setProfile={setProfile} />
                                     }

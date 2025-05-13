@@ -2,9 +2,9 @@
     "stats": {
         "name": "高川楽",
         "teamnames": [
-            {"name": "ソーラーパワーズ", "id": "akbadaihfa" }, 
-            {"name": "がっくんウォーリアーズ", "id": "akdjhhgdaih"},
-            {"name": "ソーラーパワーズ", "id": "ajjjdhgihs"}
+            {"name": "ソーラーパワーズ", "start": 2015, "end": 2017, "id": "akbadaihfa" }, 
+            {"name": "がっくんウォーリアーズ", "start": 2017, "end": 2019, "id": "akdjhhgdaih"},
+            {"name": "ソーラーパワーズ", "start": 2020, "end": null, "id": "ajjjdhgihs"}
         ],
         "sports": [
             "baseball"

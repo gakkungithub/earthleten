@@ -4,9 +4,16 @@ import Link from 'next/link';
 import { getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 // import path from 'path';
 
+type Teamname = {
+    name: string;
+    start: number;
+    end: number | null;
+    id: string;
+}
+
 type Stats = {
     name: string;
-    teamnames?: {name: string; id: string}[];
+    teamnames?: Teamname[];
     sports: string[];
     genres?: string[];
     gender: string;
@@ -73,7 +80,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                         <p className="text-2xl whitespace-nowrap font-bold">[{(await getGenreLabelsByLanguage(stats.sports, 'jp')).join(', ')}]</p>
                         <p>{genreLabels.join(', ')}</p>
                     </li>
-                    <li>{stats.teamnames?.join(' -> ') || ""}</li>
+                    <li>{stats.teamnames?.map((teamname) => teamname.name).join(" -> ") || ""}</li>
                 </ul>
             </div>
             <div className="border-t-2">
