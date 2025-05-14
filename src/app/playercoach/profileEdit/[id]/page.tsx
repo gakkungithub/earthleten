@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import MenuNarrow from '@/components/MenuNarrow';
+import SportsNarrow from '@/components/SportsMenu';
 
 import { v4 } from 'uuid';
 // import path from 'path';
@@ -624,7 +625,7 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
     );
 }
 
-function TeamHistoryInputCopy({ teamnames, byear, setProfile }: { teamnames: Teamname[], byear: number, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamname[], byear: number, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
     const [teamInsertRow, setTeamInsertRow] = useState<number>(0);
     const maxRow = teamnames.length;
     const thisYear = (new Date()).getFullYear();
@@ -817,8 +818,9 @@ export default function PlayerCoachProfileEditPage(){
     const [profile, setProfile] = useState<Profile | null>(null);
 
     const [currentImage, setCurrentImage] = useState<string>("");
+    const [openSportsMenu, setOpenSportsMenu] = useState<boolean>(false);
+    const [sports, setSports] = useState<string[]>([]);
     const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
-
     const [genres, setGenres] = useState<string[]>([]);
 
     function getMaxDayOfMonth(month: number, year: number): number {
@@ -936,7 +938,8 @@ export default function PlayerCoachProfileEditPage(){
         .then((res) => res.json())
         .then((json) => {
             setProfile(json);
-            setGenres(json?.stats?.genres || [])
+            setSports(json?.stats?.sports || []);
+            setGenres(json?.stats?.genres || []);
         })
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -970,7 +973,7 @@ export default function PlayerCoachProfileEditPage(){
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
         <div className={`border-2 px-2 rounded-3xl my-4 w-fit mx-auto text-${textcolor} bg-${bgcolor}`}>
-            <div className="flex items-start no-underline rounded my-2">
+            <div className="flex items-start no-underline rounded mt-2 space-x-2">
                 <form>
                     <fieldset className="p-2 border text-center">
                         <legend className="font-bold">自画像</legend>
@@ -988,56 +991,67 @@ export default function PlayerCoachProfileEditPage(){
                         {/* <div>{errors.image?.message}</div> */}
                     </fieldset>
                 </form>
-                <div className="relative mx-2">
-                    <form>
-                        <fieldset className="w-full border p-2">
-                            <legend className="font-bold text-center">選手情報</legend>
-                            <ul className="space-y-2 w-full">
-                                <li>
-                                    <label htmlFor="name">名前: 
-                                        <input id="name" type="text" defaultValue={profile?.stats.name || ""} 
-                                        onChange={(e) => setProfile((prevProfile) => {
-                                            if (!prevProfile?.stats?.bdate) return prevProfile;
+                <div className="px-2 border-l-2">
+                    <h2>選手情報</h2>
+                    <div className="relative py-2">
+                        <ul className="space-y-2 w-full">
+                            <li>
+                                <label htmlFor="name">名前: 
+                                    <input id="name" type="text" defaultValue={profile?.stats.name || ""} 
+                                    onChange={(e) => setProfile((prevProfile) => {
+                                        if (!prevProfile?.stats?.bdate) return prevProfile;
 
-                                            return {
-                                                ...prevProfile,
-                                                stats: {
-                                                    ...prevProfile.stats,
-                                                    name: e.target.value
-                                                }
+                                        return {
+                                            ...prevProfile,
+                                            stats: {
+                                                ...prevProfile.stats,
+                                                name: e.target.value
                                             }
-                                        })}
-                                        className="ml-2 border w-48 h-8 rounded text-3xl" />
-                                    </label>
-                                </li>
-                                <li className="w-full">
-                                    {profile?.stats?.teamnames &&
-                                        <TeamHistoryInputCopy teamnames={profile.stats.teamnames} byear={profile?.stats?.bdate[2]} setProfile={setProfile} />
+                                        }
+                                    })}
+                                    className="ml-2 border w-48 h-8 rounded text-3xl" />
+                                </label>
+                            </li>
+                            <li className="w-full">
+                                {profile?.stats?.teamnames &&
+                                    <TeamHistoryInput teamnames={profile.stats.teamnames} byear={profile?.stats?.bdate[2]} setProfile={setProfile} />
+                                }
+                            </li>
+                            <li>
+                                <div className="relative">
+                                    <button type="button" onClick={() => setOpenSportsMenu(!openSportsMenu)}
+                                    className={`w-fit rounded ${openSportsMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ スポーツ追加</button>
+                                    {openSportsMenu &&
+                                        <div className="absolute top-full text-black z-11">
+                                            {/* <MenuNarrow setGenres={setGenres}/> */}
+                                            <SportsNarrow narrowedSports={sports} setSports={setSports}/>
+                                        </div>
                                     }
-                                </li>
-                                <li>
-                                    <label htmlFor="sports">スポーツ: 
-                                        <input id="sports" type="text" defaultValue={(profile?.stats?.sports || []).map((sports) => menuMapJP[sports]).join(', ')} 
-                                        className="ml-2 border w-48 rounded" />
-                                    </label>
-                                </li>
-                                <li className="flex">
-                                    <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)} 
-                                    className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>ジャンル: </button>
-                                    <div className="w-60 border rounded mx-2">
-                                        <p className="overflow-x-auto">{
-                                            genres.map((genre) => menuMapJP[genre]).join(', ')
-                                        }</p>
-                                    </div>
-                                </li>
-                            </ul>
-                        </fieldset>
-                    </form>
-                    {openGenreMenu &&
-                        <div className="absolute top-full left-2 text-black z-11">
-                            <MenuNarrow setGenres={setGenres}/>
-                        </div>
-                    }
+                                </div>
+                                <div className="w-60 border rounded mx-2">
+                                    <p className="overflow-x-auto">{
+                                        sports.map((sports) => menuMapJP[sports]).join(', ')
+                                    }</p>
+                                </div>
+                            </li>
+                            <li>
+                                <div className="relative">
+                                    <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)}
+                                    className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ ジャンル追加</button>
+                                    {openGenreMenu &&
+                                        <div className="absolute top-full text-black z-11">
+                                            <MenuNarrow setGenres={setGenres}/>
+                                        </div>
+                                    }
+                                </div>
+                                <div className="w-60 border rounded mx-2">
+                                    <p className="overflow-x-auto">{
+                                        genres.map((genre) => menuMapJP[genre]).join(', ')
+                                    }</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <form className="border-t-2 py-2">
