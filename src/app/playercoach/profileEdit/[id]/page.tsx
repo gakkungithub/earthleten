@@ -4,8 +4,7 @@ import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
-import Link from 'next/link';
-import MenuNarrow from '@/components/MenuNarrow';
+import MenuNarrowFixed from '@/components/MenuNarrowFixed';
 import SportsNarrow from '@/components/SportsMenu';
 
 import { v4 } from 'uuid';
@@ -22,7 +21,7 @@ type Stats = {
     name: string;
     teamnames?: Teamname[];
     sports: string[];
-    genres?: string[];
+    genres: string[];
     gender: string;
     bdate: [number, number, number];
     height?: number;
@@ -653,7 +652,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
             }
         });
     
-    const updateEntry = (index: number, type: string, name: string | number) => {
+    const updateEntry = (index: number, name: string) => {
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
 
@@ -665,7 +664,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
                         ...teamnames.slice(0, index),
                         {
                             ...teamnames[index], 
-                            [type]: name
+                            name: name
                         },
                         ...teamnames.slice(index+1)
                     ]
@@ -784,7 +783,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
                             type="text"
                             value={teamname.name}
                             placeholder="チーム名"
-                            onChange={(e) => updateEntry(teamNameIndex, "teamname", e.target.value)}
+                            onChange={(e) => updateEntry(teamNameIndex, e.target.value)}
                             className="border rounded p-1"
                         />
                         <input
@@ -938,8 +937,8 @@ export default function PlayerCoachProfileEditPage(){
         .then((res) => res.json())
         .then((json) => {
             setProfile(json);
-            setSports(json?.stats?.sports || []);
-            setGenres(json?.stats?.genres || []);
+            setSports(json?.stats.sports || []);
+            setGenres(json?.stats.genres || []);
         })
         .catch(() => redirect(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -966,6 +965,43 @@ export default function PlayerCoachProfileEditPage(){
                 ...profile,
                 scripts: newScripts
             });
+        }
+    }
+
+    const submitHandler = async () => {
+        if (!profile) return;
+
+        setProfile((prevProfile) => {
+            if (!prevProfile) return prevProfile;
+
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    sports: sports,
+                    genres: genres
+                }
+            }
+        })
+
+        try {
+            const response = await fetch('/api/profileEdit', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(profile),
+            });
+    
+            if (response.ok){
+                console.log('succeess in save');
+                redirect(`/playercoach/profile/${params.id}`);
+            }
+            else {
+                console.error('error in save');
+            }
+        } catch (err) {
+            console.error('error in connection', err);
         }
     }
     
@@ -1019,12 +1055,15 @@ export default function PlayerCoachProfileEditPage(){
                             </li>
                             <li>
                                 <div className="relative">
-                                    <button type="button" onClick={() => setOpenSportsMenu(!openSportsMenu)}
+                                    <button type="button" onClick={() => {
+                                        setOpenSportsMenu(!openSportsMenu);
+                                        setOpenGenreMenu(false);
+                                    }}
                                     className={`w-fit rounded ${openSportsMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ スポーツ追加</button>
                                     {openSportsMenu &&
                                         <div className="absolute top-full text-black z-11">
                                             {/* <MenuNarrow setGenres={setGenres}/> */}
-                                            <SportsNarrow narrowedSports={sports} setSports={setSports}/>
+                                            <SportsNarrow narrowedSports={sports} setSports={setSports} setGenres={setGenres}/>
                                         </div>
                                     }
                                 </div>
@@ -1036,11 +1075,14 @@ export default function PlayerCoachProfileEditPage(){
                             </li>
                             <li>
                                 <div className="relative">
-                                    <button type="button" onClick={() => setOpenGenreMenu(!openGenreMenu)}
+                                    <button type="button" onClick={() => {
+                                        setOpenGenreMenu(!openGenreMenu);
+                                        setOpenSportsMenu(false);
+                                    }}
                                     className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ ジャンル追加</button>
                                     {openGenreMenu &&
                                         <div className="absolute top-full text-black z-11">
-                                            <MenuNarrow setGenres={setGenres}/>
+                                            <MenuNarrowFixed sports={sports} genres={genres} setGenres={setGenres}/>
                                         </div>
                                     }
                                 </div>
@@ -1162,13 +1204,39 @@ export default function PlayerCoachProfileEditPage(){
             </form>
         </div>
         <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded text-center">
-            {(profile?.scripts || []).map((script) => (
+            {(profile?.scripts || []).map((script, scriptIndex) => (
                 <div key={script.id} className="flex flex-col py-2">
                     <div className="flex justify-between border-b-2 font-bold">
-                        <input type="text" defaultValue={script.section} />
+                        <input type="text" defaultValue={script.section} onChange={(e) => {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    scripts: [
+                                        ...prevProfile.scripts.slice(0, scriptIndex),
+                                        {...prevProfile.scripts[scriptIndex], section: e.target.value},
+                                        ...prevProfile.scripts.slice(scriptIndex+1)
+                                    ]
+                                }
+                            })
+                        }}/>
                         <button onClick={() => deleteScript(script.id)} className="w-fit bg-gray-600 hover:bg-gray-500 text-white rounded p-2 my-2">削除</button>
                     </div>
-                    <textarea defaultValue={script.texts.join('\n')} className="h-32"/>
+                    <textarea defaultValue={script.texts.join('\n')} onChange={(e) => {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    scripts: [
+                                        ...prevProfile.scripts.slice(0, scriptIndex),
+                                        {...prevProfile.scripts[scriptIndex], texts: e.target.value.split('\n')},
+                                        ...prevProfile.scripts.slice(scriptIndex+1)
+                                    ]
+                                }
+                            })
+                        }} className="h-32"/>
                 </div>
             ))}
             <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目を追加▼</button>
@@ -1179,7 +1247,7 @@ export default function PlayerCoachProfileEditPage(){
         {profile?.awards &&
             <AwardTables awards={profile.awards} setProfile={setProfile} />
         }
-        <Link href={`/playercoach/profile/${params.id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-orange-600 hover:bg-orange-500">編集終了</Link>
+        <button onClick={submitHandler} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-orange-600 hover:bg-orange-500">編集終了</button>
         </>
     )
 }
