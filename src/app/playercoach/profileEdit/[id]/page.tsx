@@ -624,9 +624,10 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
     );
 }
 
-function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[], setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+function TeamHistoryInputCopy({ teamnames, byear, setProfile }: { teamnames: Teamname[], byear: number, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
     const [teamInsertRow, setTeamInsertRow] = useState<number>(0);
     const maxRow = teamnames.length;
+    const thisYear = (new Date()).getFullYear();
     const [isActive, setIsActive] = useState<boolean>(maxRow === 0 ? false : teamnames[maxRow-1].end === null);
 
     const addEntry = () => 
@@ -641,8 +642,8 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                         ...teamnames.slice(0, teamInsertRow),
                         {
                             name: "",
-                            start: teamInsertRow === 0 ? 0 : (teamnames[teamInsertRow-1].end ?? 0), 
-                            end: teamInsertRow === maxRow ? ( isActive ? null : (new Date()).getFullYear()) : teamnames[teamInsertRow].start, 
+                            start: teamInsertRow === 0 ? byear : (teamnames[teamInsertRow-1].end ?? 0), 
+                            end: teamInsertRow === maxRow ? ( isActive ? null : thisYear) : teamnames[teamInsertRow].start, 
                             id: v4()
                         },
                         ...teamnames.slice(teamInsertRow)
@@ -672,34 +673,36 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
         });     
     }
 
-    // const updateStartMax = (index: number, value: number) => {
-    //     setProfile((prevProfile) => {
-    //         if (!prevProfile?.stats?.teamnames) return prevProfile;
+    const updateStartEnd = (index: number, type: string, value: number, min: number, max: number) => {
+        setProfile((prevProfile) => {
+            if (!prevProfile?.stats?.teamnames) return prevProfile;
 
-    //         return {
-    //             ...prevProfile,
-    //             stats: {
-    //                 ...prevProfile.stats,
-    //                 teamnames: [
-    //                     ...teamnames.slice(0, index),
-    //                     {
-    //                         ...teamnames[index], 
-    //                         max: (
-    //                             teamnames[index].end === null ? 
-    //                                 value : 
-    //                                 ( 
-    //                                     value > teamnames[index].end ?
+            const correctValue = () => {
+                if (value < min) {
+                    return min;
+                }
+                else if (value > max) {
+                    return max;
+                }
+                return value;
+            }
 
-
-    //                                 )
-    //                         )
-    //                     },
-    //                     ...teamnames.slice(index+1)
-    //                 ]
-    //             }
-    //         }
-    //     });     
-    // }
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    teamnames: [
+                        ...teamnames.slice(0, index),
+                        {
+                            ...teamnames[index], 
+                            [type]: correctValue()
+                        },
+                        ...teamnames.slice(index+1)
+                    ]
+                }
+            }
+        });     
+    }
   
     const removeEntry = (index: number) => {
         setProfile((prevProfile) => {
@@ -787,9 +790,9 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                             type="number"
                             value={teamname.start}
                             placeholder="入団年"
-                            onChange={(e) => updateEntry(teamNameIndex, "start", Number(e.target.value))}
-                            min={teamNameIndex > 0 ? (teamnames[teamNameIndex-1].end || 0): 1997}
-                            max={teamname.end === null ? 2025 : teamname.end}
+                            onChange={(e) => updateStartEnd(teamNameIndex, "start", Number(e.target.value), Number(e.target.min), Number(e.target.max))}
+                            min={teamNameIndex > 0 ? (teamnames[teamNameIndex-1].end || 0): byear}
+                            max={teamname.end === null ? thisYear : teamname.end}
                             className="border rounded p-1 w-16"
                         />
                         <input
@@ -797,9 +800,9 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                             value={teamname.end ?? ""}
                             disabled={teamname.end === null}
                             placeholder="退団年"
-                            onChange={(e) => updateEntry(teamNameIndex, "end", Number(e.target.value))}
+                            onChange={(e) => updateStartEnd(teamNameIndex, "end", Number(e.target.value), Number(e.target.min), Number(e.target.max))}
                             min={teamname.start}
-                            max={teamNameIndex === maxRow-1 ? 2025 : teamnames[teamNameIndex+1].start}
+                            max={teamNameIndex === maxRow-1 ? thisYear : teamnames[teamNameIndex+1].start}
                             className="border rounded p-1 w-16"
                         />
                         <button type="button" onClick={() => removeEntry(teamNameIndex)} className="flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center">&times;</button>
@@ -1009,7 +1012,7 @@ export default function PlayerCoachProfileEditPage(){
                                 </li>
                                 <li className="w-full">
                                     {profile?.stats?.teamnames &&
-                                        <TeamHistoryInputCopy teamnames={profile.stats.teamnames} setProfile={setProfile} />
+                                        <TeamHistoryInputCopy teamnames={profile.stats.teamnames} byear={profile?.stats?.bdate[2]} setProfile={setProfile} />
                                     }
                                 </li>
                                 <li>
@@ -1091,6 +1094,7 @@ export default function PlayerCoachProfileEditPage(){
                         誕生日:
                         <div className="flex justify-center items-center">
                             <input id="year" type="number" step="1" value={profile?.stats?.bdate?.[2] || 0}
+                            max={profile?.stats?.teamnames?.[0] ? profile.stats.teamnames[0].start : (new Date()).getFullYear()} 
                             onChange={(e) => setProfile((prevProfile) => {
                                 if (!prevProfile?.stats?.bdate) return prevProfile;
 
