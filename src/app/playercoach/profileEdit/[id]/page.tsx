@@ -627,7 +627,7 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
 function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[], setProfile: Dispatch<SetStateAction<Profile | null>>}) {
     const [teamInsertRow, setTeamInsertRow] = useState<number>(0);
     const maxRow = teamnames.length;
-    const [isActive, setIsActive] = useState<boolean>(teamnames[maxRow-1].end === null);
+    const [isActive, setIsActive] = useState<boolean>(maxRow === 0 ? false : teamnames[maxRow-1].end === null);
 
     const addEntry = () => 
         setProfile((prevProfile) => {
@@ -639,7 +639,12 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                     ...prevProfile.stats,
                     teamnames: [
                         ...teamnames.slice(0, teamInsertRow),
-                        {name: "", start: 0, end: null, id: v4()},
+                        {
+                            name: "",
+                            start: teamInsertRow === 0 ? 0 : (teamnames[teamInsertRow-1].end ?? 0), 
+                            end: teamInsertRow === maxRow ? ( isActive ? null : (new Date()).getFullYear()) : teamnames[teamInsertRow].start, 
+                            id: v4()
+                        },
                         ...teamnames.slice(teamInsertRow)
                     ]
                 }
@@ -666,6 +671,35 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
             }
         });     
     }
+
+    // const updateStartMax = (index: number, value: number) => {
+    //     setProfile((prevProfile) => {
+    //         if (!prevProfile?.stats?.teamnames) return prevProfile;
+
+    //         return {
+    //             ...prevProfile,
+    //             stats: {
+    //                 ...prevProfile.stats,
+    //                 teamnames: [
+    //                     ...teamnames.slice(0, index),
+    //                     {
+    //                         ...teamnames[index], 
+    //                         max: (
+    //                             teamnames[index].end === null ? 
+    //                                 value : 
+    //                                 ( 
+    //                                     value > teamnames[index].end ?
+
+
+    //                                 )
+    //                         )
+    //                     },
+    //                     ...teamnames.slice(index+1)
+    //                 ]
+    //             }
+    //         }
+    //     });     
+    // }
   
     const removeEntry = (index: number) => {
         setProfile((prevProfile) => {
@@ -675,10 +709,17 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                 ...prevProfile,
                 stats: {
                     ...prevProfile.stats,
-                    teamnames: [
-                        ...teamnames.slice(0, index),
-                        ...teamnames.slice(index+1)
-                    ]
+                    teamnames: maxRow === 1 ?
+                    [] :
+                        isActive && maxRow-1 === index?
+                        [
+                            ...teamnames.slice(0, maxRow-2),
+                            {...teamnames[maxRow-2], end: null}   
+                        ] :
+                        [
+                            ...teamnames.slice(0, index),
+                            ...teamnames.slice(index+1)
+                        ]
                 }
             }
         });
@@ -694,23 +735,30 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                 ...prevProfile,
                 stats: {
                     ...prevProfile.stats,
-                    teamnames: [
+                    teamnames: maxRow ? 
+                    [
                         ...teamnames.slice(0, maxRow-1),
                         {
                             ...teamnames[maxRow-1], 
                             end: checked ? null : (new Date()).getFullYear()
                         },
-                    ]
+                    ] :
+                    []
                 }
             }
         }); 
     }
 
     useEffect(() => {
-        if (teamInsertRow > maxRow) {
-            setTeamInsertRow(maxRow);
+        if (teamInsertRow >= maxRow) {
+            if (isActive && maxRow) {
+                setTeamInsertRow(maxRow-1);
+            }
+            else {
+                setTeamInsertRow(maxRow);
+            }
         }
-    }, [teamInsertRow, maxRow])
+    }, [teamInsertRow, maxRow, isActive])
   
     return (
         <div className={`overflow-x-auto w-full ${teamInsertRow === teamnames.length ? "border-b-4 border-fuchsia-600" : ""}`}>
@@ -740,6 +788,8 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                             value={teamname.start}
                             placeholder="入団年"
                             onChange={(e) => updateEntry(teamNameIndex, "start", Number(e.target.value))}
+                            min={teamNameIndex > 0 ? (teamnames[teamNameIndex-1].end || 0): 1997}
+                            max={teamname.end === null ? 2025 : teamname.end}
                             className="border rounded p-1 w-16"
                         />
                         <input
@@ -748,6 +798,8 @@ function TeamHistoryInputCopy({ teamnames, setProfile }: { teamnames: Teamname[]
                             disabled={teamname.end === null}
                             placeholder="退団年"
                             onChange={(e) => updateEntry(teamNameIndex, "end", Number(e.target.value))}
+                            min={teamname.start}
+                            max={teamNameIndex === maxRow-1 ? 2025 : teamnames[teamNameIndex+1].start}
                             className="border rounded p-1 w-16"
                         />
                         <button type="button" onClick={() => removeEntry(teamNameIndex)} className="flex w-4 h-4 bg-gray-400 text-white rounded-full items-center justify-center">&times;</button>
