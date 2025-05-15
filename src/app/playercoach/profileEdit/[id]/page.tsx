@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import MenuNarrowFixed from '@/components/MenuNarrowFixed';
 import SportsNarrow from '@/components/SportsMenu';
 
@@ -38,7 +38,7 @@ type CellLocation =
     [number, number, number]
 
 type TableCell = {
-    value: string | number | null;
+    value: string | number;
     id: string;
     highlightColor?: string;
 }
@@ -102,7 +102,7 @@ function ResultTableCell({tableCellInfo, usedHColors, isAddLinePlace, setProfile
             ${tableCell?.highlightColor ? tableCell?.highlightColor : ""} ${isAddLinePlace && "border-l-4 border-l-fuchsia-600"}`}>
             <input type="text" onFocus={() => setOpenHighlightColorMenu(true)} 
             onBlur={() => setOpenHighlightColorMenu(false)}
-            defaultValue={tableCell.value !== null ? tableCell.value : ""} className="border rounded" />
+            defaultValue={tableCell.value} className="border rounded" />
             {openHighlightColorMenu &&
                 <div className="absolute top-full left-0 z-10 flex w-full px-4 space-x-2">
                 {usedHColors.map((usedHColor) => (
@@ -143,7 +143,6 @@ function ResultTableCell({tableCellInfo, usedHColors, isAddLinePlace, setProfile
                     </button>
                 ))}
                 </div>
-                // <SetHighlightColor usedHColors={usedHColors} currentColor={tableCell.highlightColor || ""} cellLocation={cellLocation} />
             }
         </td>
     )
@@ -295,7 +294,7 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
                                                     rows: [
                                                         ...result.rows.slice(0, rocNum), 
                                                         {id: v4(), cells: Array.from({length: result.columns.length},() => (
-                                                            {id: v4(), value: null}
+                                                            {id: v4(), value: ""}
                                                         ))}, 
                                                         ...result.rows.slice(rocNum)
                                                     ]
@@ -394,7 +393,7 @@ function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetSt
                                             {
                                                 id: v4(),
                                                 cells: Array.from({length: 2},() => (
-                                                    {id: v4(), value: null}
+                                                    {id: v4(), value: ""}
                                                 ))
                                             }
                                         ]
@@ -940,7 +939,7 @@ export default function PlayerCoachProfileEditPage(){
             setSports(json?.stats.sports || []);
             setGenres(json?.stats.genres || []);
         })
-        .catch(() => redirect(`/playercoach/profile/${params.id}`));
+        .catch(() => router.push(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
@@ -968,21 +967,41 @@ export default function PlayerCoachProfileEditPage(){
         }
     }
 
+    const router = useRouter();
+
     const submitHandler = async () => {
         if (!profile) return;
 
-        setProfile((prevProfile) => {
-            if (!prevProfile) return prevProfile;
+        const scripts = profile.scripts.filter((script) => script.section !== "");
 
-            return {
-                ...prevProfile,
-                stats: {
-                    ...prevProfile.stats,
-                    sports: sports,
-                    genres: genres
-                }
-            }
-        })
+        const data = {
+            ...profile.data,
+            results: profile.data.results.filter((result) => 
+                result.position !== "" ||
+                !result.columns.every(column => column.value === "")
+            ),
+            highlightInfo: Object.fromEntries(Object.entries(profile.data.highlightInfo).filter(([, value]) => value !== "")) as Partial<Record<string, string>>
+        }
+
+        const awards = 
+            profile.awards.filter((award) => award.section !== "")
+            .map((award) => ({
+                ...award,
+                titles: award.titles.filter((title) => title.years.length > 0)   
+            }))
+            .filter((award) => award.titles.length > 0)
+
+        const sentProfile = {
+            ...profile,
+            stats: {
+                ...profile.stats,
+                sports: sports,
+                genres: genres
+            },
+            scripts: scripts,
+            data: data,
+            awards: awards
+        };
 
         try {
             const response = await fetch('/api/profileEdit', {
@@ -990,12 +1009,12 @@ export default function PlayerCoachProfileEditPage(){
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(profile),
+                body: JSON.stringify(sentProfile),
             });
     
             if (response.ok){
                 console.log('succeess in save');
-                redirect(`/playercoach/profile/${params.id}`);
+                router.push(`/playercoach/profile/${params.id}`);
             }
             else {
                 console.error('error in save');
@@ -1247,7 +1266,7 @@ export default function PlayerCoachProfileEditPage(){
         {profile?.awards &&
             <AwardTables awards={profile.awards} setProfile={setProfile} />
         }
-        <button onClick={submitHandler} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-orange-600 hover:bg-orange-500">編集終了</button>
+        <button type="button" onClick={submitHandler} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-orange-600 hover:bg-orange-500">編集終了</button>
         </>
     )
 }

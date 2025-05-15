@@ -3,12 +3,6 @@
     "name": "高川楽",
     "teamnames": [
       {
-        "name": "gakkunjrs",
-        "start": 2012,
-        "end": 2015,
-        "id": "25d15477-a04c-46e0-a8b1-cd9a67bedb6c"
-      },
-      {
         "name": "ソーラーパワーズ",
         "start": 2015,
         "end": 2017,
@@ -32,9 +26,7 @@
     ],
     "genres": [
       "baseball_fielder_second",
-      "baseball_fielder_shortstop",
-      "baseball_fielder_first",
-      "baseball_fielder_center"
+      "baseball_fielder_shortstop"
     ],
     "gender": "male",
     "bdate": [
@@ -76,15 +68,6 @@
         "ストレートは平均158km、最速で163kmを記録した。",
         "フォークボールは最大70cmの落差を記録し、ワンバウンドして空振りを奪うことも多々あった。",
         "スイーパーは一度右に膨らんでから打者からベース2つ分曲がるので、上2つの球種の効果を更に高めた。"
-      ]
-    },
-    {
-      "id": "401aafb1-f1f3-46d9-abff-e5d50cdd46a4",
-      "section": "その他1",
-      "texts": [
-        "テスト",
-        "テスト1",
-        ""
       ]
     }
   ],

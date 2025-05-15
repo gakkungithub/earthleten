@@ -28,7 +28,7 @@ type Script = {
 }
 
 type TableCell = {
-    value: string | number | null;
+    value: string | number;
     id: string;
     highlightColor?: string;
 }
@@ -50,10 +50,16 @@ type Result = {
     rows: TableRow[];
 };
 
+type Title = {
+    id: string; 
+    name: string; 
+    years: number[];
+}
+
 type Award = {
     id: string;
     section: string;
-    titles: {id: string; name: string; years: number[]}[];
+    titles: Title[];
 }
 
 type Color = {
@@ -87,7 +93,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 <p className="font-bold">プロフィール</p>
                 <ul className="list-none ml-4">
                     <li>性別: {await getGenderByLanguage(stats.gender, 'jp')}</li>
-                    <li>誕生日: {stats.bdate || "不明"}</li>
+                    <li>誕生日: {stats.bdate?.join('/') || "?"}</li>
                     <li>身長: {stats.height || "?"}cm</li>
                     <li>体重: {stats.weight || "?"}kg</li>
                 </ul>
@@ -126,7 +132,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                                 <tr key={row.id} className="text-center">
                                     {row.cells.map((cell) => (
                                         <td key={cell.id} className={`border-black border px-4 py-2 whitespace-nowrap ${cell?.highlightColor || ""}`}>
-                                        {cell.value !== null ? cell.value : "-"}
+                                        {cell.value !== "" ? cell.value : "-"}
                                         </td>
                                     ))}
                                 </tr>
@@ -145,7 +151,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         </div>
         <h2 className="font-bold text-3xl my-2">- 受賞 -</h2>
         <div className="h-128 overflow-y-auto border-2 p-2">
-            {awards.map((award, awardIndex) => (
+            {awards.map((award) => (
             <div key={award.id} className="overflow-x-auto">
                 <table className="table-auto w-full border-collapse border border-gray-300">
                 <caption className="caption-top text-left font-semibold text-lg mb-2">
@@ -162,7 +168,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                     </tr>
                 </thead>
                 <tbody>
-                    {award.titles.map((title, titleIndex) => (
+                    {award.titles.map((title) => (
                         <tr key={title.id} className="text-center">
                             <td className="border px-4 py-2 whitespace-nowrap">
                                 {title.name}
