@@ -80,13 +80,27 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor ? `text-${color.textcolor}` : "text-white"} ${color?.bgcolor ? `bg-${color.bgcolor}` : "bg-gray-400"}`}>
             <div className="flex items-center no-underline w-fit rounded">
                 <Image src='/defaultIcon.png' alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
-                <ul>
+                <ul className="mt-2">
                     <li className="flex gap-x-2 items-center">
                         <p className="text-4xl font-bold">{stats.name}</p>
                         <p className="text-2xl whitespace-nowrap font-bold">[{(await getGenreLabelsByLanguage(stats.sports, 'jp')).join(', ')}]</p>
                         <p>{genreLabels.join(', ')}</p>
                     </li>
-                    <li>{stats.teamnames?.map((teamname) => teamname.name).join(" -> ") || ""}</li>
+                    <li className="px-2">
+                        <div className="flex flex-col items-start">
+                        {stats.teamnames?.map((team, index) => (
+                            <div key={index} className="flex flex-col items-start">
+                                <p>
+                                    <span className="font-bold text-lg">{team.name} </span>
+                                    <span>{team.start}〜{team.end !== null ? team.end : "現役"}</span>
+                                </p>
+                                {index !== (stats.teamnames?.length || 0) - 1 && (
+                                    <div className="text-lg text-center">↓</div>
+                                )}
+                            </div>
+                        ))}
+                        </div>
+                    </li>
                 </ul>
             </div>
             <div className="border-t-2">
