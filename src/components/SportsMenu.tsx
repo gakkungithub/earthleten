@@ -1,8 +1,8 @@
 'use client';
 
-import React, { Dispatch, SetStateAction } from 'react';
+import React from 'react';
 
-export default function SportsNarrow({narrowedSports, setSports, setGenres} : {narrowedSports: string[], setSports: Dispatch<SetStateAction<string[]>>, setGenres: Dispatch<SetStateAction<string[]>>}) {
+export default function SportsMenu({narrowedSports, narrowedGenres, setSports, setGenres} : {narrowedSports: string[], narrowedGenres: string[], setSports: (sports: string[]) => void, setGenres: (genres: string[]) => void }) {
     // #region menuConst 
     const sportsMap = ['baseball', 'football', 'trackfield'];
 
@@ -19,9 +19,7 @@ export default function SportsNarrow({narrowedSports, setSports, setGenres} : {n
             Array.from(new Set([...narrowedSports, sports]))
         )
         if (included) {
-            setGenres((prevGenres) => 
-                prevGenres.filter((g) => !g.includes(sports))
-            )
+            setGenres(narrowedGenres.filter((g) => !g.includes(sports)))
         }
     }
     

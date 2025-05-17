@@ -25,8 +25,9 @@
       "baseball"
     ],
     "genres": [
-      "baseball_fielder_second",
-      "baseball_fielder_shortstop"
+      "baseball_pitcher_starter",
+      "baseball_pitcher_setupman",
+      "baseball_pitcher_closer"
     ],
     "gender": "male",
     "bdate": [

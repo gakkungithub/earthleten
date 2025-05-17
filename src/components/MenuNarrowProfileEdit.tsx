@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Dispatch, SetStateAction } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 
 type CboxData = {
@@ -11,7 +11,7 @@ type CboxData = {
     }
 }
 
-export default function MenuNarrowFixed({sports, genres, setGenres} : {sports: string[], genres: string[], setGenres: Dispatch<SetStateAction<string[]>> }) {
+export default function MenuNarrowProfileEdit({sports, genres, setGenres} : {sports: string[], genres: string[], setGenres: (genres: string[]) => void }) {
     // #region menuConst 
     const menuMap: {[key: string] : {genres: string[], level: number} } = {
         sports: {genres: ['baseball', 'football', 'trackfield'], level: -1},
@@ -181,7 +181,7 @@ export default function MenuNarrowFixed({sports, genres, setGenres} : {sports: s
                     setValue('sports.sub1', [...new Set(watchSub1.filter(genre => !allSub1Genres.includes(genre)))]);
                     allSub1Genres.map((genre) => {
                         const allSub2Genres = menuMap[genre].genres;
-                        setValue('sports.sub2', [...new Set(getValues('sports.sub2').filter(genre => !allSub2Genres.includes(genre)))]);  
+                        setValue('sports.sub2', [...new Set(watchSub2.filter(genre => !allSub2Genres.includes(genre)))]);  
                     });
                 }
                 else if (regName === 'sports.sub1') {
@@ -225,17 +225,21 @@ export default function MenuNarrowFixed({sports, genres, setGenres} : {sports: s
         </label>);
     }
 
-    const updateSuggests = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.value) {
-            const response = await fetch(`/api/genres?genreString=${e.target.value}`, {
+    const updateSuggests = async (value: string) => {
+        if (value) {
+            const response = await fetch(`/api/genres?genreString=${value}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
             if (response.ok) {
-                const genres = await response.json();
-                setGenreSuggests(genres);
+                const genreSuggests = (await response.json()) as [string, string][];
+                const gSFiltered = genreSuggests.filter(([key, ]) => 
+                    sports.some(sports => key.includes(sports)) &&
+                    !genres.some(genre => key.includes(genre))
+                );
+                setGenreSuggests(gSFiltered);
             }
         }
         else {
@@ -253,17 +257,23 @@ export default function MenuNarrowFixed({sports, genres, setGenres} : {sports: s
                     <div className="relative">
                         <label htmlFor='genreSuggests'>
                             🔍 <input type="text" id='genreSuggests' className="border-2 rounded"
-                            onChange={updateSuggests}/>
+                            onChange={(e) => updateSuggests(e.target.value)}/>
                         </label>
                         {genreSuggests.length > 0 &&
                             <ul className="absolute top-full z-12 overflow-y-auto w-full h-64 bg-white border-2">
-                            {genreSuggests.map((genreSuggest, index) => (
-                                <li key={index} onClick={() => setGenres((prevGenres: string[]) => Array.from(new Set([...prevGenres, genreSuggest[0]])))}
+                            {genreSuggests.map((genreSuggest) => (
+                                <li key={genreSuggest[0]} onClick={() => {
+                                    setGenres(Array.from(new Set([...genres, genreSuggest[0]])))
+                                    setValue('sports.sub2', [...watchSub2, genreSuggest[0]]);
+                                    setGenreSuggests((prevGenreSuggests) => {
+                                        const removedSuggests = prevGenreSuggests.filter(suggest => suggest[0] !== genreSuggest[0]);
+                                        return removedSuggests
+                                    })
+                                }}
                                 className="border rounded text-white bg-blue-600 w-fit px-4 mx-auto hover:cursor-pointer">
                                     {genreSuggest[1]}
                                 </li>
-                            ))
-                            }
+                            ))}
                             </ul>
                         }
                     </div>

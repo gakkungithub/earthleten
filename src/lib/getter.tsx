@@ -163,9 +163,10 @@ export async function getGenreLabelsByLanguage(genres: string[], language: strin
 }
 
 export async function getGenreLabelsBySuggest(genreString: string) {
-    const genres = Object.entries(menuMapJP).filter(
-        ([key, value]) => value.includes(genreString) && key.split('_').length === 3
-    ) || [];
+    
+    const genres = Object.entries(menuMapJP).filter(([key, value]) => 
+        key.split('_').length === 3 && value.includes(genreString)
+    );
     return genres;
 }
 

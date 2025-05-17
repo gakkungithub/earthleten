@@ -4,8 +4,8 @@ import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import MenuNarrowFixed from '@/components/MenuNarrowFixed';
-import SportsNarrow from '@/components/SportsMenu';
+import MenuNarrowProfileEdit from '@/components/MenuNarrowProfileEdit';
+import SportsMenu from '@/components/SportsMenu';
 
 import { v4 } from 'uuid';
 // import path from 'path';
@@ -523,7 +523,7 @@ function TitleTable({title, titleLocation, crntYear, setProfile}:{title: Title, 
     );
 }
 
-function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<SetStateAction<Profile | null>>}){
+function AwardTables({awards, setProfile}:{ awards:Award[], setProfile: Dispatch<SetStateAction<Profile | null>> }){
     const crntYear = String((new Date()).getFullYear());
 
     return (
@@ -623,7 +623,7 @@ function AwardTables({awards, setProfile}:{awards:Award[], setProfile: Dispatch<
     );
 }
 
-function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamname[], byear: number, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamname[], byear: number, setProfile: Dispatch<SetStateAction<Profile | null>> }) {
     const [teamInsertRow, setTeamInsertRow] = useState<number>(0);
     const maxRow = teamnames.length;
     const thisYear = (new Date()).getFullYear();
@@ -765,7 +765,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
     return (
         <div className={`overflow-x-auto w-full ${teamInsertRow === teamnames.length ? "border-b-4 border-fuchsia-600" : ""}`}>
             <h2 className="text-lg font-bold">チーム履歴</h2>
-            <button type="button" onClick={addEntry} className="my-2 bg-blue-500 text-white px-2 py-1 rounded">＋ チーム追加</button>
+            <button type="button" onClick={addEntry} className="my-2 py-1 rounded">＋ チーム追加</button>
             <label>
                 <span className="mx-2">追加列</span>
                 <input id="teamInsertCol" type="number" value={teamInsertRow} onChange={(e) => setTeamInsertRow(Number(e.target.value))} 
@@ -812,15 +812,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
     );
 }
 
-export default function PlayerCoachProfileEditPage(){
-    const [profile, setProfile] = useState<Profile | null>(null);
-
-    const [currentImage, setCurrentImage] = useState<string>("");
-    const [openSportsMenu, setOpenSportsMenu] = useState<boolean>(false);
-    const [sports, setSports] = useState<string[]>([]);
-    const [openGenreMenu, setOpenGenreMenu] = useState<boolean>(false);
-    const [genres, setGenres] = useState<string[]>([]);
-
+function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatch<SetStateAction<Profile | null>> }) {
     function getMaxDayOfMonth(month: number, year: number): number {
         if ([1, 3, 5, 7, 8, 10, 12].includes(month)) return 31;
         if ([4, 6, 9, 11].includes(month)) return 30;
@@ -829,17 +821,204 @@ export default function PlayerCoachProfileEditPage(){
         return isLeapYear ? 29 : 28;
       }
 
-    const [month, day, year] = profile?.stats?.bdate || [1,1,1]
+    const [month, day, year] = stats?.bdate || [1,1,1]
 
     const correctedDay = useMemo(() => {
         const maxDay = getMaxDayOfMonth(month, year);
         return Math.min(day, maxDay);
     }, [month, day, year]);
-      
-    const params = useParams();
 
-    const bgcolor: string = profile?.color?.bgcolor || "gray-400";
-    const textcolor: string = profile?.color?.textcolor || "white"
+    const genderOnChange = (gender: string) => 
+        setProfile((prevProfile) => {
+            if (!prevProfile) return prevProfile
+
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    gender: gender
+                }
+            }
+        });
+
+    const bdateOnChange = (value: string, level: string) => 
+        setProfile((prevProfile) => {
+            if (!prevProfile?.stats?.bdate) return prevProfile;
+
+            const newBdate = (): [number, number, number] => {
+                switch (level) {
+                    case "year":
+                        return [prevProfile.stats.bdate[0], prevProfile.stats.bdate?.[1], Number(value)];
+                    case "month":
+                        return [Number(value), prevProfile.stats.bdate[1], prevProfile.stats.bdate?.[2]];
+                    case "day":
+                        return [prevProfile.stats.bdate[0], Number(value), prevProfile.stats.bdate?.[2]]
+                    default:
+                        return prevProfile.stats.bdate;
+                }
+            }
+            
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    bdate: newBdate()
+                }
+            }
+        })
+
+    return (
+        <form className="border-t-2 py-2">
+        <p className="font-bold">プロフィール</p>
+        <ul className="list-none ml-4 space-y-2">
+            <li className="flex items-center">
+                性別: 
+                <div className="flex flex-col">
+                    <label htmlFor="gender-male" className="mx-2">
+                        <input id="gender-male" type="radio" value="male" checked={stats?.gender === "male"} 
+                        onChange={() => genderOnChange('male')}/> 男性
+                    </label>                    
+                    <label htmlFor="gender-female" className="mx-2">
+                        <input id="gender-female" type="radio" value="female" checked={stats?.gender === "female"} 
+                            onChange={() => genderOnChange('female')}/> 女性
+                    </label>
+                    <label htmlFor="gender-private" className="mx-2">
+                        <input id="gender-private" type="radio" value="private" checked={stats?.gender === "private"} 
+                            onChange={() => genderOnChange('private')}/> 非公開
+                    </label>
+                </div>
+            </li>
+            <li className="flex items-center">
+                誕生日:
+                <div className="flex justify-center items-center">
+                    <input id="year" type="number" step="1" value={stats?.bdate?.[2] || 0}
+                    max={stats?.teamnames?.[0] ? stats.teamnames[0].start : (new Date()).getFullYear()} 
+                    onChange={(e) => bdateOnChange(e.target.value, "year")} className="border w-12 m-2" />
+                    <p>年</p>
+                    <input id="month" type="number" step="1" value={stats?.bdate?.[0] || 0} min={1} max={12}
+                    onChange={(e) => bdateOnChange(e.target.value, "month")} className="border w-12 m-2" />
+                    <p>月</p>
+                    <input id="day" type="number" step="1" value={correctedDay} min={1}
+                    onChange={(e) => bdateOnChange(e.target.value, "day")} className="border w-12 m-2" />
+                    <p>日</p> 
+                </div>                  
+            </li>
+            <li className="flex items-center">
+                <label htmlFor="height">身長:</label>
+                <input id="height" type="number" step="0.1" defaultValue={stats?.height} className="border w-12 mx-2" />
+                <p>cm</p>
+            </li>
+            <li className="flex items-center">
+                <label htmlFor="weight">体重:</label>
+                <input id="weight" type="number" step="0.1" defaultValue={stats?.weight} className="border w-12 mx-2" />
+                <p>kg</p>
+            </li>
+        </ul>
+        </form>
+    )
+}
+
+function ScriptTables({ scripts, setProfile }: { scripts: Script[], setProfile: Dispatch<SetStateAction<Profile | null>> }) {
+    const addScript = () => 
+        setProfile((prevProfile) => {
+            if (!prevProfile) return prevProfile;
+
+            const newScript: Script = { id: v4(), section: "", texts: []};
+
+            return {
+                ...prevProfile,
+                scripts: [...prevProfile.scripts, newScript]
+            }
+        });
+
+    const deleteScript = (id: string) => {
+        const confirmed = window.confirm("本当に削除しますか?");
+        
+        if (confirmed) {
+            setProfile((prevProfile) => {
+                if (!prevProfile) return prevProfile;
+    
+                const newScripts = scripts.filter(script => script.id !== id);
+    
+                return {
+                    ...prevProfile,
+                    scripts: newScripts
+                }
+            });
+        }
+    }
+    
+    return (
+        <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded text-center">
+            {scripts.map((script, scriptIndex) => (
+                <div key={script.id} className="flex flex-col py-2">
+                    <div className="flex justify-between border-b-2 font-bold">
+                        <input type="text" defaultValue={script.section} onChange={(e) => {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    scripts: [
+                                        ...prevProfile.scripts.slice(0, scriptIndex),
+                                        {...prevProfile.scripts[scriptIndex], section: e.target.value},
+                                        ...prevProfile.scripts.slice(scriptIndex+1)
+                                    ]
+                                }
+                            })
+                        }}/>
+                        <button onClick={() => deleteScript(script.id)} className="w-fit bg-gray-600 hover:bg-gray-500 text-white rounded p-2 my-2">削除</button>
+                    </div>
+                    <textarea defaultValue={script.texts.join('\n')} onChange={(e) => {
+                            setProfile((prevProfile) => {
+                                if (!prevProfile) return prevProfile;
+
+                                return {
+                                    ...prevProfile,
+                                    scripts: [
+                                        ...prevProfile.scripts.slice(0, scriptIndex),
+                                        {...prevProfile.scripts[scriptIndex], texts: e.target.value.split('\n')},
+                                        ...prevProfile.scripts.slice(scriptIndex+1)
+                                    ]
+                                }
+                            })
+                        }} className="h-32"/>
+                </div>
+            ))}
+            <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目を追加▼</button>
+        </div>
+    )
+}
+
+function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { sports: string[], genres: string[], textcolor: string, bgcolor: string, setProfile: Dispatch<SetStateAction<Profile | null>> }) {
+    const [openSportsMenu, setOpenSportsMenu] = useState<boolean>(false);
+    const [openGenresMenu, setOpenGenresMenu] = useState<boolean>(false);
+    
+    const setSports = (sports: string[]) => 
+        setProfile((prevProfile) => {
+            if (!prevProfile) return prevProfile;
+            
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    sports: sports
+                }
+            }
+        });
+    
+    const setGenres = (genres: string[]) => 
+        setProfile((prevProfile) => {
+            if (!prevProfile) return prevProfile;
+            
+            return {
+                ...prevProfile,
+                stats: {
+                    ...prevProfile.stats,
+                    genres: genres
+                }
+            }
+        });
 
     const menuMapJP: { [key: string]: string } = {
         baseball: '野球',
@@ -931,41 +1110,70 @@ export default function PlayerCoachProfileEditPage(){
         trackfield_mixed_decathlon: '十種競技'
     };
 
+    return (
+        <>
+            <li>
+                <div className="relative">
+                    <button type="button" onClick={() => {
+                        setOpenSportsMenu(!openSportsMenu);
+                        setOpenGenresMenu(false);
+                    }}
+                    className={`w-fit rounded ${openSportsMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ スポーツ追加</button>
+                    {openSportsMenu &&
+                        <div className="absolute top-full text-black z-11">
+                            {/* <MenuNarrow setGenres={setGenres}/> */}
+                            <SportsMenu narrowedSports={sports} narrowedGenres={genres} setSports={setSports} setGenres={setGenres}/>
+                        </div>
+                    }
+                </div>
+                <div className="w-60 border rounded mx-2">
+                    <p className="overflow-x-auto">{
+                        sports.map((sports) => menuMapJP[sports]).join(', ')
+                    }</p>
+                </div>
+            </li>
+            <li>
+                <div className="relative">
+                    <button type="button" onClick={() => {
+                        setOpenGenresMenu(!openGenresMenu);
+                        setOpenSportsMenu(false);
+                    }}
+                    className={`w-fit rounded ${openGenresMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ ジャンル追加</button>
+                    {openGenresMenu &&
+                        <div className="absolute top-full text-black z-11">
+                            <MenuNarrowProfileEdit sports={sports} genres={genres} setGenres={setGenres}/>
+                        </div>
+                    }
+                </div>
+                <div className="w-60 border rounded mx-2">
+                    <p className="overflow-x-auto">{
+                        genres.map((genre) => menuMapJP[genre]).join(', ')
+                    }</p>
+                </div>
+            </li>
+        </>
+    )
+}
+
+export default function PlayerCoachProfileEditPage(){
+    const [profile, setProfile] = useState<Profile | null>(null);
+
+    const [currentImage, setCurrentImage] = useState<string>("");
+      
+    const params = useParams();
+
+    const bgcolor: string = profile?.color?.bgcolor || "gray-400";
+    const textcolor: string = profile?.color?.textcolor || "white"
+
     useEffect(() => {
         fetch('/jsonfile/sports_kgavvaaxha_3.json')
         .then((res) => res.json())
         .then((json) => {
             setProfile(json);
-            setSports(json?.stats.sports || []);
-            setGenres(json?.stats.genres || []);
         })
         .catch(() => router.push(`/playercoach/profile/${params.id}`));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
-
-    const addScript = () => {
-        if(!profile) return;
-
-        const newScript: Script = { id: v4(), section: "", texts: []};
-        setProfile({
-            ...profile,
-            scripts: [...profile.scripts, newScript]
-        });
-    }
-
-    const deleteScript = (id: string) => {
-        if(!profile?.scripts) return;
-
-        const confirmed = window.confirm("本当に削除しますか?");
-
-        if (confirmed) {
-            const newScripts = profile.scripts.filter(script => script.id !== id);
-            setProfile({
-                ...profile,
-                scripts: newScripts
-            });
-        }
-    }
 
     const router = useRouter();
 
@@ -993,11 +1201,6 @@ export default function PlayerCoachProfileEditPage(){
 
         const sentProfile = {
             ...profile,
-            stats: {
-                ...profile.stats,
-                sports: sports,
-                genres: genres
-            },
             scripts: scripts,
             data: data,
             awards: awards
@@ -1043,7 +1246,6 @@ export default function PlayerCoachProfileEditPage(){
                                 const file = e.currentTarget.files ? window.URL.createObjectURL(e.currentTarget.files[0]) : currentImage;
                                 setCurrentImage((prevImage) => file || prevImage)
                             }} />
-                        {/* <div>{errors.image?.message}</div> */}
                     </fieldset>
                 </form>
                 <div className="px-2 border-l-2">
@@ -1072,194 +1274,20 @@ export default function PlayerCoachProfileEditPage(){
                                     <TeamHistoryInput teamnames={profile.stats.teamnames} byear={profile?.stats?.bdate[2]} setProfile={setProfile} />
                                 }
                             </li>
-                            <li>
-                                <div className="relative">
-                                    <button type="button" onClick={() => {
-                                        setOpenSportsMenu(!openSportsMenu);
-                                        setOpenGenreMenu(false);
-                                    }}
-                                    className={`w-fit rounded ${openSportsMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ スポーツ追加</button>
-                                    {openSportsMenu &&
-                                        <div className="absolute top-full text-black z-11">
-                                            {/* <MenuNarrow setGenres={setGenres}/> */}
-                                            <SportsNarrow narrowedSports={sports} setSports={setSports} setGenres={setGenres}/>
-                                        </div>
-                                    }
-                                </div>
-                                <div className="w-60 border rounded mx-2">
-                                    <p className="overflow-x-auto">{
-                                        sports.map((sports) => menuMapJP[sports]).join(', ')
-                                    }</p>
-                                </div>
-                            </li>
-                            <li>
-                                <div className="relative">
-                                    <button type="button" onClick={() => {
-                                        setOpenGenreMenu(!openGenreMenu);
-                                        setOpenSportsMenu(false);
-                                    }}
-                                    className={`w-fit rounded ${openGenreMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ ジャンル追加</button>
-                                    {openGenreMenu &&
-                                        <div className="absolute top-full text-black z-11">
-                                            <MenuNarrowFixed sports={sports} genres={genres} setGenres={setGenres}/>
-                                        </div>
-                                    }
-                                </div>
-                                <div className="w-60 border rounded mx-2">
-                                    <p className="overflow-x-auto">{
-                                        genres.map((genre) => menuMapJP[genre]).join(', ')
-                                    }</p>
-                                </div>
-                            </li>
+                            {profile?.stats?.sports && profile?.stats?.genres &&
+                                <SportsGenreMenus sports={profile.stats.sports} genres={profile.stats.genres} textcolor={textcolor} bgcolor={bgcolor} setProfile={setProfile}/>
+                            }
                         </ul>
                     </div>
                 </div>
             </div>
-            <form className="border-t-2 py-2">
-                <p className="font-bold">プロフィール</p>
-                <ul className="list-none ml-4 space-y-2">
-                    <li className="flex items-center">
-                        性別: 
-                        <div className="flex flex-col">
-                            <label htmlFor="gender-male" className="mx-2">
-                                <input id="gender-male" type="radio" value="male" checked={profile?.stats?.gender === "male"} 
-                                onChange={(e) => setProfile((prevProfile) => {
-                                    if (!prevProfile) return prevProfile
-
-                                    return {
-                                        ...prevProfile,
-                                        stats: {
-                                            ...prevProfile.stats,
-                                            gender: e.target.value
-                                        }
-                                    }
-                                })}/> 男性
-                            </label>                    
-                            <label htmlFor="gender-female" className="mx-2">
-                                <input id="gender-female" type="radio" value="female" checked={profile?.stats?.gender === "female"} 
-                                    onChange={(e) => setProfile((prevProfile) => {
-                                        if (!prevProfile) return prevProfile
-
-                                        return {
-                                            ...prevProfile,
-                                            stats: {
-                                                ...prevProfile.stats,
-                                                gender: e.target.value
-                                            }
-                                        }
-                                    })}/> 女性
-                            </label>
-                            <label htmlFor="gender-private" className="mx-2">
-                                <input id="gender-private" type="radio" value="private" checked={profile?.stats?.gender === "private"} 
-                                    onChange={(e) => setProfile((prevProfile) => {
-                                        if (!prevProfile) return prevProfile
-
-                                        return {
-                                            ...prevProfile,
-                                            stats: {
-                                                ...prevProfile.stats,
-                                                gender: e.target.value
-                                            }
-                                        }
-                                    })}/> 非公開
-                            </label>
-                        </div>
-                    </li>
-                    <li className="flex items-center">
-                        誕生日:
-                        <div className="flex justify-center items-center">
-                            <input id="year" type="number" step="1" value={profile?.stats?.bdate?.[2] || 0}
-                            max={profile?.stats?.teamnames?.[0] ? profile.stats.teamnames[0].start : (new Date()).getFullYear()} 
-                            onChange={(e) => setProfile((prevProfile) => {
-                                if (!prevProfile?.stats?.bdate) return prevProfile;
-
-                                return {
-                                    ...prevProfile,
-                                    stats: {
-                                        ...prevProfile.stats,
-                                        bdate: [prevProfile.stats.bdate[0], prevProfile.stats.bdate?.[1], Number(e.target.value)]
-                                    }
-                                }
-                            })} className="border w-12 m-2" />
-                            <p>年</p>
-                            <input id="month" type="number" step="1" value={profile?.stats?.bdate?.[0] || 0} min={1} max={12}
-                            onChange={(e) => setProfile((prevProfile) => {
-                                if (!prevProfile?.stats?.bdate) return prevProfile;
-
-                                return {
-                                    ...prevProfile,
-                                    stats: {
-                                        ...prevProfile.stats,
-                                        bdate: [Number(e.target.value), prevProfile.stats.bdate[1], prevProfile.stats.bdate?.[2]]
-                                    }
-                                }
-                            })} className="border w-12 m-2" />
-                            <p>月</p>
-                            <input id="day" type="number" step="1" value={correctedDay} min={1}
-                            onChange={(e) => {
-                                const inputDay = Number(e.target.value);
-                                setProfile((prevProfile) => ({
-                                ...prevProfile!,
-                                stats: {
-                                    ...prevProfile!.stats,
-                                    bdate: [month, inputDay, year],
-                                }
-                                }));
-                            }} className="border w-12 m-2" />
-                            <p>日</p> 
-                        </div>                  
-                    </li>
-                    <li className="flex items-center">
-                        <label htmlFor="height">身長:</label>
-                        <input id="height" type="number" step="0.1" defaultValue={profile?.stats?.height} className="border w-12 mx-2" />
-                        <p>cm</p>
-                    </li>
-                    <li className="flex items-center">
-                        <label htmlFor="weight">体重:</label>
-                        <input id="weight" type="number" step="0.1" defaultValue={profile?.stats?.weight} className="border w-12 mx-2" />
-                        <p>kg</p>
-                    </li>
-                </ul>
-            </form>
+            {profile?.stats &&
+                <ProfileInput stats={profile.stats} setProfile={setProfile}/>
+            }
         </div>
-        <div className="w-full h-128 overflow-y-auto border-2 p-2 my-2 rounded text-center">
-            {(profile?.scripts || []).map((script, scriptIndex) => (
-                <div key={script.id} className="flex flex-col py-2">
-                    <div className="flex justify-between border-b-2 font-bold">
-                        <input type="text" defaultValue={script.section} onChange={(e) => {
-                            setProfile((prevProfile) => {
-                                if (!prevProfile) return prevProfile;
-
-                                return {
-                                    ...prevProfile,
-                                    scripts: [
-                                        ...prevProfile.scripts.slice(0, scriptIndex),
-                                        {...prevProfile.scripts[scriptIndex], section: e.target.value},
-                                        ...prevProfile.scripts.slice(scriptIndex+1)
-                                    ]
-                                }
-                            })
-                        }}/>
-                        <button onClick={() => deleteScript(script.id)} className="w-fit bg-gray-600 hover:bg-gray-500 text-white rounded p-2 my-2">削除</button>
-                    </div>
-                    <textarea defaultValue={script.texts.join('\n')} onChange={(e) => {
-                            setProfile((prevProfile) => {
-                                if (!prevProfile) return prevProfile;
-
-                                return {
-                                    ...prevProfile,
-                                    scripts: [
-                                        ...prevProfile.scripts.slice(0, scriptIndex),
-                                        {...prevProfile.scripts[scriptIndex], texts: e.target.value.split('\n')},
-                                        ...prevProfile.scripts.slice(scriptIndex+1)
-                                    ]
-                                }
-                            })
-                        }} className="h-32"/>
-                </div>
-            ))}
-            <button onClick={addScript} className="w-fit bg-blue-600 hover:bg-blue-500 text-white rounded p-2">▼項目を追加▼</button>
-        </div>
+        {profile?.scripts &&
+            <ScriptTables scripts={profile.scripts} setProfile={setProfile}/>
+        }
         {profile?.data &&
             <ResultTables data={profile.data} setProfile={setProfile} />
         }

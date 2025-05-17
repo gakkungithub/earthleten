@@ -79,7 +79,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
         <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor ? `text-${color.textcolor}` : "text-white"} ${color?.bgcolor ? `bg-${color.bgcolor}` : "bg-gray-400"}`}>
             <div className="flex items-center no-underline w-fit rounded">
-                <Image src='/defaultIcon.png' alt="" width={128} height={128} className="mr-2 rounded-full"/>                   
+                <Image src='/defaultIcon.png' alt="" width={128} height={256} className="mr-2 rounded-full"/>                   
                 <ul className="mt-2">
                     <li className="flex gap-x-2 items-center">
                         <p className="text-4xl font-bold">{stats.name}</p>
