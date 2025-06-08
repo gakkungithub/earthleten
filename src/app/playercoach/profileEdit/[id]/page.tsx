@@ -90,6 +90,46 @@ type Color = {
     textcolor: string;
 }
 
+function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textcolor: string, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+    const colorOptions = [
+        'red-600', 
+        'organe-600', 
+        'yellow-500', 
+        'lime-500',
+        'green-600',
+        'sky-500',
+        'blue-600', 
+        'purple-600',
+        'amber-700',
+        'gray-600',
+        'black', 
+        'white',
+    ];
+
+    // const setColor = (colorName: string) => {
+    //     if 
+    //     data.highlightInfo[colorName] = "";
+    //     setOpenHighlightMenu(!openHighlightMenu);
+    // }
+
+    return (
+        <div className="">
+            <div>
+                <p>背景色: </p>
+                {colorOptions.map((color) => (
+                    <button key={`bg-${color}`} onClick={() => {}} className={`${color == bgcolor ? 'w-6 h-6' : 'w-4 h-4'} bg-${color} rounded`}></button>
+                ))}
+            </div>
+            <div>
+                <p>文字色: </p>
+                {colorOptions.map((color) => (
+                    <button key={`text-${color}`} onClick={() => {}} className={`${color == textcolor ? 'w-6 h-6' : 'w-4 h-4'} bg-${color} rounded`}></button>
+                ))}
+            </div>
+        </div>
+    )
+}
+
 function ResultTableCell({tableCellInfo, usedHColors, isAddLinePlace, setProfile} : 
     {tableCellInfo: {tableCell: TableCell, cellLocation: CellLocation;}; usedHColors: string[]; isAddLinePlace: boolean; setProfile: Dispatch<SetStateAction<Profile | null>>}){
     const [openHighlightColorMenu, setOpenHighlightColorMenu] = useState<boolean>(false);
@@ -1162,7 +1202,7 @@ export default function PlayerCoachProfileEditPage(){
       
     const params = useParams();
 
-    const bgcolor: string = profile?.color?.bgcolor || "gray-400";
+    const bgcolor: string = profile?.color?.bgcolor || "gray-600";
     const textcolor: string = profile?.color?.textcolor || "white"
 
     useEffect(() => {

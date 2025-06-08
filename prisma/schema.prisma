@@ -36,6 +36,7 @@ model Genre {
   id        String    @id @default(cuid())
   genre     String    @unique
   threads   ThreadOnGenre[]
+  wikipages WikiOnGenre[]
 }
 
 model Comment {
@@ -77,19 +78,43 @@ model User {
   image     String
 }
 
-model PCProfile {
-  id        String    @id default(cuid())
-  name      String    
-  genres    PCPOnGenre[]
-  bdate     DateTime?
-  image     String
+enum  RoleType {
+  PLAYER
+  COACH
 }
 
-model PCPOnGenre {
-  pcp       PCProfile @relation(fields: [pid], references: [id])
-  pid       String
+model WikiPage {
+  id        String    @id @default(cuid())
+  name      String
+  filePath  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  role      RoleType
+  sports    WikiOnSports[]
+  genres    WikiOnGenre[]
+}
+
+model WikiOnSports {
+  wikipage  WikiPage  @relation(fields: [wid], references: [id])
+  wid       String
+  sports    Sports    @relation(fields: [sid], references: [id])
+  sid       String
+
+  @@id([wid, sid])
+}
+
+model Sports {
+  id        String    @id @default(cuid())
+  sports    String    @unique
+  wikipages WikiOnSports[]
+}
+
+model WikiOnGenre {
+  wikipage  WikiPage  @relation(fields: [wid], references: [id])
+  wid       String
   genre     Genre     @relation(fields: [gid], references: [id])
   gid       String
 
-  @@id([pid, gid])
+  @@id([wid, gid])
 }
