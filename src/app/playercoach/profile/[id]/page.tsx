@@ -66,10 +66,25 @@ type Color = {
     bgcolor: string;
     textcolor: string;
 }
+
+const colorClassMap: Record<string, { bg: string; text: string }> = {
+  red: { bg: 'bg-red-600', text: 'text-red-600' },
+  orange: { bg: 'bg-orange-600', text: 'text-orange-600' },
+  yellow: { bg: 'bg-yellow-600', text: 'text-yellow-600' },
+  lime: { bg: 'bg-lime-400', text: 'text-lime-400' },
+  green: { bg: 'bg-green-600', text: 'text-green-600' },
+  sky: { bg: 'bg-sky-500', text: 'text-sky-500' },
+  blue: { bg: 'bg-blue-600', text: 'text-blue-600' },
+  purple: { bg: 'bg-purple-600', text: 'text-purple-600' },
+  amber: { bg: 'bg-amber-700', text: 'text-amber-700' },
+  gray: { bg: 'bg-gray-600', text: 'text-gray-600' },
+  black: { bg: 'bg-black', text: 'text-black' },
+  white: { bg: 'bg-white', text: 'text-white' },
+}
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
     const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_3.json', 'utf-8');
-    const {stats, scripts, data, awards, color}: {stats: Stats, scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color | null} 
+    const {stats, scripts, data, awards, color}: {stats: Stats, scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color} 
         = JSON.parse(jsonData);
 
     const genreLabels = await getGenreLabelsByLanguage(stats.genres || [], 'jp');
@@ -77,7 +92,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor ? `text-${color.textcolor}` : "text-white"} ${color?.bgcolor ? `bg-${color.bgcolor}` : "bg-gray-400"}`}>
+        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor ? colorClassMap[color.textcolor].text : "text-white"} ${color?.bgcolor ? colorClassMap[color.bgcolor].bg : "bg-gray-600"}`}>
             <div className="flex items-center no-underline w-fit rounded">
                 <Image src='/defaultIcon.png' alt="" width={128} height={256} className="mr-2 rounded-full"/>                   
                 <ul className="mt-2">

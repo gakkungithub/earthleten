@@ -433,7 +433,7 @@
     }
   ],
   "color": {
-    "bgcolor": "blue-600",
+    "bgcolor": "blue",
     "textcolor": "white"
   }
 }

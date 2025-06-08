@@ -8,6 +8,7 @@ import MenuNarrowProfileEdit from '@/components/MenuNarrowProfileEdit';
 import SportsMenu from '@/components/SportsMenu';
 
 import { v4 } from 'uuid';
+import clsx from 'clsx';
 // import path from 'path';
 
 type Teamname = {
@@ -70,7 +71,7 @@ type Profile = {
     scripts: Script[];
     data: Data;
     awards: Award[];
-    color: Color | null;
+    color: Color;
 }
 
 type Title = {
@@ -90,40 +91,75 @@ type Color = {
     textcolor: string;
 }
 
-function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textcolor: string, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
-    const colorOptions = [
-        'red-600', 
-        'organe-600', 
-        'yellow-500', 
-        'lime-500',
-        'green-600',
-        'sky-500',
-        'blue-600', 
-        'purple-600',
-        'amber-700',
-        'gray-600',
-        'black', 
-        'white',
-    ];
+const colorClassMap: Record<string, { bg: string; text: string }> = {
+  red: { bg: 'bg-red-600', text: 'text-red-600' },
+  orange: { bg: 'bg-orange-600', text: 'text-orange-600' },
+  yellow: { bg: 'bg-yellow-600', text: 'text-yellow-600' },
+  lime: { bg: 'bg-lime-400', text: 'text-lime-400' },
+  green: { bg: 'bg-green-600', text: 'text-green-600' },
+  sky: { bg: 'bg-sky-500', text: 'text-sky-500' },
+  blue: { bg: 'bg-blue-600', text: 'text-blue-600' },
+  purple: { bg: 'bg-purple-600', text: 'text-purple-600' },
+  amber: { bg: 'bg-amber-700', text: 'text-amber-700' },
+  gray: { bg: 'bg-gray-600', text: 'text-gray-600' },
+  black: { bg: 'bg-black', text: 'text-black' },
+  white: { bg: 'bg-white', text: 'text-white' },
+}
 
-    // const setColor = (colorName: string) => {
-    //     if 
-    //     data.highlightInfo[colorName] = "";
-    //     setOpenHighlightMenu(!openHighlightMenu);
-    // }
+function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textcolor: string, setProfile: Dispatch<SetStateAction<Profile | null>>}) {
+    const getColorCSS = (type: 'bg' | 'text', color: string): string => {
+        const isSelected = type === 'bg' ? color === bgcolor : color === textcolor;
+
+        return clsx(
+            colorClassMap[color].bg,
+            isSelected ? 'w-6 h-6' : 'w-4 h-4',
+            'border-2 rounded'
+        );
+    };
+
+    const setColor = (type: string, color: string) => {
+        if (type === 'bg'){
+            setProfile((prevProfile) => {
+                if (!prevProfile) return prevProfile;
+
+                return {
+                    ...prevProfile,
+                    color: {
+                        ...prevProfile.color,
+                        bgcolor: color
+                    }
+                }
+            })
+        }
+        else if (type === 'text'){
+            setProfile((prevProfile) => {
+                if (!prevProfile) return prevProfile;
+
+                return {
+                    ...prevProfile,
+                    color: {
+                        ...prevProfile.color,
+                        textcolor: color
+                    }
+                }
+            })
+        }
+    }
+
+    const colorKeys = Object.keys(colorClassMap)
 
     return (
-        <div className="">
-            <div>
+        <div className="flex flex-col items-center">
+            <div className="space-x-2">
                 <p>背景色: </p>
-                {colorOptions.map((color) => (
-                    <button key={`bg-${color}`} onClick={() => {}} className={`${color == bgcolor ? 'w-6 h-6' : 'w-4 h-4'} bg-${color} rounded`}></button>
+                {colorKeys.map((color) => (
+                    <button key={`bg-${color}`} onClick={() => setColor('bg', color)} className={getColorCSS('bg', color)}></button>
                 ))}
             </div>
-            <div>
+            <div className="space-x-2">
                 <p>文字色: </p>
-                {colorOptions.map((color) => (
-                    <button key={`text-${color}`} onClick={() => {}} className={`${color == textcolor ? 'w-6 h-6' : 'w-4 h-4'} bg-${color} rounded`}></button>
+                {colorKeys.map((color) => (
+                    <button key={`bg-${color}`} onClick={() => setColor('text', color)} className={getColorCSS('text', color)}></button>
                 ))}
             </div>
         </div>
@@ -1158,7 +1194,7 @@ function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { 
                         setOpenSportsMenu(!openSportsMenu);
                         setOpenGenresMenu(false);
                     }}
-                    className={`w-fit rounded ${openSportsMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ スポーツ追加</button>
+                    className={`w-fit rounded ${openSportsMenu && colorClassMap[textcolor].bg + colorClassMap[bgcolor].text}`}>＋ スポーツ追加</button>
                     {openSportsMenu &&
                         <div className="absolute top-full text-black z-11">
                             {/* <MenuNarrow setGenres={setGenres}/> */}
@@ -1178,7 +1214,7 @@ function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { 
                         setOpenGenresMenu(!openGenresMenu);
                         setOpenSportsMenu(false);
                     }}
-                    className={`w-fit rounded ${openGenresMenu && `bg-${textcolor} text-${bgcolor}`}`}>＋ ジャンル追加</button>
+                    className={`w-fit rounded ${openGenresMenu && colorClassMap[textcolor].bg + colorClassMap[bgcolor].text}`}>＋ ジャンル追加</button>
                     {openGenresMenu &&
                         <div className="absolute top-full text-black z-11">
                             <MenuNarrowProfileEdit sports={sports} genres={genres} setGenres={setGenres}/>
@@ -1269,8 +1305,9 @@ export default function PlayerCoachProfileEditPage(){
     
     return (
         <>
+        <SetThemeColors bgcolor={bgcolor} textcolor={textcolor} setProfile={setProfile} />
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 w-fit mx-auto text-${textcolor} bg-${bgcolor}`}>
+        <div className={`border-2 px-2 rounded-3xl my-4 w-fit mx-auto ${colorClassMap[bgcolor].bg} ${colorClassMap[textcolor].text}`}>
             <div className="flex items-start no-underline rounded mt-2 space-x-2">
                 <form>
                     <fieldset className="p-2 border text-center">
@@ -1280,7 +1317,7 @@ export default function PlayerCoachProfileEditPage(){
                             <Image src={currentImage} alt="" width={128} height={256} className="m-auto"/>
                             }
                         </div>
-                        <label htmlFor="self-image" className={`cursor-pointer px-4 py-2 bg-${textcolor} text-${bgcolor}`}>画像を選択</label>
+                        <label htmlFor="self-image" className="cursor-pointer px-4 py-2">画像を選択</label>
                         <input id="self-image" type="file" accept="image/*" className="hidden" 
                             onChange={(e) => {
                                 const file = e.currentTarget.files ? window.URL.createObjectURL(e.currentTarget.files[0]) : currentImage;
