@@ -1238,7 +1238,7 @@ export default function PlayerCoachProfileEditPage(){
       
     const params = useParams();
 
-    const bgcolor: string = profile?.color?.bgcolor || "gray-600";
+    const bgcolor: string = profile?.color?.bgcolor || "gray";
     const textcolor: string = profile?.color?.textcolor || "white"
 
     useEffect(() => {

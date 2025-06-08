@@ -4,6 +4,14 @@ import Link from 'next/link';
 import { getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 // import path from 'path';
 
+type Profile = {
+    stats: Stats;
+    scripts: Script[];
+    data: Data;
+    awards: Award[];
+    color: Color;
+}
+
 type Teamname = {
     name: string;
     start: number;
@@ -25,6 +33,11 @@ type Stats = {
 type Script = {
     section: string;
     texts: string[];
+}
+
+type Data = {
+    results: Result[];
+    highlightInfo: Partial<Record<string, string>>;
 }
 
 type TableCell = {
@@ -67,24 +80,24 @@ type Color = {
     textcolor: string;
 }
 
-const colorClassMap: Record<string, { bg: string; text: string }> = {
-  red: { bg: 'bg-red-600', text: 'text-red-600' },
-  orange: { bg: 'bg-orange-600', text: 'text-orange-600' },
-  yellow: { bg: 'bg-yellow-600', text: 'text-yellow-600' },
-  lime: { bg: 'bg-lime-400', text: 'text-lime-400' },
-  green: { bg: 'bg-green-600', text: 'text-green-600' },
-  sky: { bg: 'bg-sky-500', text: 'text-sky-500' },
-  blue: { bg: 'bg-blue-600', text: 'text-blue-600' },
-  purple: { bg: 'bg-purple-600', text: 'text-purple-600' },
-  amber: { bg: 'bg-amber-700', text: 'text-amber-700' },
-  gray: { bg: 'bg-gray-600', text: 'text-gray-600' },
-  black: { bg: 'bg-black', text: 'text-black' },
-  white: { bg: 'bg-white', text: 'text-white' },
+const colorClassMap: Record<string, { bg: string; text: string, border: string }> = {
+  red: { bg: 'bg-red-600', text: 'text-red-600', border: 'border-red-600' },
+  orange: { bg: 'bg-orange-600', text: 'text-orange-600', border: 'border-orange-600' },
+  yellow: { bg: 'bg-yellow-600', text: 'text-yellow-600', border: 'border-yellow-600' },
+  lime: { bg: 'bg-lime-400', text: 'text-lime-400', border: 'border-lime-400' },
+  green: { bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-600' },
+  sky: { bg: 'bg-sky-500', text: 'text-sky-500', border: 'border-sky-500' },
+  blue: { bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-600' },
+  purple: { bg: 'bg-purple-600', text: 'text-purple-600', border: 'border-purple-600' },
+  amber: { bg: 'bg-amber-700', text: 'text-amber-700', border: 'border-amber-700' },
+  gray: { bg: 'bg-gray-600', text: 'text-gray-600', border: 'border-gray-600' },
+  black: { bg: 'bg-black', text: 'text-black', border: 'border-black' },
+  white: { bg: 'bg-white', text: 'text-white', border: 'border-white' },
 }
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
     const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_3.json', 'utf-8');
-    const {stats, scripts, data, awards, color}: {stats: Stats, scripts: Script[], data: {results: Result[], highlightInfo: Partial<Record<string, string>>}, awards: Award[], color: Color} 
+    const {stats, scripts, data, awards, color}: Profile 
         = JSON.parse(jsonData);
 
     const genreLabels = await getGenreLabelsByLanguage(stats.genres || [], 'jp');
@@ -92,9 +105,9 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
     return (
         <>
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 ${color?.textcolor ? colorClassMap[color.textcolor].text : "text-white"} ${color?.bgcolor ? colorClassMap[color.bgcolor].bg : "bg-gray-600"}`}>
+        <div className={`border-2 px-2 rounded-3xl my-4 ${colorClassMap[color.textcolor].text} ${colorClassMap[color.bgcolor].bg}`}>
             <div className="flex items-center no-underline w-fit rounded">
-                <Image src='/defaultIcon.png' alt="" width={128} height={256} className="mr-2 rounded-full"/>                   
+                <Image src='/defaultIcon.png' alt="" width={128} height={256} className={`mr-2 border-2 bg-gray-600 ${color?.textcolor ? colorClassMap[color.textcolor].border : "border-white"} rounded-full`}/>                   
                 <ul className="mt-2">
                     <li className="flex gap-x-2 items-center">
                         <p className="text-4xl font-bold">{stats.name}</p>
