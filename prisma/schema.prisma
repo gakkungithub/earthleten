@@ -92,7 +92,7 @@ model WikiPage {
 
   role      RoleType
   sports    WikiOnSports[]
-  genres    WikiOnGenre[]
+  genres    WikiOnGenre[] 
 }
 
 model WikiOnSports {

@@ -36,7 +36,12 @@
       1997
     ],
     "height": 171,
-    "weight": 67
+    "weight": 67,
+    "privateFields": {
+      "bdate": false,
+      "height": false,
+      "weight": false
+    }
   },
   "scripts": [
     {
@@ -433,7 +438,7 @@
     }
   ],
   "color": {
-    "bgcolor": "blue",
-    "textcolor": "white"
+    "bgcolor": "sky",
+    "textcolor": "black"
   }
 }

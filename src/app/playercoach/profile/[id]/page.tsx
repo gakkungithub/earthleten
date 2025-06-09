@@ -25,9 +25,10 @@ type Stats = {
     sports: string[];
     genres: string[];
     gender: string;
-    bdate?: [number, number, number];
-    height?: number;
-    weight?: number;
+    bdate: [number, number, number];
+    height: number;
+    weight: number;
+    privateFields: PrivateFields;
 }
 
 type Script = {
@@ -80,6 +81,13 @@ type Color = {
     textcolor: string;
 }
 
+// 今はjsonファイル内に入れているが、profileAddメニューができたらデータベースでこのフィールドを管理する
+type PrivateFields = {
+    bdate: boolean;
+    height: boolean;
+    weight: boolean;
+}
+
 const colorClassMap: Record<string, { bg: string; text: string, border: string }> = {
   red: { bg: 'bg-red-600', text: 'text-red-600', border: 'border-red-600' },
   orange: { bg: 'bg-orange-600', text: 'text-orange-600', border: 'border-orange-600' },
@@ -104,7 +112,6 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
 
     return (
         <>
-        {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
         <div className={`border-2 px-2 rounded-3xl my-4 ${colorClassMap[color.textcolor].text} ${colorClassMap[color.bgcolor].bg}`}>
             <div className="flex items-center no-underline w-fit rounded">
                 <Image src='/defaultIcon.png' alt="" width={128} height={256} className={`mr-2 border-2 bg-gray-600 ${color?.textcolor ? colorClassMap[color.textcolor].border : "border-white"} rounded-full`}/>                   
