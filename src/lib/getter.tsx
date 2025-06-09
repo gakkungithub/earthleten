@@ -22,8 +22,8 @@ export async function getUserByName(name: string): Promise<User>{
 /*
  * スポーツのIDをスポーツ名から取得
  */
-export async function getSportsIDs( sports: string[] ) : Promise<{id: string}[]> {
-    return await prisma.Sports.findMany({
+export async function getSportsIDs( sports: string[] ) : Promise<string[]> {
+    const sidList : { id: string }[] = await prisma.Sports.findMany({
         where: {
             sports: {
                 in: sports,
@@ -33,13 +33,15 @@ export async function getSportsIDs( sports: string[] ) : Promise<{id: string}[]>
             id: true,
         }
     });
+
+    return sidList.map(s => s.id);
 }
 
 /*
  * ジャンルのIDをジャンル名から取得
  */
-export async function getGenreIDs( genres: string[] ) : Promise<{id: string}[]> {
-    return await prisma.Genre.findMany({
+export async function getGenreIDs( genres: string[] ) : Promise<string[]> {
+    const gidList : { id: string }[] = await prisma.Genre.findMany({
         where: {
             genre: {
                 in: genres,
@@ -49,6 +51,8 @@ export async function getGenreIDs( genres: string[] ) : Promise<{id: string}[]> 
             id: true,
         }
     });
+
+    return gidList.map(g => g.id);
 }
 
 /* 
@@ -196,11 +200,59 @@ export async function getGenderByLanguage(gender: string, language: string) {
     return genderMapJP[gender];
 }
 
+// model WikiPage {
+//   id        String    @id @default(cuid())
+//   name      String
+//   fileID    String
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   role      RoleType
+//   sports    WikiOnSports[]
+//   genres    WikiOnGenre[] 
+// }
+
+export async function getWikiCards() : Promise<{
+    name: string;
+    sports: string[];
+    genres: string[];
+}[]> {
+  const wikiCards : {name: string; sports: {sports:{sports: string}}[]; genres: {genre:{genre: string}}[];}[]
+    = await prisma.wikiPage.findMany({
+        select: {
+        name: true,
+        sports: {
+            select: {
+            sports: {
+                select: {
+                sports: true // ← Sports モデルの sports フィールド（名前）
+                }
+            }
+            }
+        },
+        genres: {
+            select: {
+            genre: {
+                select: {
+                genre: true // ← Genre モデルの genre フィールド（名前）
+                }
+            }
+            }
+        }
+        }
+    });
+
+  return wikiCards.map(w => ({
+    name: w.name,
+    sports: w.sports.map(s => menuMapJP[s.sports.sports]),
+    genres: w.genres.map(g => menuMapJP[g.genre.genre])
+  }))
+}
+
+
 /* スレッドをジャンルで取得する 
  * genreがundefinedの場合、絞り込まない */
 export async function getThreadsByGenresAndOrder( genres: string[], order: string ) {
-    const gidList : {id: string}[] = await getGenreIDs(genres);
-    const gids = gidList.map(g => g.id);
+    const gids = await getGenreIDs(genres);
 
     const orderBy = 
         order === 'most_comments' 
@@ -243,8 +295,7 @@ export async function getThread( id: string ) {
 
 // スレッドをユーザーIDで取得
 export async function getThreadsByUserID( uid: string, genres: string[], order: string ) {
-    const gidList : {id: string}[] = await getGenreIDs(genres);
-    const gids = gidList.map(g => g.id);
+    const gids = await getGenreIDs(genres);
 
     const orderBy = 
         order === 'most_comments' 

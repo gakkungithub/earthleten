@@ -103,7 +103,6 @@ export async function addUser(data: {name: string, password: string}): Promise<{
 
 export async function addPlayerCoach(data: {name: string, fileID: string, sids: string[], gids: string[]}): Promise<{ success: boolean, message?: string }> {
     try {
-        console.log(data);
         // 後でroleを動的に設定するように修正する
         const role = RoleType.PLAYER;
 
