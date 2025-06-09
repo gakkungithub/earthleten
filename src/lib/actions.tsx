@@ -1,6 +1,7 @@
 'use server';
 
 import prisma from './prisma';
+import { RoleType } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 export async function addThread(data: {uid: string, title: string, gids: string[], comment1: string, topImageList: string[]}) : Promise<boolean> {
@@ -99,4 +100,86 @@ export async function addUser(data: {name: string, password: string}): Promise<{
         }
     }
 }
+
+export async function addPlayerCoach(data: {name: string, fileID: string, sids: string[], gids: string[]}): Promise<{ success: boolean, message?: string }> {
+    try {
+        console.log(data);
+        // 後でroleを動的に設定するように修正する
+        const role = RoleType.PLAYER;
+
+        const newWiki = await prisma.WikiPage.create({
+            data: {
+                name: data.name,
+                fileID: data.fileID,
+                role: role
+            }
+        });
+
+        const wid = newWiki.id as string;
+
+        const wikiOnSports = data.sids.map(sid => ({
+            wid,
+            sid,
+        }))
+
+        const wikiOnGenres = data.gids.map(gid => ({
+            wid,
+            gid,
+        }));
+
+        await prisma.WikiOnSports.createMany({
+            data: wikiOnSports,
+        });
+
+        await prisma.WikiOnGenre.createMany({
+            data: wikiOnGenres,
+        });
+        
+        return { success: true };
+
+    } catch (error: unknown) {
+        if (error instanceof PrismaClientKnownRequestError) {
+            return { success: false, message: "予期せぬPrism内のエラーが生じました" };
+        }
+        else {
+            return { success: false, message: "予期せぬエラーが生じました" };
+        }
+    }
+}
+
+// model WikiPage {
+//   id        String    @id @default(cuid())
+//   name      String
+//   filePath  String
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+
+//   role      RoleType
+//   sports    WikiOnSports[]
+//   genres    WikiOnGenre[] 
+// }
+
+// model WikiOnSports {
+//   wikipage  WikiPage  @relation(fields: [wid], references: [id])
+//   wid       String
+//   sports    Sports    @relation(fields: [sid], references: [id])
+//   sid       String
+
+//   @@id([wid, sid])
+// }
+
+// model Sports {
+//   id        String    @id @default(cuid())
+//   sports    String    @unique
+//   wikipages WikiOnSports[]
+// }
+
+// model WikiOnGenre {
+//   wikipage  WikiPage  @relation(fields: [wid], references: [id])
+//   wid       String
+//   genre     Genre     @relation(fields: [gid], references: [id])
+//   gid       String
+
+//   @@id([wid, gid])
+// }
 

@@ -1,0 +1,36 @@
+{
+  "stats": {
+    "name": "Mr. Test",
+    "teamnames": [],
+    "sports": [
+      "baseball"
+    ],
+    "genres": [
+      "baseball_fielder_second",
+      "baseball_fielder_shortstop"
+    ],
+    "gender": "male",
+    "bdate": [
+      6,
+      9,
+      2025
+    ],
+    "height": 150,
+    "weight": 40,
+    "privateFields": {
+      "bdate": true,
+      "height": true,
+      "weight": true
+    }
+  },
+  "scripts": [],
+  "data": {
+    "results": [],
+    "highlightInfo": {}
+  },
+  "awards": [],
+  "color": {
+    "bgcolor": "gray",
+    "textcolor": "white"
+  }
+}

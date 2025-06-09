@@ -20,7 +20,7 @@ type Teamname = {
 
 type Stats = {
     name: string;
-    teamnames?: Teamname[];
+    teamnames: Teamname[];
     sports: string[];
     genres: string[];
     gender: string;
@@ -157,14 +157,14 @@ function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textc
     const colorKeys = Object.keys(colorClassMap)
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="space-x-2">
+        <div className="space-y-2">
+            <div className="flex space-x-2 items-center">
                 <p>背景色: </p>
                 {colorKeys.map((color) => (
                     <button key={`bg-${color}`} onClick={() => setColor('bg', color)} className={getColorCSS('bg', color)}></button>
                 ))}
             </div>
-            <div className="space-x-2">
+            <div className="flex space-x-2 items-center">
                 <p>文字色: </p>
                 {colorKeys.map((color) => (
                     <button key={`bg-${color}`} onClick={() => setColor('text', color)} className={getColorCSS('text', color)}></button>
@@ -713,6 +713,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
     const thisYear = (new Date()).getFullYear();
     const [isActive, setIsActive] = useState<boolean>(maxRow === 0 ? false : teamnames[maxRow-1].end === null);
 
+    // チームを追加
     const addEntry = () => 
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
@@ -735,6 +736,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
             }
         });
     
+    // チーム名の変化を管理
     const updateEntry = (index: number, name: string) => {
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
@@ -756,6 +758,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
         });     
     }
 
+    // 入団年と退団年の値の変化を管理 (値が上下限を超える場合、フィルタリングする)
     const updateStartEnd = (index: number, type: string, value: number, min: number, max: number) => {
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
@@ -787,6 +790,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
         });     
     }
   
+    // チーム履歴を消去
     const removeEntry = (index: number) => {
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.teamnames) return prevProfile;
@@ -795,8 +799,10 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
                 ...prevProfile,
                 stats: {
                     ...prevProfile.stats,
+                    // チームが一つしかなければ空配列(スライスで切り出すとindexエラーになる)
                     teamnames: maxRow === 1 ?
                     [] :
+                        // 最終チーム（所属中) を消すならその1個前のチームの退団年をnullすなわち所属中にする
                         isActive && maxRow-1 === index?
                         [
                             ...teamnames.slice(0, maxRow-2),
@@ -811,6 +817,7 @@ function TeamHistoryInput({ teamnames, byear, setProfile }: { teamnames: Teamnam
         });
     };
 
+    // 現役か引退済かを設定
     const handleActive = (checked: boolean) => {
         setIsActive(checked);
 
@@ -1289,8 +1296,8 @@ export default function PlayerCoachProfileEditPage(){
       
     const params = useParams();
 
-    const bgcolor: string = profile?.color?.bgcolor || "gray";
-    const textcolor: string = profile?.color?.textcolor || "white"
+    const bgcolor: string = profile?.color.bgcolor || "gray";
+    const textcolor: string = profile?.color.textcolor || "white"
 
     useEffect(() => {
         fetch('/jsonfile/sports_kgavvaaxha_3.json')
@@ -1306,6 +1313,20 @@ export default function PlayerCoachProfileEditPage(){
 
     const submitHandler = async () => {
         if (!profile) return;
+
+        // 名前がないなら変更を受け付けない
+        if (profile.stats.name === ""){
+            alert("名前が入力されていません!!");
+            return;
+        }
+        else if (profile.stats.teamnames.length === 0){
+            alert("スポーツ欄が空です!!");
+            return;
+        }
+        else if (profile.stats.genres.length === 0){
+            alert("ジャンル欄が空です!!")
+            return;
+        }
 
         const scripts = profile.scripts.filter((script) => script.section !== "");
 
@@ -1342,12 +1363,15 @@ export default function PlayerCoachProfileEditPage(){
 // }
 
         try {
-            const response = await fetch(`/api/playercoach/kgavvaaxha_3`, {
+            const response = await fetch(`/api/playercoach`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(sentProfile),
+                body: JSON.stringify({
+                    id: "kgavvaaxha_3",
+                    ...sentProfile
+                }),
             });
     
             if (response.ok){
@@ -1392,7 +1416,7 @@ export default function PlayerCoachProfileEditPage(){
                                 <label htmlFor="name">名前: 
                                     <input id="name" type="text" defaultValue={profile?.stats.name || ""} 
                                     onChange={(e) => setProfile((prevProfile) => {
-                                        if (!prevProfile?.stats?.bdate) return prevProfile;
+                                        if (!prevProfile?.stats?.name) return prevProfile;
 
                                         return {
                                             ...prevProfile,
@@ -1406,11 +1430,11 @@ export default function PlayerCoachProfileEditPage(){
                                 </label>
                             </li>
                             <li className="w-full">
-                                {profile?.stats?.teamnames &&
+                                {profile?.stats.teamnames &&
                                     <TeamHistoryInput teamnames={profile.stats.teamnames} byear={profile?.stats?.bdate?.[2] || 0} setProfile={setProfile} />
                                 }
                             </li>
-                            {profile?.stats?.sports && profile?.stats?.genres &&
+                            {profile?.stats.sports && profile?.stats.genres &&
                                 <SportsGenreMenus sports={profile.stats.sports} genres={profile.stats.genres} textcolor={textcolor} bgcolor={bgcolor} setProfile={setProfile}/>
                             }
                         </ul>

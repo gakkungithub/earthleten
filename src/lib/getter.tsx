@@ -20,9 +20,25 @@ export async function getUserByName(name: string): Promise<User>{
 }
 
 /*
- * ジャンルのIDを取得
+ * スポーツのIDをスポーツ名から取得
  */
-export async function getGenreIDs( genres: string[] ) {
+export async function getSportsIDs( sports: string[] ) : Promise<{id: string}[]> {
+    return await prisma.Sports.findMany({
+        where: {
+            sports: {
+                in: sports,
+            },
+        },
+        select: {
+            id: true,
+        }
+    });
+}
+
+/*
+ * ジャンルのIDをジャンル名から取得
+ */
+export async function getGenreIDs( genres: string[] ) : Promise<{id: string}[]> {
     return await prisma.Genre.findMany({
         where: {
             genre: {
@@ -163,7 +179,6 @@ export async function getGenreLabelsByLanguage(genres: string[], language: strin
 }
 
 export async function getGenreLabelsBySuggest(genreString: string) {
-    
     const genres = Object.entries(menuMapJP).filter(([key, value]) => 
         key.split('_').length === 3 && value.includes(genreString)
     );

@@ -438,7 +438,7 @@
     }
   ],
   "color": {
-    "bgcolor": "sky",
-    "textcolor": "black"
+    "bgcolor": "blue",
+    "textcolor": "white"
   }
 }

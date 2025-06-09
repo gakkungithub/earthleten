@@ -1,4 +1,4 @@
-import {getGenreLabelsBySuggest} from '@/lib/getter';
+import { getGenreLabelsBySuggest } from '@/lib/getter';
 
 // ジャンルタグをサジェストで取得する
 export async function GET(req: Request) {

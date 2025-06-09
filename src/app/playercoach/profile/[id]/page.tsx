@@ -142,9 +142,9 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 <p className="font-bold">プロフィール</p>
                 <ul className="list-none ml-4">
                     <li>性別: {await getGenderByLanguage(stats.gender, 'jp')}</li>
-                    <li>誕生日: {stats.bdate?.join('/') || "?"}</li>
-                    <li>身長: {stats.height || "?"}cm</li>
-                    <li>体重: {stats.weight || "?"}kg</li>
+                    <li>誕生日: {stats.privateFields.bdate ? "非公開" : stats.bdate.join('/')}</li>
+                    <li>身長: {stats.privateFields.height ? "非公開" : `${stats.height} cm`}</li>
+                    <li>体重: {stats.privateFields.weight ? "非公開" : `${stats.weight} kg`}</li>
                 </ul>
             </div>
         </div>
