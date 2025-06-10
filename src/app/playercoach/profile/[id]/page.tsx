@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import fs from 'fs';
 import Link from 'next/link';
-import { getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
+import { getFileID, getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 // import path from 'path';
 
 type Profile = {
@@ -104,9 +104,11 @@ const colorClassMap: Record<string, { bg: string; text: string, border: string }
 }
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
-    const jsonData = fs.readFileSync('./public/jsonfile/sports_kgavvaaxha_3.json', 'utf-8');
+    const { id } = await params;
+    const fileID = (await getFileID(id)).fileID
+    const jsonData = fs.readFileSync(`./public/jsonfile/sports_${fileID}.json`, 'utf-8');
     const {stats, scripts, data, awards, color}: Profile 
-        = JSON.parse(jsonData);
+        = JSON.parse(jsonData); 
 
     const genreLabels = await getGenreLabelsByLanguage(stats.genres || [], 'jp');
 
@@ -116,10 +118,10 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
             <div className="flex items-center no-underline w-fit rounded">
                 <Image src='/defaultIcon.png' alt="" width={128} height={256} className={`mr-2 border-2 bg-gray-600 ${color?.textcolor ? colorClassMap[color.textcolor].border : "border-white"} rounded-full`}/>                   
                 <ul className="mt-2">
-                    <li className="flex gap-x-2 items-center">
+                    <li className="flex flex-col space-y-2 items-center">
                         <p className="text-4xl font-bold">{stats.name}</p>
-                        <p className="text-2xl whitespace-nowrap font-bold">[{(await getGenreLabelsByLanguage(stats.sports, 'jp')).join(', ')}]</p>
-                        <p>{genreLabels.join(', ')}</p>
+                        <p className="text-2xl whitespace-nowrap font-bold">{(await getGenreLabelsByLanguage(stats.sports, 'jp')).join(', ')}</p>
+                        <p>[{genreLabels.join(', ')}]</p>
                     </li>
                     <li className="px-2">
                         <div className="flex flex-col items-start">
@@ -233,7 +235,7 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
             </div>
             ))}
         </div>
-        <Link href={`/playercoach/profileEdit/${(await params).id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-blue-600 hover:bg-blue-500">編集開始</Link>
+        <Link href={`/playercoach/profileEdit/${id}`} className="fixed bottom-2 right-2 w-16 h-16 flex justify-center items-center text-white rounded-full bg-blue-600 hover:bg-blue-500">編集開始</Link>
         </>
     )
 }

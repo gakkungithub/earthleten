@@ -227,12 +227,7 @@ export default function MenuNarrowProfileEdit({sports, genres, setGenres} : {spo
 
     const updateSuggests = async (value: string) => {
         if (value) {
-            const response = await fetch(`/api/genres?genreString=${value}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            });
+            const response = await fetch(`/api/genres?genreString=${value}`);
             if (response.ok) {
                 const genreSuggests = (await response.json()) as [string, string][];
                 const gSFiltered = genreSuggests.filter(([key, ]) => 

@@ -1,8 +1,23 @@
 import { writeFile } from 'fs/promises';
 import path from 'path';
+import fs from 'fs';
 import { v4 } from 'uuid';
-import { getSportsIDs, getGenreIDs } from '@/lib/getter';
+import { getFileID, getSportsIDs, getGenreIDs } from '@/lib/getter';
 import { addPlayerCoach } from '@/lib/actions';
+
+export async function GET(req: Request) {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id') || '';
+
+    try {
+        const fileID = (await getFileID(id)).fileID
+        const jsonData = fs.readFileSync(`./public/jsonfile/sports_${fileID}.json`, 'utf-8');
+
+        return new Response(jsonData, { status: 200 });
+    } catch {
+        return new Response(JSON.stringify('Error fetching genres'), { status: 500 });
+    }
+}
 
 export async function POST(req: Request){
     const profile = await req.json();

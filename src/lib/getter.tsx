@@ -211,41 +211,57 @@ export async function getGenderByLanguage(gender: string, language: string) {
 //   genres    WikiOnGenre[] 
 // }
 
+// 選手・監督の概要カードのための情報
 export async function getWikiCards() : Promise<{
+    id: string;
     name: string;
     sports: string[];
     genres: string[];
 }[]> {
-  const wikiCards : {name: string; sports: {sports:{sports: string}}[]; genres: {genre:{genre: string}}[];}[]
+  const wikiCards : {id: string; name: string; sports: {sports:{sports: string}}[]; genres: {genre:{genre: string}}[];}[]
     = await prisma.wikiPage.findMany({
         select: {
-        name: true,
-        sports: {
-            select: {
+            id: true,
+            name: true,
             sports: {
                 select: {
-                sports: true // ← Sports モデルの sports フィールド（名前）
+                sports: {
+                    select: {
+                    sports: true // ← Sports モデルの sports フィールド（名前）
+                    }
                 }
-            }
-            }
-        },
-        genres: {
-            select: {
-            genre: {
+                }
+            },
+            genres: {
                 select: {
-                genre: true // ← Genre モデルの genre フィールド（名前）
+                genre: {
+                    select: {
+                    genre: true // ← Genre モデルの genre フィールド（名前）
+                    }
+                }
                 }
             }
-            }
-        }
         }
     });
 
   return wikiCards.map(w => ({
+    id: w.id,
     name: w.name,
     sports: w.sports.map(s => menuMapJP[s.sports.sports]),
     genres: w.genres.map(g => menuMapJP[g.genre.genre])
   }))
+}
+
+// 選手・監督の名前からファイル名を取得
+export async function getFileID(id: string) : Promise<{ fileID: string; }> {
+  return await prisma.wikiPage.findUnique({
+        where: {
+            id: id,
+        },
+        select: {
+            fileID: true,
+        }
+    });
 }
 
 

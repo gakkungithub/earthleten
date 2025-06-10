@@ -1299,8 +1299,9 @@ export default function PlayerCoachProfileEditPage(){
     const bgcolor: string = profile?.color.bgcolor || "gray";
     const textcolor: string = profile?.color.textcolor || "white"
 
+    // '/jsonfile/sports_kgavvaaxha_3.json'
     useEffect(() => {
-        fetch('/jsonfile/sports_kgavvaaxha_3.json')
+        fetch(`/api/playercoach?id=${params.id}`)
         .then((res) => res.json())
         .then((json) => {
             setProfile(json);
