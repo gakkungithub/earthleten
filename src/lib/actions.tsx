@@ -1,8 +1,10 @@
 'use server';
 
 import prisma from './prisma';
-import { RoleType } from '@prisma/client';
+import { RoleType, TeamName, Color } from '@prisma/client';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { Profile, Teamname, Script, Award, Title } from '@/typeDeclar/typeComp';
+import { getSportIDs, getGenreIDs } from '@/lib/getter';
 
 export async function addThread(data: {uid: string, title: string, gids: string[], comment1: string, topImageList: string[]}) : Promise<boolean> {
     try {
@@ -146,39 +148,125 @@ export async function addPlayerCoach(data: {name: string, fileID: string, sids: 
     }
 }
 
-// model WikiPage {
-//   id        String    @id @default(cuid())
-//   name      String
-//   filePath  String
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
+export async function addPlayerCoach2(profile: Profile) {
+    try{
+        const {awards, themeColor, data, scripts, stats} = profile;
 
-//   role      RoleType
-//   sports    WikiOnSports[]
-//   genres    WikiOnGenre[] 
-// }
+        const sids = await getSportIDs(stats.sports);
+        const gids = await getGenreIDs(stats.genres);
 
-// model WikiOnSports {
-//   wikipage  WikiPage  @relation(fields: [wid], references: [id])
-//   wid       String
-//   sports    Sports    @relation(fields: [sid], references: [id])
-//   sid       String
+        const newWiki = await prisma.Wiki.create({ 
+            data: {
+                name: stats.name,
+                // 後で変える
+                role: RoleType.PLAYER,
+                gender: stats.gender,
+                bdate: new Date(stats.bdate[2], stats.bdate[0]-1, stats.bdate[1]),
+                height: stats.height,
+                weight: stats.weight,
+                isBdatePrivate: stats.isBdatePrivate,
+                isHeightPrivate: stats.isHeightPrivate,
+                isWeightPrivate: stats.isWeightPrivate,
+                bgColor: themeColor.bgColor,
+                textColor: themeColor.textColor,
+                teamnames: {
+                    create: stats.teamnames.map((tn: Teamname) => ({
+                        name: tn.name,
+                        start: tn.start,
+                        end: tn.end
+                    }))
+                },
+                sports: {
+                    create: sids.map((sid) => ({
+                        sport: {
+                            connect: { id: sid }
+                        }
+                    }))
+                },
+                genres: {
+                    create: gids.map((gid) => ({
+                        genre: {
+                            connect: { id: gid }
+                        }
+                    }))
+                },
+                scripts: {
+                    create: scripts.map((s: Script) => ({
+                        section: s.section,
+                        texts: {
+                            create: s.texts.map((text: string) => ({
+                                text: text
+                            }))
+                        }
+                    }))
+                },
+                data: {
+                    create: {
+                        allowedColors: {
+                            create: (Object.entries(data.highlightInfo)).map((h) => (
+                                {
+                                    color: h[0] as Color,
+                                    explanation: h[1]
+                                }
+                            ))
+                        },
+                        results: {
+                            create: data.results.map((rs) => (
+                                {
+                                    position: rs.position,
+                                    columns: {
+                                        create: rs.columns.map((col) => (
+                                            {
+                                                value: col.value
+                                            }
+                                        ))
+                                    },
+                                    rows: {
+                                        create: rs.rows.map((row) => (
+                                            {
+                                                cells: {
+                                                    create: row.cells.map((cell) => (
+                                                        {
+                                                            value: cell.value,
+                                                            highlightColor: cell.highlightColor
+                                                        }
+                                                    ))
+                                                }
+                                            }
+                                        ))
+                                    }
+                                }
+                            ))
+                        }
+                    }
+                },
+                awards: {
+                    create: awards.map((a: Award) => ({
+                        section: a.section,
+                        titles: {
+                            create: a.titles.map((title: Title) => ({
+                                name: title.name,
+                                years: {
+                                    create: title.years.map((year: number) => ({
+                                        year: year
+                                    }))
+                                }
+                            }))
+                        }
+                    }))
+                }
+            }
+        });
 
-//   @@id([wid, sid])
-// }
+        return { success: true, message: "正しくデータが保存されました" };
+    }catch(error){
+        console.log(error);
+        return { success: false, message: "予期せぬエラーが生じました" };
+    }
+}
 
-// model Sports {
-//   id        String    @id @default(cuid())
-//   sports    String    @unique
-//   wikipages WikiOnSports[]
-// }
 
-// model WikiOnGenre {
-//   wikipage  WikiPage  @relation(fields: [wid], references: [id])
-//   wid       String
-//   genre     Genre     @relation(fields: [gid], references: [id])
-//   gid       String
 
-//   @@id([wid, gid])
-// }
+
+
 

@@ -32,6 +32,12 @@ model ThreadOnGenre {
   @@id([tid, gid])
 }
 
+model Sport {
+  id        String    @id @default(cuid())
+  sport     String    @unique
+  wiki      WikiOnSport[]
+}
+
 model Genre {
   id        String    @id @default(cuid())
   genre     String    @unique
@@ -65,6 +71,12 @@ model CommentVideo {
   cid       String    
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  PRIVATE
+}
+
 model User {
   id        String    @id @default(cuid())
   threads   Thread[]
@@ -83,37 +95,157 @@ enum RoleType {
   COACH
 }
 
-model WikiPage {
-  id        String    @id @default(cuid())
-  name      String
-  fileID    String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  role      RoleType
-  sports    WikiOnSports[]
-  genres    WikiOnGenre[] 
+// Wiki用のデータ
+model Wiki {
+  id                String   @id @default(cuid())
+  name              String
+  role              RoleType
+  gender            Gender
+  bdate             DateTime
+  height            Float
+  weight            Float
+  isBdatePrivate    Boolean @default(false)
+  isHeightPrivate   Boolean @default(false)
+  isWeightPrivate   Boolean @default(false)
+  bgColor           Color
+  textColor         Color
+  teamnames         TeamName[]
+  sports            WikiOnSport[]
+  genres            WikiOnGenre[]
+  scripts           Script[]
+  data              WikiData @relation(fields: [wdid], references: [id])
+  wdid              String   @unique
+  awards            Award[]
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 }
 
-model WikiOnSports {
-  wikipage  WikiPage  @relation(fields: [wid], references: [id])
+enum Color {
+  RED
+  ORANGE
+  YELLOW
+  LIME
+  GREEN
+  SKY
+  BLUE
+  PURPLE
+  AMBER
+  GRAY
+  BLACK
+  WHITE
+}
+
+model TeamName {
+  id        String      @id @default(cuid())
+  name      String
+  start     Int
+  end       Int?
+  wiki      Wiki        @relation(fields: [wid], references: [id])
   wid       String
-  sports    Sports    @relation(fields: [sid], references: [id])
+}
+
+model WikiOnSport {
+  wiki      Wiki      @relation(fields: [wid], references: [id])
+  wid       String
+  sport     Sport     @relation(fields: [sid], references: [id])
   sid       String
 
   @@id([wid, sid])
 }
 
-model Sports {
-  id        String    @id @default(cuid())
-  sports    String    @unique
-  wikipages WikiOnSports[]
-}
-
 model WikiOnGenre {
-  wikipage  WikiPage  @relation(fields: [wid], references: [id])
+  wiki      Wiki      @relation(fields: [wid], references: [id])
   wid       String
   genre     Genre     @relation(fields: [gid], references: [id])
   gid       String
 
   @@id([wid, gid])
 }
+
+model Script {
+  id        String   @id @default(cuid())
+  section   String
+  wiki      Wiki     @relation(fields: [wid], references: [id])
+  wid       String
+  texts     ScriptText[]
+}
+
+model ScriptText {
+  id       String   @id @default(cuid())
+  text     String
+  script   Script   @relation(fields: [sid], references: [id])
+  sid      String
+}
+
+model WikiData {
+  id            String                  @id @default(cuid())
+  results       Result[]
+  allowedColors AllowedHighlightColor[] // ハイライトの色の選択の制御はアプリ側で行う
+  wiki          Wiki?
+}
+
+model Result {
+  id            String                  @id @default(cuid())
+  position      String
+  columns       DataColumn[]
+  rows          DataRow[]
+  wikiData      WikiData                @relation(fields: [wdid], references: [id])
+  wdid          String
+}
+
+model AllowedHighlightColor {
+  id            String    @id @default(cuid())
+  color         Color
+  explanation   String
+  wikiData      WikiData  @relation(fields: [wdid], references: [id])
+  wdid          String
+}
+
+model DataColumn {
+  id        String    @id @default(cuid())
+  value     String
+  result    Result  @relation(fields: [rid], references: [id])
+  rid       String
+}
+
+model DataRow {
+  id        String     @id @default(cuid())
+  result    Result  @relation(fields: [rid], references: [id])
+  rid       String
+  cells     DataCell[]
+}
+
+model DataCell {
+  id              String   @id @default(cuid())
+  value           String?
+  highlightColor  Color?
+  row             DataRow  @relation(fields: [rowId], references: [id])
+  rowId           String
+}
+
+model Award {
+  id        String   @id @default(cuid())
+  section   String
+  wiki      Wiki     @relation(fields: [wid], references: [id])
+  wid       String
+  titles    AwardTitle[]
+}
+
+model AwardTitle {
+  id       String   @id @default(cuid())
+  name     String
+  award    Award    @relation(fields: [awardId], references: [id])
+  awardId  String
+  years    AwardYear[]
+}
+
+model AwardYear {
+  id           String        @id @default(cuid())
+  year         Int
+  awardTitle   AwardTitle    @relation(fields: [titleId], references: [id])
+  titleId      String
+}
+
+
+
+

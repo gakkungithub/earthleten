@@ -1,9 +1,10 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { getWikiCards } from '@/lib/getter';
+import { getWiki } from '@/lib/getter';
+
 
 export default async function PlayerCoachPage() {
-    const wikiCards = await getWikiCards();
+    const wikiCards = await getWiki();
 
     return (
         <>

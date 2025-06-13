@@ -10,111 +10,29 @@ import { v4 } from 'uuid';
 import clsx from 'clsx';
 // import path from 'path';
 
-type Teamname = {
-    name: string;
-    start: number;
-    end: number | null;
-    id: string;
-}
-
-type Stats = {
-    name: string;
-    teamnames: Teamname[];
-    sports: string[];
-    genres: string[];
-    gender: string;
-    bdate: [number, number, number];
-    height: number;
-    weight: number;
-    privateFields: PrivateFields;
-}
-
-type Script = {
-    id: string;
-    section: string;
-    texts: string[];
-}
+import { Profile, Stats, Teamname, Script, Data, Result, TableColCell, TableRow, TableCell, Title, Award, ThemeColor} from '@/typeDeclar/typeComp';
+import { Color, Gender } from '@prisma/client';
 
 type CellLocation = 
-    [number, number, number]
+    [number, number, number];
 
-type TableCell = {
-    value: string | number;
-    id: string;
-    highlightColor?: string;
-}
-
-type TableColCell = {
-    value: string;
-    id: string;
-}
-
-type TableRow = {
-    id: string;
-    cells: TableCell[];
-}
-
-type Result = {
-    position: string;
-    id: string;
-    columns: TableColCell[];
-    rows: TableRow[];
-};
-
-type Data = {
-    results: Result[];
-    highlightInfo: Partial<Record<string, string>>;
-}
-
-type Profile = {
-    stats: Stats;
-    scripts: Script[];
-    data: Data;
-    awards: Award[];
-    color: Color;
-}
-
-type Title = {
-    id: string; 
-    name: string; 
-    years: number[];
-}
-
-type Award = {
-    id: string;
-    section: string;
-    titles: Title[];
-}
-
-type Color = {
-    bgcolor: string;
-    textcolor: string;
-}
-
-// 今はjsonファイル内に入れているが、profileAddメニューができたらデータベースでこのフィールドを管理する
-type PrivateFields = {
-    bdate: boolean;
-    height: boolean;
-    weight: boolean;
-}
-
-const colorClassMap: Record<string, { bg: string; text: string }> = {
-  red: { bg: 'bg-red-600', text: 'text-red-600' },
-  orange: { bg: 'bg-orange-600', text: 'text-orange-600' },
-  yellow: { bg: 'bg-yellow-600', text: 'text-yellow-600' },
-  lime: { bg: 'bg-lime-400', text: 'text-lime-400' },
-  green: { bg: 'bg-green-600', text: 'text-green-600' },
-  sky: { bg: 'bg-sky-500', text: 'text-sky-500' },
-  blue: { bg: 'bg-blue-600', text: 'text-blue-600' },
-  purple: { bg: 'bg-purple-600', text: 'text-purple-600' },
-  amber: { bg: 'bg-amber-700', text: 'text-amber-700' },
-  gray: { bg: 'bg-gray-600', text: 'text-gray-600' },
-  black: { bg: 'bg-black', text: 'text-black' },
-  white: { bg: 'bg-white', text: 'text-white' },
+const colorClassMap: Record<Color, { bg: string; text: string }> = {
+  RED: { bg: 'bg-red-600', text: 'text-red-600' },
+  ORANGE: { bg: 'bg-orange-600', text: 'text-orange-600' },
+  YELLOW: { bg: 'bg-yellow-600', text: 'text-yellow-600' },
+  LIME: { bg: 'bg-lime-400', text: 'text-lime-400' },
+  GREEN: { bg: 'bg-green-600', text: 'text-green-600' },
+  SKY: { bg: 'bg-sky-500', text: 'text-sky-500' },
+  BLUE: { bg: 'bg-blue-600', text: 'text-blue-600' },
+  PURPLE: { bg: 'bg-purple-600', text: 'text-purple-600' },
+  AMBER: { bg: 'bg-amber-700', text: 'text-amber-700' },
+  GRAY: { bg: 'bg-gray-600', text: 'text-gray-600' },
+  BLACK: { bg: 'bg-black', text: 'text-black' },
+  WHITE: { bg: 'bg-white', text: 'text-white' },
 }
 
 function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textcolor: string, setProfile: Dispatch<SetStateAction<Profile>>}) {
-    const getColorCSS = (type: 'bg' | 'text', color: string): string => {
+    const getColorCSS = (type: 'bg' | 'text', color: Color): string => {
         const isSelected = type === 'bg' ? color === bgcolor : color === textcolor;
 
         return clsx(
@@ -124,14 +42,14 @@ function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textc
         );
     };
 
-    const setColor = (type: string, color: string) => {
+    const setColor = (type: string, color: Color) => {
         if (type === 'bg'){
             setProfile((prevProfile) => {
                 return {
                     ...prevProfile,
-                    color: {
-                        ...prevProfile.color,
-                        bgcolor: color
+                    themeColor: {
+                        ...prevProfile.themeColor,
+                        bgColor: color
                     }
                 }
             })
@@ -140,16 +58,16 @@ function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textc
             setProfile((prevProfile) => {
                 return {
                     ...prevProfile,
-                    color: {
-                        ...prevProfile.color,
-                        textcolor: color
+                    themeColor: {
+                        ...prevProfile.themeColor,
+                        textColor: color
                     }
                 }
             })
         }
     }
 
-    const colorKeys = Object.keys(colorClassMap)
+    const colorKeys = Object.keys(colorClassMap) as Color[];
 
     return (
         <div className="space-y-2">
@@ -433,12 +351,12 @@ function ResultTable({result, resultIndex, usedHColors, setProfile}:{result: Res
 }
 
 function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetStateAction<Profile>>}){
-    const highlightColors = ["red-600", "blue-600", "gray-600", "green-600", "yellow-600"];
+    const highlightColors = [Color.RED, Color.BLUE, Color.GRAY, Color.GREEN, Color.YELLOW];
     const usedHColors = highlightColors.filter(color => data.highlightInfo[color] !== undefined);
     const unusedHColors = highlightColors.filter(color => data.highlightInfo[color] === undefined);
     const [openHighlightMenu, setOpenHighlightMenu] = useState<boolean>(false);
 
-    const addHColor = (colorName: string) => {
+    const addHColor = (colorName: Color) => {
         data.highlightInfo[colorName] = "";
         setOpenHighlightMenu(!openHighlightMenu);
     }
@@ -487,13 +405,7 @@ function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetSt
             <ul className="mx-4">
                 {usedHColors.map((color) => (
                     <li key={color} className={`flex my-2 text-${color} items-center`}> 
-                        <p className={`w-4 h-4 rounded ${
-                            color === "red-600" ? "bg-red-600" :
-                            color === "blue-600" ? "bg-blue-600" :
-                            color === "green-600" ? "bg-green-600" :
-                            color === "yellow-600" ? "bg-yellow-600" :
-                            color === "gray-600" ? "bg-gray-600" : ""
-                        }`}></p>
+                        <p className={`w-4 h-4 rounded ${colorClassMap[color].bg}`}></p>
                         <input type="text" defaultValue={data.highlightInfo[color]} className="mx-2 border rounded" />
                     </li>
                 ))}
@@ -505,7 +417,7 @@ function ResultTables({data, setProfile}:{data: Data, setProfile: Dispatch<SetSt
                         <p>↓追加するハイライトの色を選んでください↓</p>
                         <div className="flex m-2 w-full space-x-2">
                             {unusedHColors.map((color) => (
-                                <button key={color} onClick={() => addHColor(color)} className={`w-4 h-4 bg-${color} rounded`}></button>
+                                <button key={color} onClick={() => addHColor(color)} className={`w-4 h-4 ${colorClassMap[color].bg} rounded`}></button>
                             ))}
                         </div>
                     </div>
@@ -890,14 +802,14 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
         return isLeapYear ? 29 : 28;
       }
 
-    const [month, day, year] = stats?.bdate || [1,1,1]
+    const [month, day, year] = stats.bdate;
 
     const correctedDay = useMemo(() => {
         const maxDay = getMaxDayOfMonth(month, year);
         return Math.min(day, maxDay);
     }, [month, day, year]);
 
-    const genderOnChange = (gender: string) => 
+    const genderOnChange = (gender: Gender) => 
         setProfile((prevProfile) => {
             return {
                 ...prevProfile,
@@ -913,11 +825,11 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
             const newBdate = (): [number, number, number] => {
                 switch (level) {
                     case "year":
-                        return [prevProfile.stats.bdate[0], prevProfile.stats.bdate?.[1], Number(value)];
+                        return [prevProfile.stats.bdate[0], prevProfile.stats.bdate[1], Number(value)];
                     case "month":
-                        return [Number(value), prevProfile.stats.bdate[1], prevProfile.stats.bdate?.[2]];
+                        return [Number(value), prevProfile.stats.bdate[1], prevProfile.stats.bdate[2]];
                     case "day":
-                        return [prevProfile.stats.bdate[0], Number(value), prevProfile.stats.bdate?.[2]]
+                        return [prevProfile.stats.bdate[0], Number(value), prevProfile.stats.bdate[2]];
                     default:
                         return prevProfile.stats.bdate;
                 }
@@ -936,34 +848,31 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.bdate) return prevProfile;
 
-            const newPrivateFields = (): PrivateFields => {
+            const newStats = (): Stats => {
                 switch (type) {
                     case "bdate":
                         return {
-                            ...stats.privateFields,
-                            bdate: checked
+                            ...stats,
+                            isBdatePrivate: checked
                         };
                     case "height":
                         return {
-                            ...stats.privateFields,
-                            height: checked 
+                            ...stats,
+                            isHeightPrivate: checked 
                         };
                     case "weight":
                         return {
-                            ...stats.privateFields,
-                            weight: checked
+                            ...stats,
+                            isWeightPrivate: checked
                         };
                     default:
-                        return stats.privateFields;
+                        return stats;
                 }
             }
             
             return {
                 ...prevProfile,
-                stats: {
-                    ...stats,
-                    privateFields: newPrivateFields()
-                }
+                stats: newStats()
             }
         })
 
@@ -975,16 +884,16 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
                 性別: 
                 <div className="flex flex-col">
                     <label htmlFor="gender-male" className="mx-2">
-                        <input id="gender-male" type="radio" value="male" checked={stats?.gender === "male"} 
-                        onChange={() => genderOnChange('male')}/> 男性
+                        <input id="gender-male" type="radio" value="male" checked={stats.gender === Gender.MALE} 
+                        onChange={() => genderOnChange(Gender.MALE)}/> 男性
                     </label>                    
                     <label htmlFor="gender-female" className="mx-2">
-                        <input id="gender-female" type="radio" value="female" checked={stats?.gender === "female"} 
-                            onChange={() => genderOnChange('female')}/> 女性
+                        <input id="gender-female" type="radio" value="female" checked={stats.gender === Gender.FEMALE} 
+                            onChange={() => genderOnChange(Gender.FEMALE)}/> 女性
                     </label>
                     <label htmlFor="gender-private" className="mx-2">
-                        <input id="gender-private" type="radio" value="private" checked={stats?.gender === "private"} 
-                            onChange={() => genderOnChange('private')}/> 非公開
+                        <input id="gender-private" type="radio" value="private" checked={stats.gender === Gender.PRIVATE} 
+                            onChange={() => genderOnChange(Gender.PRIVATE)}/> 非公開
                     </label>
                 </div>
             </li>
@@ -994,32 +903,32 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
                     <input id="year" type="number" step="1" value={stats.bdate[2]}
                     max={stats.teamnames?.[0] ? stats.teamnames[0].start : (new Date()).getFullYear()} 
                     onChange={(e) => bdateOnChange(e.target.value, "year")} 
-                    disabled={stats.privateFields.bdate} className="border w-12 m-2" />
+                    disabled={stats.isBdatePrivate} className="border w-12 m-2" />
                     <p>年</p>
                     <input id="month" type="number" step="1" value={stats.bdate[0]} min={1} max={12}
                     onChange={(e) => bdateOnChange(e.target.value, "month")} 
-                    disabled={stats.privateFields.bdate} className="border w-12 m-2" />
+                    disabled={stats.isBdatePrivate} className="border w-12 m-2" />
                     <p>月</p>
                     <input id="day" type="number" step="1" value={correctedDay} min={1}
                     onChange={(e) => bdateOnChange(e.target.value, "day")} 
-                    disabled={stats.privateFields.bdate} className="border w-12 m-2" />
+                    disabled={stats.isBdatePrivate} className="border w-12 m-2" />
                     <p>日</p> 
                 </div>
-                <label> / 非公開: <input type="checkbox" defaultChecked={stats.privateFields.bdate} onChange={(e) => setPrivate("bdate", e.target.checked)} /></label>                 
+                <label> / 非公開: <input type="checkbox" defaultChecked={stats.isBdatePrivate} onChange={(e) => setPrivate("bdate", e.target.checked)} /></label>                 
             </li>
             <li className="flex items-center">
                 <label htmlFor="height">身長:</label>
                 <input id="height" type="number" step="0.1" defaultValue={stats.height} 
-                disabled={stats.privateFields.height} className="border w-12 mx-2" />
+                disabled={stats.isHeightPrivate} className="border w-12 mx-2" />
                 <p>cm</p>
-                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.privateFields.height} onChange={(e) => setPrivate("height", e.target.checked)} /></label>
+                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.isHeightPrivate} onChange={(e) => setPrivate("height", e.target.checked)} /></label>
             </li>
             <li className="flex items-center">
                 <label htmlFor="weight">体重:</label>
                 <input id="weight" type="number" step="0.1" defaultValue={stats.weight} 
-                disabled={stats.privateFields.weight} className="border w-12 mx-2" />
+                disabled={stats.isWeightPrivate} className="border w-12 mx-2" />
                 <p>kg</p>
-                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.privateFields.weight} onChange={(e) => setPrivate("weight", e.target.checked)} /></label>
+                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.isWeightPrivate} onChange={(e) => setPrivate("weight", e.target.checked)} /></label>
             </li>
         </ul>
         </form>
@@ -1098,7 +1007,7 @@ function ScriptTables({ scripts, setProfile }: { scripts: Script[], setProfile: 
     )
 }
 
-function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { sports: string[], genres: string[], textcolor: string, bgcolor: string, setProfile: Dispatch<SetStateAction<Profile>> }) {
+function SportsGenreMenus({ sports, genres, textColor, bgColor, setProfile }: { sports: string[], genres: string[], textColor: Color, bgColor: Color, setProfile: Dispatch<SetStateAction<Profile>> }) {
     const [openSportsMenu, setOpenSportsMenu] = useState<boolean>(false);
     const [openGenresMenu, setOpenGenresMenu] = useState<boolean>(false);
     
@@ -1226,7 +1135,7 @@ function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { 
                         setOpenSportsMenu(!openSportsMenu);
                         setOpenGenresMenu(false);
                     }}
-                    className={`w-fit rounded ${openSportsMenu && colorClassMap[textcolor].bg + colorClassMap[bgcolor].text}`}>＋ スポーツ追加</button>
+                    className={`w-fit rounded ${openSportsMenu && colorClassMap[textColor].bg + colorClassMap[bgColor].text}`}>＋ スポーツ追加</button>
                     {openSportsMenu &&
                         <div className="absolute top-full text-black z-11">
                             {/* <MenuNarrow setGenres={setGenres}/> */}
@@ -1246,7 +1155,7 @@ function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { 
                         setOpenGenresMenu(!openGenresMenu);
                         setOpenSportsMenu(false);
                     }}
-                    className={`w-fit rounded ${openGenresMenu && colorClassMap[textcolor].bg + colorClassMap[bgcolor].text}`}>＋ ジャンル追加</button>
+                    className={`w-fit rounded ${openGenresMenu && colorClassMap[textColor].bg + colorClassMap[bgColor].text}`}>＋ ジャンル追加</button>
                     {openGenresMenu &&
                         <div className="absolute top-full text-black z-11">
                             <MenuNarrowProfileEdit sports={sports} genres={genres} setGenres={setGenres}/>
@@ -1272,15 +1181,13 @@ export default function PlayerCoachProfileAddPage(){
             teamnames: [],
             sports: [],
             genres: [],
-            gender: "private",
+            gender: Gender.PRIVATE,
             bdate: [crntDate.getMonth()+1, crntDate.getDate(), crntDate.getFullYear()],
             height: 150,
             weight: 40,
-            privateFields: {
-                bdate: true,
-                height: true,
-                weight: true
-            }
+            isBdatePrivate: false,
+            isHeightPrivate: false,
+            isWeightPrivate: false
         },
         scripts: [],
         data: {
@@ -1288,9 +1195,9 @@ export default function PlayerCoachProfileAddPage(){
             highlightInfo: {}
         },
         awards: [],
-        color: {
-            bgcolor: "gray",
-            textcolor: "white"
+        themeColor: {
+            bgColor: Color.GRAY,
+            textColor: Color.WHITE
         }
     }
 
@@ -1333,7 +1240,7 @@ export default function PlayerCoachProfileAddPage(){
             }))
             .filter((award) => award.titles.length > 0)
 
-        const sentProfile = {
+        const sentProfile: Profile = {
             ...profile,
             scripts: scripts,
             data: data,
@@ -1363,9 +1270,9 @@ export default function PlayerCoachProfileAddPage(){
     
     return (
         <>
-        <SetThemeColors bgcolor={profile.color.bgcolor} textcolor={profile.color.textcolor} setProfile={setProfile} />
+        <SetThemeColors bgcolor={profile.themeColor.bgColor} textcolor={profile.themeColor.textColor} setProfile={setProfile} />
         {/* 色を選んで変える(設定されてない場合はデフォルトの色(現状はtext-white, bg-gray-400)) */}
-        <div className={`border-2 px-2 rounded-3xl my-4 w-fit mx-auto ${colorClassMap[profile.color.bgcolor].bg} ${colorClassMap[profile.color.textcolor].text}`}>
+        <div className={`border-2 px-2 rounded-3xl my-4 w-fit mx-auto ${colorClassMap[profile.themeColor.bgColor].bg} ${colorClassMap[profile.themeColor.textColor].text}`}>
             <div className="flex items-start no-underline rounded mt-2 space-x-2">
                 <form>
                     <fieldset className="p-2 border text-center">
@@ -1405,7 +1312,7 @@ export default function PlayerCoachProfileAddPage(){
                             <li className="w-full">
                                 <TeamHistoryInput teamnames={profile.stats.teamnames} byear={profile.stats.bdate[2]} setProfile={setProfile} />
                             </li>
-                            <SportsGenreMenus sports={profile.stats.sports} genres={profile.stats.genres} textcolor={profile.color.textcolor} bgcolor={profile.color.bgcolor} setProfile={setProfile}/>
+                            <SportsGenreMenus sports={profile.stats.sports} genres={profile.stats.genres} textColor={profile.themeColor.textColor} bgColor={profile.themeColor.bgColor} setProfile={setProfile}/>
                         </ul>
                     </div>
                 </div>

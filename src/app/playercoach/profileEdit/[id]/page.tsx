@@ -1,5 +1,7 @@
 'use client';
 
+// このページは後々修正する
+
 import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
@@ -9,95 +11,12 @@ import SportsMenu from '@/components/SportsMenu';
 
 import { v4 } from 'uuid';
 import clsx from 'clsx';
+
+import { Profile, Stats, Teamname, Script, Data, Result, TableColCell, TableRow, TableCell, Title, Award, ThemeColor} from '@/typeDeclar/typeComp';
 // import path from 'path';
 
-type Teamname = {
-    name: string;
-    start: number;
-    end: number | null;
-    id: string;
-}
-
-type Stats = {
-    name: string;
-    teamnames: Teamname[];
-    sports: string[];
-    genres: string[];
-    gender: string;
-    bdate: [number, number, number];
-    height: number;
-    weight: number;
-    privateFields: PrivateFields;
-}
-
-type Script = {
-    id: string;
-    section: string;
-    texts: string[];
-}
-
 type CellLocation = 
-    [number, number, number]
-
-type TableCell = {
-    value: string | number;
-    id: string;
-    highlightColor?: string;
-}
-
-type TableColCell = {
-    value: string;
-    id: string;
-}
-
-type TableRow = {
-    id: string;
-    cells: TableCell[];
-}
-
-type Result = {
-    position: string;
-    id: string;
-    columns: TableColCell[];
-    rows: TableRow[];
-};
-
-type Data = {
-    results: Result[];
-    highlightInfo: Partial<Record<string, string>>;
-}
-
-type Profile = {
-    stats: Stats;
-    scripts: Script[];
-    data: Data;
-    awards: Award[];
-    color: Color;
-}
-
-type Title = {
-    id: string; 
-    name: string; 
-    years: number[];
-}
-
-type Award = {
-    id: string;
-    section: string;
-    titles: Title[];
-}
-
-type Color = {
-    bgcolor: string;
-    textcolor: string;
-}
-
-// 今はjsonファイル内に入れているが、profileAddメニューができたらデータベースでこのフィールドを管理する
-type PrivateFields = {
-    bdate: boolean;
-    height: boolean;
-    weight: boolean;
-}
+    [number, number, number];
 
 const colorClassMap: Record<string, { bg: string; text: string }> = {
   red: { bg: 'bg-red-600', text: 'text-red-600' },
@@ -939,11 +858,11 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
             const newBdate = (): [number, number, number] => {
                 switch (level) {
                     case "year":
-                        return [prevProfile.stats.bdate[0], prevProfile.stats.bdate?.[1], Number(value)];
+                        return [prevProfile.stats.bdate[0], prevProfile.stats.bdate[1], Number(value)];
                     case "month":
-                        return [Number(value), prevProfile.stats.bdate[1], prevProfile.stats.bdate?.[2]];
+                        return [Number(value), prevProfile.stats.bdate[1], prevProfile.stats.bdate[2]];
                     case "day":
-                        return [prevProfile.stats.bdate[0], Number(value), prevProfile.stats.bdate?.[2]]
+                        return [prevProfile.stats.bdate[0], Number(value), prevProfile.stats.bdate[2]]
                     default:
                         return prevProfile.stats.bdate;
                 }
@@ -962,34 +881,31 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
         setProfile((prevProfile) => {
             if (!prevProfile?.stats?.bdate) return prevProfile;
 
-            const newPrivateFields = (): PrivateFields => {
+            const newStats = (): Stats => {
                 switch (type) {
                     case "bdate":
                         return {
-                            ...stats.privateFields,
-                            bdate: checked
+                            ...stats,
+                            isBdatePrivate: checked
                         };
                     case "height":
                         return {
-                            ...stats.privateFields,
-                            height: checked 
+                            ...stats,
+                            isHeightPrivate: checked 
                         };
                     case "weight":
                         return {
-                            ...stats.privateFields,
-                            weight: checked
+                            ...stats,
+                            isWeightPrivate: checked
                         };
                     default:
-                        return stats.privateFields;
+                        return stats;
                 }
             }
             
             return {
                 ...prevProfile,
-                stats: {
-                    ...stats,
-                    privateFields: newPrivateFields()
-                }
+                stats: newStats()
             }
         })
 
@@ -1020,32 +936,32 @@ function ProfileInput({ stats, setProfile }: { stats: Stats, setProfile: Dispatc
                     <input id="year" type="number" step="1" value={stats.bdate[2]}
                     max={stats?.teamnames?.[0] ? stats.teamnames[0].start : (new Date()).getFullYear()} 
                     onChange={(e) => bdateOnChange(e.target.value, "year")} 
-                    disabled={stats.privateFields.bdate} className="border w-12 m-2" />
+                    disabled={stats.isBdatePrivate} className="border w-12 m-2" />
                     <p>年</p>
                     <input id="month" type="number" step="1" value={stats.bdate[0]} min={1} max={12}
                     onChange={(e) => bdateOnChange(e.target.value, "month")} 
-                    disabled={stats.privateFields.bdate} className="border w-12 m-2" />
+                    disabled={stats.isBdatePrivate} className="border w-12 m-2" />
                     <p>月</p>
                     <input id="day" type="number" step="1" value={correctedDay} min={1}
                     onChange={(e) => bdateOnChange(e.target.value, "day")} 
-                    disabled={stats.privateFields.bdate} className="border w-12 m-2" />
+                    disabled={stats.isBdatePrivate} className="border w-12 m-2" />
                     <p>日</p> 
                 </div>
-                <label> / 非公開: <input type="checkbox" defaultChecked={stats.privateFields.bdate} onChange={(e) => setPrivate("bdate", e.target.checked)} /></label>                 
+                <label> / 非公開: <input type="checkbox" defaultChecked={stats.isBdatePrivate} onChange={(e) => setPrivate("bdate", e.target.checked)} /></label>                 
             </li>
             <li className="flex items-center">
                 <label htmlFor="height">身長:</label>
                 <input id="height" type="number" step="0.1" defaultValue={stats.height} 
-                disabled={stats.privateFields.height} className="border w-12 mx-2" />
+                disabled={stats.isHeightPrivate} className="border w-12 mx-2" />
                 <p>cm</p>
-                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.privateFields.height} onChange={(e) => setPrivate("height", e.target.checked)} /></label>
+                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.isHeightPrivate} onChange={(e) => setPrivate("height", e.target.checked)} /></label>
             </li>
             <li className="flex items-center">
                 <label htmlFor="weight">体重:</label>
                 <input id="weight" type="number" step="0.1" defaultValue={stats.weight} 
-                disabled={stats.privateFields.weight} className="border w-12 mx-2" />
+                disabled={stats.isWeightPrivate} className="border w-12 mx-2" />
                 <p>kg</p>
-                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.privateFields.weight} onChange={(e) => setPrivate("weight", e.target.checked)} /></label>
+                <label className="ml-2"> / 非公開: <input type="checkbox" defaultChecked={stats.isWeightPrivate} onChange={(e) => setPrivate("weight", e.target.checked)} /></label>
             </li>
         </ul>
         </form>
@@ -1296,8 +1212,8 @@ export default function PlayerCoachProfileEditPage(){
       
     const params = useParams();
 
-    const bgcolor: string = profile?.color.bgcolor || "gray";
-    const textcolor: string = profile?.color.textcolor || "white"
+    const bgcolor: string = profile?.themeColor.bgColor || "gray";
+    const textcolor: string = profile?.themeColor.textColor || "white"
 
     // '/jsonfile/sports_kgavvaaxha_3.json'
     useEffect(() => {
@@ -1331,7 +1247,7 @@ export default function PlayerCoachProfileEditPage(){
 
         const scripts = profile.scripts.filter((script) => script.section !== "");
 
-        const data = {
+        const data: Data = {
             ...profile.data,
             results: profile.data.results.filter((result) => 
                 result.position !== "" ||
@@ -1340,7 +1256,7 @@ export default function PlayerCoachProfileEditPage(){
             highlightInfo: Object.fromEntries(Object.entries(profile.data.highlightInfo).filter(([, value]) => value !== "")) as Partial<Record<string, string>>
         }
 
-        const awards = 
+        const awards: Award[] = 
             profile.awards.filter((award) => award.section !== "")
             .map((award) => ({
                 ...award,
@@ -1348,7 +1264,7 @@ export default function PlayerCoachProfileEditPage(){
             }))
             .filter((award) => award.titles.length > 0)
 
-        const sentProfile = {
+        const sentProfile: Profile = {
             ...profile,
             scripts: scripts,
             data: data,

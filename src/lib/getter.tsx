@@ -1,4 +1,5 @@
 import prisma from './prisma';
+import { Color } from '@prisma/client';
 import { User } from '@/typeDeclar/typeComp';
 
 /* ユーザーをidから取得する
@@ -22,10 +23,10 @@ export async function getUserByName(name: string): Promise<User>{
 /*
  * スポーツのIDをスポーツ名から取得
  */
-export async function getSportsIDs( sports: string[] ) : Promise<string[]> {
-    const sidList : { id: string }[] = await prisma.Sports.findMany({
+export async function getSportIDs( sports: string[] ) : Promise<string[]> {
+    const sidList : { id: string }[] = await prisma.Sport.findMany({
         where: {
-            sports: {
+            sport: {
                 in: sports,
             },
         },
@@ -200,57 +201,193 @@ export async function getGenderByLanguage(gender: string, language: string) {
     return genderMapJP[gender];
 }
 
-// model WikiPage {
-//   id        String    @id @default(cuid())
-//   name      String
-//   fileID    String
-//   createdAt DateTime  @default(now())
-//   updatedAt DateTime  @updatedAt
-//   role      RoleType
-//   sports    WikiOnSports[]
-//   genres    WikiOnGenre[] 
-// }
-
-// 選手・監督の概要カードのための情報
-export async function getWikiCards() : Promise<{
+export type Wiki = {
     id: string;
     name: string;
-    sports: string[];
-    genres: string[];
-}[]> {
-  const wikiCards : {id: string; name: string; sports: {sports:{sports: string}}[]; genres: {genre:{genre: string}}[];}[]
-    = await prisma.wikiPage.findMany({
+    gender: string;
+    bdate: Date;
+    isBdatePrivate: boolean;
+    isHeightPrivate: boolean;
+    isWeightPrivate: boolean;
+    height: number;
+    weight: number;
+    bgColor: string;
+    textColor: string;
+    createdAt: Date;
+    updatedAt: Date;
+    teamnames: {name: string; start: number; end?: number;}[];
+    scripts: {section: string; texts: {text: string}[];}[];
+    awards: {section: string; titles: {name: string; years: {year: number}[];}[];}[];
+    sports: {sport:{sport: string;};}[]; 
+    genres: {genre:{genre: string;};}[];
+}
+
+// 選手・監督の概要カードのための情報
+export async function getWiki() {
+  const wikis : Wiki[] = await prisma.Wiki.findMany({
         select: {
             id: true,
             name: true,
-            sports: {
+            gender: true,
+            bdate: true,
+            height: true,
+            weight: true,
+            isBdatePrivate: true,
+            isHeightPrivate: true,
+            isWeightPrivate: true,
+            bgColor: true,
+            textColor: true,
+            createdAt: true,
+            updatedAt: true,
+            teamnames: {
                 select: {
-                sports: {
-                    select: {
-                    sports: true // ← Sports モデルの sports フィールド（名前）
+                    name: true,
+                    start: true,
+                    end: true
+                }
+            },
+            scripts: {
+                select: {
+                    section: true,
+                    texts: {
+                        select: {
+                            text: true
+                        }
                     }
                 }
+            },
+            awards: {
+                select: {
+                    section: true,
+                    titles:{
+                        select: {
+                            name: true,
+                            years: {
+                                select: {
+                                    year: true
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            sports: {
+                select: {
+                    sport: {
+                        select: {
+                            sport: true // ← Sports モデルの sports フィールド（名前）
+                        }
+                    }
                 }
             },
             genres: {
                 select: {
-                genre: {
-                    select: {
-                    genre: true // ← Genre モデルの genre フィールド（名前）
+                    genre: {
+                        select: {
+                            genre: true // ← Genre モデルの genre フィールド（名前）
+                        }
                     }
-                }
                 }
             }
         }
     });
 
-  return wikiCards.map(w => ({
-    id: w.id,
-    name: w.name,
-    sports: w.sports.map(s => menuMapJP[s.sports.sports]),
+  return wikis.map(w => ({
+    ...w,
+    sports: w.sports.map(s => menuMapJP[s.sport.sport]),
     genres: w.genres.map(g => menuMapJP[g.genre.genre])
   }))
 }
+
+export async function getWikiByID(id: string) {
+    try {
+        const wiki : Wiki = await prisma.wiki.findUnique({
+            where: {
+                id: id
+            },
+            include: {
+                teamnames: true,
+                scripts: {
+                    include: {
+                        texts: true
+                    }
+                },
+                data: {
+                    include: {
+                        columns: true,
+                        rows: {
+                            include: {
+                                cells: true
+                            }
+                        },
+                        allowedColors: true
+                    }
+                },
+                awards: {
+                    include: {
+                        titles: {
+                            include: {
+                                years: true
+                            }
+                        }
+                    }
+                },
+                sports: {
+                    include: {
+                        sport: true
+                    }
+                },
+                genres: {
+                    include: {
+                        genre: true
+                    }
+                }
+            }
+
+        })
+    }catch{
+        return null;
+    }
+}
+
+// model WikiData {
+//   id            String                  @id @default(cuid())
+//   position      String
+//   wiki          Wiki                    @relation(fields: [wid], references: [id])
+//   wid           String
+//   columns       DataColumn[]
+//   rows          DataRow[]
+//   allowedColors AllowedHighlightColor[] // ハイライトの色の選択の制御はアプリ側で行う
+// }
+
+// model AllowedHighlightColor {
+//   id        String    @id @default(cuid())
+//   color     Color
+//   wikiData  WikiData  @relation(fields: [wdid], references: [id])
+//   wdid      String
+// }
+
+// model DataColumn {
+//   id        String    @id @default(cuid())
+//   value     String
+//   wikiData  WikiData  @relation(fields: [wdid], references: [id])
+//   wdid      String
+// }
+
+// model DataRow {
+//   id        String     @id @default(cuid())
+//   wikiData  WikiData   @relation(fields: [wdid], references: [id])
+//   wdid      String
+//   cells     DataCell[]
+// }
+
+// model DataCell {
+//   id              String   @id @default(cuid())
+//   value           String?
+//   highlightColor  Color?
+//   row             DataRow  @relation(fields: [rowId], references: [id])
+//   rowId           String
+// }
 
 // 選手・監督の名前からファイル名を取得
 export async function getFileID(id: string) : Promise<{ fileID: string; }> {

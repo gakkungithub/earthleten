@@ -1,9 +1,8 @@
 import { writeFile } from 'fs/promises';
 import path from 'path';
 import fs from 'fs';
-import { v4 } from 'uuid';
-import { getFileID, getSportsIDs, getGenreIDs } from '@/lib/getter';
-import { addPlayerCoach } from '@/lib/actions';
+import { getFileID } from '@/lib/getter';
+import { addPlayerCoach2 } from '@/lib/actions';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -23,21 +22,13 @@ export async function POST(req: Request){
     const profile = await req.json();
 
     try { 
-        const id = v4();
-        const filePath = path.join(process.cwd(), 'public/jsonfile', `sports_${id}.json`); // public ではなく data ディレクトリなど
-        await writeFile(filePath, JSON.stringify(profile, null, 2), 'utf-8');
-
-        const sids = await getSportsIDs(profile.stats.sports);
-        const gids = await getGenreIDs(profile.stats.genres);
-
-        const result = await addPlayerCoach({name: profile.stats.name, fileID: id, sids: sids, gids: gids})
+        const result = await addPlayerCoach2(profile);
 
         if (result.success) {
-          return new Response(JSON.stringify({ id: id }), { status: 200 });
+          return new Response(JSON.stringify({ message: "succeeded in post"}), { status: 200 });
         }
         else {
-          console.log(result.message)
-          return new Response(JSON.stringify({ id: id }), { status: 500 });
+          return new Response(JSON.stringify({ message: "error in post" }), { status: 500 });
         }
         
     } catch {
