@@ -6,8 +6,8 @@ import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import MenuNarrowProfileEdit from '@/components/MenuNarrowProfileEdit';
-import SportsMenu from '@/components/SportsMenu';
+import GenresNarrowMenu from '@/components/GenresNarrowMenu';
+import SportsNarrowMenu from '@/components/SportsNarrowMenu';
 
 import { v4 } from 'uuid';
 import clsx from 'clsx';
@@ -1172,7 +1172,7 @@ function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { 
                     {openSportsMenu &&
                         <div className="absolute top-full text-black z-11">
                             {/* <MenuNarrow setGenres={setGenres}/> */}
-                            <SportsMenu narrowedSports={sports} narrowedGenres={genres} setSports={setSports} setGenres={setGenres}/>
+                            <SportsNarrowMenu narrowedSports={sports} narrowedGenres={genres} setSports={setSports} setGenres={setGenres}/>
                         </div>
                     }
                 </div>
@@ -1191,7 +1191,7 @@ function SportsGenreMenus({ sports, genres, textcolor, bgcolor, setProfile }: { 
                     className={`w-fit rounded ${openGenresMenu && colorClassMap[textcolor].bg + colorClassMap[bgcolor].text}`}>＋ ジャンル追加</button>
                     {openGenresMenu &&
                         <div className="absolute top-full text-black z-11">
-                            <MenuNarrowProfileEdit sports={sports} genres={genres} setGenres={setGenres}/>
+                            <GenresNarrowMenu sports={sports} genres={genres} setGenres={setGenres}/>
                         </div>
                     }
                 </div>

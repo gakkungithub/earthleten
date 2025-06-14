@@ -109,4 +109,3 @@ export type ThemeColor = {
     bgColor: Color;
     textColor: Color;
 }
-

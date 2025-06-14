@@ -11,7 +11,7 @@ type CboxData = {
     }
 }
 
-export default function MenuNarrowProfileEdit({sports, genres, setGenres} : {sports: string[], genres: string[], setGenres: (genres: string[]) => void }) {
+export default function GenresNarrowMenu({sports, genres, setGenres} : {sports: string[], genres: string[], setGenres: (genres: string[]) => void }) {
     // #region menuConst 
     const menuMap: {[key: string] : {genres: string[], level: number} } = {
         sports: {genres: ['baseball', 'football', 'trackfield'], level: -1},
@@ -285,7 +285,7 @@ export default function MenuNarrowProfileEdit({sports, genres, setGenres} : {spo
                             {!menuMap[value.genres[0]] ? 
                                 // 最下層のメニュー
                                 (<>
-                                {openMenu.includes(key) && 
+                                {openMenu.includes(key) && sports.some(sport => openMenu.includes(sport)) &&
                                 <div className="col-span-3 flex flex-col space-y-1 pl-2">
                                     <MenuInput label='すべて選択' value={key} level={value.level} />
                                     {value.genres.map((genre) => ( <MenuInput key={genre} label={menuMapJP[genre]} value={genre} level={value.level+1}/> ))}
@@ -294,7 +294,7 @@ export default function MenuNarrowProfileEdit({sports, genres, setGenres} : {spo
                                 </>) :
                                 // 中間層のメニュー
                                 (<>
-                                {openMenu.includes(key) && 
+                                {openMenu.includes(key) && sports.some(sport => openMenu.includes(sport)) && 
                                 <div className="col-span-3 flex flex-col space-y-1 pl-2">
                                     <MenuInput label='すべて選択' value={key} level={value.level} />
                                     {value.genres.map((genre) => ( <MenuButton key={genre} label={menuMapJP[genre]} menu={genre}/>))}

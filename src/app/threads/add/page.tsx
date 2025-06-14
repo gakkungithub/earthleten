@@ -8,7 +8,8 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
 import Image from 'next/image';
-import MenuNarrow from '@/components/MenuNarrow';
+import GenresNarrowMenu from '@/components/GenresNarrowMenu';
+import SportsNarrowMenu from '@/components/SportsNarrowMenu';
 
 import { redirect } from 'next/navigation';
 
@@ -49,7 +50,14 @@ export default function AddThreadsPage(){
     const { data: session, status } = useSession();
     const uid = session?.user?.id || '';
 
+    const [sports, setSports] = useState<string[]>([]);
     const [genres, setGenres] = useState<string[]>([]);
+
+    const handleSportsChange = (sports: string[]) => 
+        setSports(sports);
+
+    const handleGenresChange = (genres: string[]) => 
+        setGenres(genres);
 
     // #region imageController
     const [topImageList, setTopImageList] = useState<string[]>([]);
@@ -68,7 +76,7 @@ export default function AddThreadsPage(){
     // #endregion
 
     // #region videoController
-    const [topVideo, setTopVideo] = useState<string>("");
+    // const [topVideo, setTopVideo] = useState<string>("");
 
     // #endregion
 
@@ -106,9 +114,9 @@ export default function AddThreadsPage(){
 
     return (
         <div className="h-fit pb-15 bg-gray-300 text-black z-2 
-        transition-transform duration-300 ease-in-out relative">
+        transition-transform duration-300 ease-in-out relative px-2">
         <form onSubmit={handleSubmit(onsubmit)} className="h-fit w-full">
-            <div className="mx-2">
+            <div>
                 <fieldset className="p-2 border text-center bg-white">
                     <legend className="font-bold">タイトル</legend> 
                     <input id="add_sports_title" type="text" placeholder="タイトル" 
@@ -181,7 +189,8 @@ export default function AddThreadsPage(){
                 登録
             </button>
         </form>
-        <MenuNarrow setGenres={setGenres}/>
+        <SportsNarrowMenu narrowedSports={sports} narrowedGenres={genres} setSports={handleSportsChange} setGenres={handleGenresChange}/>
+        <GenresNarrowMenu sports={sports} genres={genres} setGenres={handleGenresChange}/>
         </div>
     );
 }

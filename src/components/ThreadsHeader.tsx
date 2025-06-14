@@ -6,7 +6,7 @@ import ChangeThreadsOrder from '@/components/ChangeThreadsOrder';
 import ChangeThreadsGenres from '@/components/ChangeThreadsGenres';
 import Link from 'next/link';
 
-export default function NarrowMenu(){
+export default function ThreadsHeader(){
     const pathname = usePathname();
     const [openMenu, setOpenMenu] = useState<boolean>(false);
     return (

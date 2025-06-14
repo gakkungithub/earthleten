@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function SportsMenu({narrowedSports, narrowedGenres, setSports, setGenres} : {narrowedSports: string[], narrowedGenres: string[], setSports: (sports: string[]) => void, setGenres: (genres: string[]) => void }) {
+export default function SportsNarrowMenu({narrowedSports, narrowedGenres, setSports, setGenres} : {narrowedSports: string[], narrowedGenres: string[], setSports: (sports: string[]) => void, setGenres: (genres: string[]) => void }) {
     // #region menuConst 
     const sportsMap = ['baseball', 'football', 'trackfield'];
 
@@ -26,7 +26,7 @@ export default function SportsMenu({narrowedSports, narrowedGenres, setSports, s
     return (
         <div className="h-fit w-full">
             <fieldset className="border text-center bg-white h-fit p-2">
-                <legend className="font-bold">ジャンルの絞り込み</legend>
+                <legend className="font-bold">スポーツの絞り込み</legend>
                 <div className="space-x-2">
                 {sportsMap.map((sports, sportsIndex) => {
                     const included = narrowedSports.includes(sports);

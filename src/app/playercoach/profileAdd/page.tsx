@@ -3,8 +3,8 @@
 import { useEffect, useState, useMemo, Dispatch, SetStateAction } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import MenuNarrowProfileEdit from '@/components/MenuNarrowProfileEdit';
-import SportsMenu from '@/components/SportsMenu';
+import GenresNarrowMenu from '@/components/GenresNarrowMenu';
+import SportsNarrowMenu from '@/components/SportsNarrowMenu';
 
 import { v4 } from 'uuid';
 import clsx from 'clsx';
@@ -12,24 +12,10 @@ import clsx from 'clsx';
 
 import { Profile, Stats, Teamname, Script, Data, Result, TableColCell, TableRow, TableCell, Title, Award, ThemeColor} from '@/typeDeclar/typeComp';
 import { Color, Gender } from '@prisma/client';
+import { colorClassMap } from '@/typeDeclar/const';
 
 type CellLocation = 
     [number, number, number];
-
-const colorClassMap: Record<Color, { bg: string; text: string }> = {
-  RED: { bg: 'bg-red-600', text: 'text-red-600' },
-  ORANGE: { bg: 'bg-orange-600', text: 'text-orange-600' },
-  YELLOW: { bg: 'bg-yellow-600', text: 'text-yellow-600' },
-  LIME: { bg: 'bg-lime-400', text: 'text-lime-400' },
-  GREEN: { bg: 'bg-green-600', text: 'text-green-600' },
-  SKY: { bg: 'bg-sky-500', text: 'text-sky-500' },
-  BLUE: { bg: 'bg-blue-600', text: 'text-blue-600' },
-  PURPLE: { bg: 'bg-purple-600', text: 'text-purple-600' },
-  AMBER: { bg: 'bg-amber-700', text: 'text-amber-700' },
-  GRAY: { bg: 'bg-gray-600', text: 'text-gray-600' },
-  BLACK: { bg: 'bg-black', text: 'text-black' },
-  WHITE: { bg: 'bg-white', text: 'text-white' },
-}
 
 function SetThemeColors({bgcolor, textcolor, setProfile}:{bgcolor: string, textcolor: string, setProfile: Dispatch<SetStateAction<Profile>>}) {
     const getColorCSS = (type: 'bg' | 'text', color: Color): string => {
@@ -1013,8 +999,6 @@ function SportsGenreMenus({ sports, genres, textColor, bgColor, setProfile }: { 
     
     const setSports = (sports: string[]) => 
         setProfile((prevProfile) => {
-            if (!prevProfile) return prevProfile;
-            
             return {
                 ...prevProfile,
                 stats: {
@@ -1026,8 +1010,6 @@ function SportsGenreMenus({ sports, genres, textColor, bgColor, setProfile }: { 
     
     const setGenres = (genres: string[]) => 
         setProfile((prevProfile) => {
-            if (!prevProfile) return prevProfile;
-            
             return {
                 ...prevProfile,
                 stats: {
@@ -1139,7 +1121,7 @@ function SportsGenreMenus({ sports, genres, textColor, bgColor, setProfile }: { 
                     {openSportsMenu &&
                         <div className="absolute top-full text-black z-11">
                             {/* <MenuNarrow setGenres={setGenres}/> */}
-                            <SportsMenu narrowedSports={sports} narrowedGenres={genres} setSports={setSports} setGenres={setGenres}/>
+                            <SportsNarrowMenu narrowedSports={sports} narrowedGenres={genres} setSports={setSports} setGenres={setGenres}/>
                         </div>
                     }
                 </div>
@@ -1158,7 +1140,7 @@ function SportsGenreMenus({ sports, genres, textColor, bgColor, setProfile }: { 
                     className={`w-fit rounded ${openGenresMenu && colorClassMap[textColor].bg + colorClassMap[bgColor].text}`}>＋ ジャンル追加</button>
                     {openGenresMenu &&
                         <div className="absolute top-full text-black z-11">
-                            <MenuNarrowProfileEdit sports={sports} genres={genres} setGenres={setGenres}/>
+                            <GenresNarrowMenu sports={sports} genres={genres} setGenres={setGenres}/>
                         </div>
                     }
                 </div>

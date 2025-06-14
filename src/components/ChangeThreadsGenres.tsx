@@ -1,6 +1,7 @@
 'use client';
 
-import MenuNarrow from '@/components/MenuNarrow';
+import GenresNarrowMenu from '@/components/GenresNarrowMenu';
+import SportsMenu from '@/components/SportsNarrowMenu';
 import { useState } from 'react';
 import { redirect, useSearchParams, usePathname } from 'next/navigation';
 
@@ -8,7 +9,15 @@ export default function ChangeThreadsOrder() {
     const searchParams = useSearchParams();
     const pathname = usePathname();
 
+    const [sports, setSports] = useState<string[]>([]);
     const [genres, setGenres] = useState<string[]>([]);
+
+    const handleSportsChange = (sports: string[]) => 
+        setSports(sports);
+
+    const handleGenresChange = (genres: string[]) => 
+        setGenres(genres);
+
     const [openMenu, setOpenMenu] = useState<boolean>(false);
 
     const onsubmit = async () => {
@@ -31,7 +40,8 @@ export default function ChangeThreadsOrder() {
             </div>
             {openMenu &&
             <>
-                <MenuNarrow setGenres={setGenres}/>
+                <SportsMenu narrowedSports={sports} narrowedGenres={genres} setSports={handleSportsChange} setGenres={handleGenresChange}/>
+                <GenresNarrowMenu sports={sports} genres={genres} setGenres={handleGenresChange}/>
                 <button type="button" disabled={genres.length === 0} onClick={onsubmit}
                 className={`absolute bottom-2 left-0 right-0 mx-auto w-fit text-white rounded p-2 
                 ${genres.length !== 0 ? "bg-blue-600 hover:bg-blue-500" : "bg-blue-300"} `}>
