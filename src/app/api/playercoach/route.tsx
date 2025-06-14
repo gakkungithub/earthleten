@@ -2,7 +2,7 @@ import { writeFile } from 'fs/promises';
 import path from 'path';
 import fs from 'fs';
 import { getFileID } from '@/lib/getter';
-import { addPlayerCoach2 } from '@/lib/actions';
+import { addPlayerCoach } from '@/lib/actions';
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
@@ -22,7 +22,7 @@ export async function POST(req: Request){
     const profile = await req.json();
 
     try { 
-        const result = await addPlayerCoach2(profile);
+        const result = await addPlayerCoach(profile);
 
         if (result.success) {
           return new Response(JSON.stringify({ message: "succeeded in post"}), { status: 200 });

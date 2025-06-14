@@ -71,15 +71,15 @@ export type Data = {
 }
 
 export type Result = {
-    position: string;
     id: string;
+    position: string;
     columns: TableColCell[];
     rows: TableRow[];
 };
 
 export type TableColCell = {
-    value: string;
     id: string;
+    value: string;
 }
 
 export type TableRow = {
@@ -88,7 +88,7 @@ export type TableRow = {
 }
 
 export type TableCell = {
-    value: string | number;
+    value: string;
     id: string;
     highlightColor?: string;
 }

@@ -5,7 +5,6 @@ import { getWiki } from '@/lib/getter';
 
 export default async function PlayerCoachPage() {
     const wikiCards = await getWiki();
-
     return (
         <>
             <div className="w-full grid lg:grid-cols-5 grid-cols-4 gap-4">

@@ -1,6 +1,6 @@
 import prisma from './prisma';
-import { Color } from '@prisma/client';
-import { User } from '@/typeDeclar/typeComp';
+import { Color, Gender } from '@prisma/client';
+import { User, Profile, Data, Teamname } from '@/typeDeclar/typeComp';
 
 /* ユーザーをidから取得する
  * typeは型のPromiseとなる必要がある */
@@ -190,13 +190,13 @@ export async function getGenreLabelsBySuggest(genreString: string) {
     return genres;
 }
 
-const genderMapJP: { [key: string]: string } = {
-    male: '男性',
-    female: '女性',
-    private: '非公開',
-};
+const genderMapJP: Record<Gender, string> = {
+    MALE: '男性',
+    FEMALE: '女性',
+    PRIVATE: '非公開',
+}
 
-export async function getGenderByLanguage(gender: string, language: string) {
+export async function getGenderByLanguage(gender: Gender, language: string) {
     // 後で言語によって変えられるようにする
     return genderMapJP[gender];
 }
@@ -204,23 +204,53 @@ export async function getGenderByLanguage(gender: string, language: string) {
 export type Wiki = {
     id: string;
     name: string;
-    gender: string;
+    gender: Gender;
     bdate: Date;
     isBdatePrivate: boolean;
     isHeightPrivate: boolean;
     isWeightPrivate: boolean;
     height: number;
     weight: number;
-    bgColor: string;
-    textColor: string;
+    bgColor: Color;
+    textColor: Color;
     createdAt: Date;
     updatedAt: Date;
-    teamnames: {name: string; start: number; end?: number;}[];
-    scripts: {section: string; texts: {text: string}[];}[];
-    awards: {section: string; titles: {name: string; years: {year: number}[];}[];}[];
+    data: {results: {id: string; position: string; columns: {id: string; value: string;}[]; rows: {id: string; cells: {id: string; value: string; highlightColor: Color;}[];}[];}[];
+            allowedColors: {id: string; color: Color; explanation: string;}[];}
+    teamnames: Teamname[];
+    scripts: {id: string; section: string; texts: {text: string}[];}[];
+    awards: {id: string; section: string; titles: {id: string; name: string; years: {year: number}[];}[];}[];
     sports: {sport:{sport: string;};}[]; 
     genres: {genre:{genre: string;};}[];
 }
+
+// export type Data = {
+//     results: Result[];
+//     highlightInfo: Partial<Record<Color, string>>;
+// }
+
+// export type Result = {
+//     position: string;
+//     id: string;
+//     columns: TableColCell[];
+//     rows: TableRow[];
+// };
+
+// export type TableColCell = {
+//     value: string;
+//     id: string;
+// }
+
+// export type TableRow = {
+//     id: string;
+//     cells: TableCell[];
+// }
+
+// export type TableCell = {
+//     value: string | number;
+//     id: string;
+//     highlightColor?: string;
+// }
 
 // 選手・監督の概要カードのための情報
 export async function getWiki() {
@@ -241,6 +271,7 @@ export async function getWiki() {
             updatedAt: true,
             teamnames: {
                 select: {
+                    id: true,
                     name: true,
                     start: true,
                     end: true
@@ -248,6 +279,7 @@ export async function getWiki() {
             },
             scripts: {
                 select: {
+                    id: true,
                     section: true,
                     texts: {
                         select: {
@@ -258,9 +290,11 @@ export async function getWiki() {
             },
             awards: {
                 select: {
+                    id: true,
                     section: true,
                     titles:{
                         select: {
+                            id: true,
                             name: true,
                             years: {
                                 select: {
@@ -288,20 +322,78 @@ export async function getWiki() {
                         }
                     }
                 }
+            },
+            data: {
+                select: {
+                    results: {
+                        select: {
+                            id: true,
+                            position: true,
+                            columns: {
+                                select: {
+                                    id: true,
+                                    value: true
+                                }
+                            },
+                            rows: {
+                                select: {
+                                    id: true,
+                                    cells: {
+                                        select: {
+                                            id: true,
+                                            value: true,
+                                            highlightColor: true,
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    allowedColors: {
+                        select: {
+                            id: true,
+                            color: true,
+                            explanation: true
+                        }
+                    }
+                }
             }
         }
     });
 
   return wikis.map(w => ({
     ...w,
+    data: {
+        results: w.data.results,
+        highlightInfo: Object.fromEntries(
+            w.data.allowedColors.map(ac =>
+                [ac.color, ac.explanation]
+            )
+        ) as Partial<Record<Color, string>>,
+        // highlightInfo: Partial<Record<Color, string>>;
+    },
+    scripts: w.scripts.map(script => ({
+        id: script.id,
+        section: script.section,
+        texts: script.texts.map(t => t.text)  // text文字列だけを抽出
+    })),
+    awards: w.awards.map(a => ({
+        id: a.id,
+        section: a.section,
+        titles: a.titles.map(t => ({
+            id: t.id,
+            name: t.name,
+            years: t.years.map(y => y.year)
+        }))
+    })),
     sports: w.sports.map(s => menuMapJP[s.sport.sport]),
     genres: w.genres.map(g => menuMapJP[g.genre.genre])
   }))
 }
 
-export async function getWikiByID(id: string) {
+export async function getWikiByID(id: string): Promise<Profile | null> {
     try {
-        const wiki : Wiki = await prisma.wiki.findUnique({
+        const wiki : Wiki = await prisma.Wiki.findUnique({
             where: {
                 id: id
             },
@@ -314,10 +406,14 @@ export async function getWikiByID(id: string) {
                 },
                 data: {
                     include: {
-                        columns: true,
-                        rows: {
+                        results: {
                             include: {
-                                cells: true
+                                columns: true,
+                                rows: {
+                                    include: {
+                                        cells: true
+                                    }
+                                }
                             }
                         },
                         allowedColors: true
@@ -343,55 +439,60 @@ export async function getWikiByID(id: string) {
                     }
                 }
             }
+        });
 
-        })
-    }catch{
+    return {
+        stats: {
+            name: wiki.name,
+            teamnames: wiki.teamnames,
+            sports: wiki.sports.map(s => s.sport.sport),
+            genres: wiki.genres.map(g => g.genre.genre),
+            gender: wiki.gender,
+            bdate: [wiki.bdate.getMonth()-1, wiki.bdate.getDate(), wiki.bdate.getFullYear()],
+            height: wiki.height,
+            weight: wiki.weight,
+            isBdatePrivate: wiki.isBdatePrivate,
+            isHeightPrivate: wiki.isHeightPrivate,
+            isWeightPrivate: wiki.isWeightPrivate,
+        },
+        scripts: wiki.scripts.map(script => ({
+            id: script.id,
+            section: script.section,
+            texts: script.texts.map(t => t.text)  // text文字列だけを抽出
+        })),
+        data: {
+            results: wiki.data.results,
+            highlightInfo: Object.fromEntries(
+                wiki.data.allowedColors.map(ac =>
+                    [ac.color, ac.explanation]
+                )
+            ) as Partial<Record<Color, string>>,
+            // highlightInfo: Partial<Record<Color, string>>;
+        },
+        awards: wiki.awards.map(a => ({
+            id: a.id,
+            section: a.section,
+            titles: a.titles.map(t => ({
+                id: t.id,
+                name: t.name,
+                years: t.years.map(y => y.year)
+            }))
+        })),
+        themeColor: {
+            bgColor: wiki.bgColor,
+            textColor: wiki.textColor
+        }
+    }
+
+    }catch(error){
+        console.log(error);
         return null;
     }
 }
 
-// model WikiData {
-//   id            String                  @id @default(cuid())
-//   position      String
-//   wiki          Wiki                    @relation(fields: [wid], references: [id])
-//   wid           String
-//   columns       DataColumn[]
-//   rows          DataRow[]
-//   allowedColors AllowedHighlightColor[] // ハイライトの色の選択の制御はアプリ側で行う
-// }
-
-// model AllowedHighlightColor {
-//   id        String    @id @default(cuid())
-//   color     Color
-//   wikiData  WikiData  @relation(fields: [wdid], references: [id])
-//   wdid      String
-// }
-
-// model DataColumn {
-//   id        String    @id @default(cuid())
-//   value     String
-//   wikiData  WikiData  @relation(fields: [wdid], references: [id])
-//   wdid      String
-// }
-
-// model DataRow {
-//   id        String     @id @default(cuid())
-//   wikiData  WikiData   @relation(fields: [wdid], references: [id])
-//   wdid      String
-//   cells     DataCell[]
-// }
-
-// model DataCell {
-//   id              String   @id @default(cuid())
-//   value           String?
-//   highlightColor  Color?
-//   row             DataRow  @relation(fields: [rowId], references: [id])
-//   rowId           String
-// }
-
 // 選手・監督の名前からファイル名を取得
 export async function getFileID(id: string) : Promise<{ fileID: string; }> {
-  return await prisma.wikiPage.findUnique({
+  return await prisma.Wiki.findUnique({
         where: {
             id: id,
         },

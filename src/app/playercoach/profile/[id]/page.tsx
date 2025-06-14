@@ -1,122 +1,42 @@
 import Image from 'next/image';
-import fs from 'fs';
 import Link from 'next/link';
-import { getFileID, getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
+import { getWikiByID, getGenreLabelsByLanguage, getGenderByLanguage } from '@/lib/getter';
 // import path from 'path';
 
-type Profile = {
-    stats: Stats;
-    scripts: Script[];
-    data: Data;
-    awards: Award[];
-    color: Color;
-}
+import { Color } from '@prisma/client';
 
-type Teamname = {
-    name: string;
-    start: number;
-    end: number | null;
-    id: string;
-}
-
-type Stats = {
-    name: string;
-    teamnames?: Teamname[];
-    sports: string[];
-    genres: string[];
-    gender: string;
-    bdate: [number, number, number];
-    height: number;
-    weight: number;
-    privateFields: PrivateFields;
-}
-
-type Script = {
-    section: string;
-    texts: string[];
-}
-
-type Data = {
-    results: Result[];
-    highlightInfo: Partial<Record<string, string>>;
-}
-
-type TableCell = {
-    value: string | number;
-    id: string;
-    highlightColor?: string;
-}
-
-type TableColCell = {
-    value: string;
-    id: string;
-}
-
-type TableRow = {
-    id: string;
-    cells: TableCell[];
-}
-
-type Result = {
-    position: string;
-    id: string;
-    columns: TableColCell[];
-    rows: TableRow[];
-};
-
-type Title = {
-    id: string; 
-    name: string; 
-    years: number[];
-}
-
-type Award = {
-    id: string;
-    section: string;
-    titles: Title[];
-}
-
-type Color = {
-    bgcolor: string;
-    textcolor: string;
-}
-
-// 今はjsonファイル内に入れているが、profileAddメニューができたらデータベースでこのフィールドを管理する
-type PrivateFields = {
-    bdate: boolean;
-    height: boolean;
-    weight: boolean;
-}
-
-const colorClassMap: Record<string, { bg: string; text: string, border: string }> = {
-  red: { bg: 'bg-red-600', text: 'text-red-600', border: 'border-red-600' },
-  orange: { bg: 'bg-orange-600', text: 'text-orange-600', border: 'border-orange-600' },
-  yellow: { bg: 'bg-yellow-600', text: 'text-yellow-600', border: 'border-yellow-600' },
-  lime: { bg: 'bg-lime-400', text: 'text-lime-400', border: 'border-lime-400' },
-  green: { bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-600' },
-  sky: { bg: 'bg-sky-500', text: 'text-sky-500', border: 'border-sky-500' },
-  blue: { bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-600' },
-  purple: { bg: 'bg-purple-600', text: 'text-purple-600', border: 'border-purple-600' },
-  amber: { bg: 'bg-amber-700', text: 'text-amber-700', border: 'border-amber-700' },
-  gray: { bg: 'bg-gray-600', text: 'text-gray-600', border: 'border-gray-600' },
-  black: { bg: 'bg-black', text: 'text-black', border: 'border-black' },
-  white: { bg: 'bg-white', text: 'text-white', border: 'border-white' },
+const colorClassMap: Record<Color, { bg: string; text: string, border: string }> = {
+  RED: { bg: 'bg-red-600', text: 'text-red-600', border: 'border-red-600' },
+  ORANGE: { bg: 'bg-orange-600', text: 'text-orange-600', border: 'border-orange-600' },
+  YELLOW: { bg: 'bg-yellow-600', text: 'text-yellow-600', border: 'border-yellow-600' },
+  LIME: { bg: 'bg-lime-400', text: 'text-lime-400', border: 'border-lime-400' },
+  GREEN: { bg: 'bg-green-600', text: 'text-green-600', border: 'border-green-600' },
+  SKY: { bg: 'bg-sky-500', text: 'text-sky-500', border: 'border-sky-500' },
+  BLUE: { bg: 'bg-blue-600', text: 'text-blue-600', border: 'border-blue-600' },
+  PURPLE: { bg: 'bg-purple-600', text: 'text-purple-600', border: 'border-purple-600' },
+  AMBER: { bg: 'bg-amber-700', text: 'text-amber-700', border: 'border-amber-700' },
+  GRAY: { bg: 'bg-gray-600', text: 'text-gray-600', border: 'border-gray-600' },
+  BLACK: { bg: 'bg-black', text: 'text-black', border: 'border-black' },
+  WHITE: { bg: 'bg-white', text: 'text-white', border: 'border-white' },
 }
   
 export default async function PlayerCoachProfilePage({params}: {params: {id: string}}) {
     const { id } = await params;
-    const fileID = (await getFileID(id)).fileID
-    const jsonData = fs.readFileSync(`./public/jsonfile/sports_${fileID}.json`, 'utf-8');
-    const {stats, scripts, data, awards, color}: Profile 
-        = JSON.parse(jsonData); 
+    const wiki = await getWikiByID(id);
 
-    const genreLabels = await getGenreLabelsByLanguage(stats.genres || [], 'jp');
+    if (!wiki) return <p>該当するWikiが見つかりません。</p>;
+
+    const {stats, scripts, data, awards, themeColor} = wiki;
+
+    const genreLabels = await getGenreLabelsByLanguage(stats.genres, 'jp');
+
+    console.log(genreLabels);
 
     return (
         <>
-        <div className={`border-2 px-2 rounded-3xl my-4 ${colorClassMap[color.textcolor].text} ${colorClassMap[color.bgcolor].bg}`}>
+        <div className={`border-2 px-2 rounded-3xl my-4 ${colorClassMap[themeColor.textColor].text} ${colorClassMap[themeColor.bgColor].bg}`}>
             <div className="flex items-center no-underline w-fit rounded">
-                <Image src='/defaultIcon.png' alt="" width={128} height={256} className={`mr-2 border-2 bg-gray-600 ${color?.textcolor ? colorClassMap[color.textcolor].border : "border-white"} rounded-full`}/>                   
+                <Image src='/defaultIcon.png' alt="" width={128} height={256} className={`mr-2 border-2 bg-gray-600 ${colorClassMap[themeColor.textColor].border} rounded-full`}/>                   
                 <ul className="mt-2">
                     <li className="flex flex-col space-y-2 items-center">
                         <p className="text-4xl font-bold">{stats.name}</p>
@@ -144,9 +64,9 @@ export default async function PlayerCoachProfilePage({params}: {params: {id: str
                 <p className="font-bold">プロフィール</p>
                 <ul className="list-none ml-4">
                     <li>性別: {await getGenderByLanguage(stats.gender, 'jp')}</li>
-                    <li>誕生日: {stats.privateFields.bdate ? "非公開" : stats.bdate.join('/')}</li>
-                    <li>身長: {stats.privateFields.height ? "非公開" : `${stats.height} cm`}</li>
-                    <li>体重: {stats.privateFields.weight ? "非公開" : `${stats.weight} kg`}</li>
+                    <li>誕生日: {stats.isBdatePrivate ? "非公開" : stats.bdate.join('/')}</li>
+                    <li>身長: {stats.isHeightPrivate ? "非公開" : `${stats.height} cm`}</li>
+                    <li>体重: {stats.isWeightPrivate ? "非公開" : `${stats.weight} kg`}</li>
                 </ul>
             </div>
         </div>
